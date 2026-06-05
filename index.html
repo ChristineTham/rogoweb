@@ -4,10 +4,37 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rogoweb</title>
+    <title>Rogomatic Web Port</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <header>
+        <h1>Rog-O-Matic :: Web Port</h1>
+        <div id="status-indicator">SYSTEM READY</div>
+      </header>
+      <main class="dashboard">
+        <div class="terminal-container">
+          <div id="terminal"></div>
+        </div>
+        <aside class="stats-panel">
+          <section class="panel-section">
+            <div class="panel-title">BOT STATUS</div>
+            <div id="bot-status">IDLE</div>
+          </section>
+          <section class="panel-section">
+            <div class="panel-title">GAME STATS</div>
+            <div>Score: <span id="stat-score">0</span></div>
+            <div>Level: <span id="stat-level">1</span></div>
+            <div>Gold: <span id="stat-gold">0</span></div>
+          </section>
+          <section class="panel-section">
+            <div class="panel-title">GENE POOL</div>
+            <div id="gene-info">No data</div>
+          </section>
+        </aside>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
