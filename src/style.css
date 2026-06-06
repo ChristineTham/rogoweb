@@ -42,13 +42,43 @@ body, html {
   .monitor-unit {
     /* Flush left, fill height */
     height: 100vh;
-    width: min(100vw, 160vh);
+    width: 160vh;
     flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
   }
-  .hardware-controls { flex: 1; }
+  .chassis-header, .chassis-footer { display: none !important; }
+  .active-area { 
+    margin: 2px !important; 
+    flex: 1;
+    height: calc(100vh - 4px);
+  }
+  
+  .hardware-controls { 
+    flex: 1; 
+    position: relative; 
+    background-color: var(--vt-beige); /* Sidebar is beige */
+    border-left: 1px solid var(--vt-beige-dark);
+  }
   .sidebar-v { display: flex; flex-direction: column; height: 100%; justify-content: center; padding: 2vh; gap: 3vh; }
   .horizontal-v { display: none; }
-  .branding { justify-content: flex-end; } /* Logo top right of screen when wide */
+  
+  /* Branding moved to the top right of the sidebar for wide displays */
+  .sidebar-v::before {
+    content: "digital VT100";
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: sans-serif;
+    font-weight: 900;
+    font-size: 2.2vh;
+    color: #555; /* Dark grey logo on beige */
+    text-transform: lowercase;
+    white-space: pre;
+    z-index: 1000;
+  }
 }
 
 /* 2. TALL DISPLAY: Monitor Top, Controls Bottom */
@@ -101,7 +131,7 @@ body, html {
 .active-area {
   flex: 1;
   background-color: #000;
-  margin: 0 1.5vh;
+  margin: 2px;
   position: relative;
   overflow: hidden;
   box-shadow: inset 0 0 40px rgba(0,0,0,1);
@@ -123,9 +153,10 @@ body, html {
    CONTROL LAYOUTS
 ========================================= */
 .hardware-controls {
-  background-color: #0a0a0b;
-  border-left: 2px solid #1a1a1b;
+  background-color: var(--vt-beige);
+  border-left: 2px solid var(--vt-beige-dark);
   display: flex;
+  position: relative;
 }
 
 .p-block, .h-group {
