@@ -7,6 +7,7 @@
   --color-vt-black: #111112;
   --color-p4-white: #ebf0ff;
   --color-dec-blue: #003DA5;
+  --aspect-5/3: 5 / 3;
 }
 
 @font-face {
@@ -35,7 +36,7 @@
 
 /* THE MONITOR UNIT (NATURAL 5:3) */
 .monitor-unit {
-  @apply relative flex flex-col bg-vt-beige shrink-0 overflow-hidden;
+  @apply relative flex flex-col bg-vt-beige shrink-0 overflow-hidden aspect-5/3;
 }
 
 .active-area {
