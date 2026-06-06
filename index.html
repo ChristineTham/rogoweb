@@ -4,105 +4,107 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DEC VT100 :: Rogue Port</title>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="app">
-    <div id="termDiv" style="display:none"></div>
-    
     <div class="vt100-workspace">
       
-      <!-- MONITOR SECTION: ALWAYS 1.6:1 -->
+      <!-- MONITOR SECTION: ALWAYS 5:3 -->
       <main id="monitor-unit" class="monitor-unit">
-        <header class="chassis-header">
-           <div class="branding">
-             <span class="digital-logo">digital</span>
-             <span class="vt100-badge">VT100</span>
-           </div>
+        
+        <!-- Header Branding: ONLY VISIBLE ON TALL DISPLAYS -->
+        <header class="header-branding">
+          <div class="dec-logo-container">
+            <img src="/assets/dec-logo-blue.png" alt="digital" class="dec-logo">
+            <span class="vt100-badge">VT100</span>
+          </div>
         </header>
 
         <div id="terminal-viewport" class="active-area">
           <div id="terminal"></div>
-          <div class="crt-glow"></div>
           <div class="scanlines"></div>
         </div>
 
-        <footer class="chassis-footer">
-          <div class="grille"></div>
-        </footer>
       </main>
 
       <!-- HARDWARE MARGIN: For controls and status -->
       <aside class="hardware-controls">
         
-        <!-- Sidebar Version: Wide Screens -->
-        <div class="panel-layout sidebar-v">
-          <section class="p-block config">
-            <div class="label">LOGIN CONFIG</div>
+        <!-- Sidebar Branding: ONLY VISIBLE ON WIDE DISPLAYS -->
+        <div class="dec-logo-container sidebar-branding">
+          <img src="/assets/dec-logo-blue.png" alt="digital" class="dec-logo">
+          <span class="vt100-badge">VT100</span>
+        </div>
+
+        <!-- DASHBOARD SCALING MODES -->
+        
+        <!-- 1. FULL DASHBOARD (Standard) -->
+        <div class="dashboard-full">
+          
+          <section class="panel-block">
+            <span class="panel-label">VAX LOGIN CONFIG</span>
             <div class="field-group">
-              <label for="unix-name">USER:</label>
+              <label for="unix-name" class="led-label" style="display:block;margin-bottom:5px">USER ID</label>
               <input type="text" id="unix-name" value="rogue" class="terminal-input">
             </div>
-            <div class="mode-selector">
-              <input type="radio" id="mode-manual" name="mode" value="manual" checked>
-              <label for="mode-manual">MANUAL</label>
-              <input type="radio" id="mode-auto" name="mode" value="auto">
-              <label for="mode-auto">AUTO</label>
-            </div>
-          </section>
-
-          <section class="p-block stats">
-            <div class="label">GAME DATA</div>
-            <div class="v-stat">LVL <span id="stat-level-v">01</span></div>
-            <div class="v-stat">GOLD <span id="stat-gold-v">000</span></div>
-            <div class="v-stat">SCORE <span id="stat-score-v">000</span></div>
-          </section>
-
-          <section class="p-block bot">
-            <div class="label">ENGINE</div>
-            <div id="bot-status-v" class="status-box">READY</div>
-            <div class="led-strip">
-               <div class="led-group"><div id="led-wait" class="led amber"></div><span>WAIT</span></div>
-               <div class="led-group"><div id="led-online" class="led green"></div><span>ON LINE</span></div>
-               <div class="led-group"><div id="led-local" class="led amber"></div><span>LOCAL</span></div>
-            </div>
-            <div class="led-strip small">
-               <div class="led-group"><div id="led-l1" class="led green"></div><span>L1</span></div>
-               <div class="led-group"><div id="led-l2" class="led green"></div><span>L2</span></div>
-               <div class="led-group"><div id="led-l3" class="led green"></div><span>L3</span></div>
-               <div class="led-group"><div id="led-l4" class="led green"></div><span>L4</span></div>
-            </div>
-          </section>
-
-          <section class="p-block pwr">
             <button id="btn-start" class="btn-industrial" disabled>CONNECT</button>
-            <div id="status-indicator-v" class="tagline">IDLE</div>
+          </section>
+
+          <section class="panel-block">
+            <span class="panel-label">VAX-11/780 DATA</span>
+            <div class="digital-readout">
+              <span class="readout-label">LEVEL</span>
+              <span id="stat-level" class="readout-value">00</span>
+            </div>
+            <div class="digital-readout">
+              <span class="readout-label">GOLD</span>
+              <span id="stat-gold" class="readout-value">000</span>
+            </div>
+            <div class="digital-readout">
+              <span class="readout-label">SCORE</span>
+              <span id="stat-score" class="readout-value">000</span>
+            </div>
+          </section>
+
+          <section class="panel-block">
+            <span class="panel-label">TERMINAL STATUS</span>
+            <div class="led-strip">
+              <div class="led-group"><div id="led-wait" class="led amber"></div><span class="led-label">WAIT</span></div>
+              <div class="led-group"><div id="led-online" class="led green"></div><span class="led-label">ONLINE</span></div>
+              <div class="led-group"><div id="led-local" class="led amber active"></div><span class="led-label">LOCAL</span></div>
+            </div>
+            <div class="led-strip" style="margin-top:20px">
+              <div class="led-group"><div id="led-l1" class="led green"></div><span class="led-label">L1</span></div>
+              <div class="led-group"><div id="led-l2" class="led green"></div><span class="led-label">L2</span></div>
+              <div class="led-group"><div id="led-l3" class="led green"></div><span class="led-label">L3</span></div>
+              <div class="led-group"><div id="led-l4" class="led green"></div><span class="led-label">L4</span></div>
+            </div>
           </section>
         </div>
 
-        <!-- Bottom-bar Version: Tall Screens -->
-        <div class="panel-layout horizontal-v">
-          <div class="h-group">
-            <div class="h-label">DATA</div>
-            <div class="h-stats">
-               <span>LVL <b id="stat-level-h">01</b></span>
-               <span>GOLD <b id="stat-gold-h">0</b></span>
-               <span>SCORE <b id="stat-score-h">0</b></span>
-            </div>
-          </div>
+        <!-- 2. ICON RAIL (Narrow Sidebar) -->
+        <div class="dashboard-rail">
+           <div class="led amber active" title="LOCAL"></div>
+           <div class="led green" title="ONLINE"></div>
+           <div class="led amber" title="WAIT"></div>
+           <div style="margin-top:20px" class="led green" title="L1"></div>
+           <div class="led green" title="L2"></div>
+           <div class="led green" title="L3"></div>
+           <div class="led green" title="L4"></div>
+        </div>
 
-          <div class="h-group">
-            <div class="h-label">STATUS</div>
-            <div id="bot-status-h" class="h-display">READY</div>
-            <div class="led-strip small">
-               <div class="led-group"><div id="led-wait-h" class="led amber"></div><span>WAIT</span></div>
-               <div class="led-group"><div id="led-online-h" class="led green"></div><span>ONLINE</span></div>
-            </div>
-          </div>
-
-          <div class="h-group actions">
-            <button id="btn-start-h" class="btn-industrial compact" disabled>START ENGINE</button>
-          </div>
+        <!-- 3. STATUS STRIP (Short Bottom Bar) -->
+        <div class="dashboard-strip">
+           <div class="led-strip">
+              <div class="led amber active"></div>
+              <div class="led green"></div>
+              <div class="led amber"></div>
+           </div>
+           <div class="digital-readout" style="gap:20px">
+              <span class="readout-value">L:01</span>
+              <span class="readout-value">G:000</span>
+              <span class="readout-value">S:000</span>
+           </div>
         </div>
 
       </aside>
