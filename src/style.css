@@ -94,7 +94,7 @@
   .vt100-workspace { @apply flex-col; }
 
   .header-branding {
-    @apply flex justify-center items-center py-2 bg-vt-beige w-full select-none;
+    @apply flex justify-center items-center h-10 bg-vt-beige w-full select-none shrink-0;
   }
 
   .monitor-unit {
