@@ -186,6 +186,29 @@ body, html {
 }
 .btn-industrial:hover:not(:disabled) { background: #222; }
 
+.terminal-input {
+  background: #000;
+  border: 1px solid #333;
+  color: var(--p4-white);
+  font-family: var(--font-term);
+  padding: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field-group { margin-bottom: 10px; }
+.field-group label { display: block; font-size: 0.8vh; color: #444; margin-bottom: 2px; }
+
+.mode-selector {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.mode-selector label { font-size: 1vh; color: #444; cursor: pointer; }
+.mode-selector input { cursor: pointer; }
+
+.led-strip.small { margin-top: 5px; gap: 10px; }
+
 .tagline { font-size: 0.9vh; text-align: center; color: #222; margin-top: 5px; font-weight: bold; }
 
 /* Horizontal Mode Specifics */

@@ -1,40 +1,114 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rogomatic Web Port</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app">
-      <header>
-        <h1>Rog-O-Matic :: Web Port</h1>
-        <div id="status-indicator">SYSTEM READY</div>
-      </header>
-      <main class="dashboard">
-        <div class="terminal-container">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEC VT100 :: Rogue Port</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <div id="termDiv" style="display:none"></div>
+    
+    <div class="vt100-workspace">
+      
+      <!-- MONITOR SECTION: ALWAYS 1.6:1 -->
+      <main id="monitor-unit" class="monitor-unit">
+        <header class="chassis-header">
+           <div class="branding">
+             <span class="digital-logo">digital</span>
+             <span class="vt100-badge">VT100</span>
+           </div>
+        </header>
+
+        <div id="terminal-viewport" class="active-area">
           <div id="terminal"></div>
+          <div class="crt-glow"></div>
+          <div class="scanlines"></div>
         </div>
-        <aside class="stats-panel">
-          <section class="panel-section">
-            <div class="panel-title">BOT STATUS</div>
-            <div id="bot-status">IDLE</div>
-          </section>
-          <section class="panel-section">
-            <div class="panel-title">GAME STATS</div>
-            <div>Score: <span id="stat-score">0</span></div>
-            <div>Level: <span id="stat-level">1</span></div>
-            <div>Gold: <span id="stat-gold">0</span></div>
-          </section>
-          <section class="panel-section">
-            <div class="panel-title">GENE POOL</div>
-            <div id="gene-info">No data</div>
-          </section>
-        </aside>
+
+        <footer class="chassis-footer">
+          <div class="grille"></div>
+        </footer>
       </main>
+
+      <!-- HARDWARE MARGIN: For controls and status -->
+      <aside class="hardware-controls">
+        
+        <!-- Sidebar Version: Wide Screens -->
+        <div class="panel-layout sidebar-v">
+          <section class="p-block config">
+            <div class="label">LOGIN CONFIG</div>
+            <div class="field-group">
+              <label for="unix-name">USER:</label>
+              <input type="text" id="unix-name" value="rogue" class="terminal-input">
+            </div>
+            <div class="mode-selector">
+              <input type="radio" id="mode-manual" name="mode" value="manual" checked>
+              <label for="mode-manual">MANUAL</label>
+              <input type="radio" id="mode-auto" name="mode" value="auto">
+              <label for="mode-auto">AUTO</label>
+            </div>
+          </section>
+
+          <section class="p-block stats">
+            <div class="label">GAME DATA</div>
+            <div class="v-stat">LVL <span id="stat-level-v">01</span></div>
+            <div class="v-stat">GOLD <span id="stat-gold-v">000</span></div>
+            <div class="v-stat">SCORE <span id="stat-score-v">000</span></div>
+          </section>
+
+          <section class="p-block bot">
+            <div class="label">ENGINE</div>
+            <div id="bot-status-v" class="status-box">READY</div>
+            <div class="led-strip">
+               <div class="led-group"><div id="led-wait" class="led amber"></div><span>WAIT</span></div>
+               <div class="led-group"><div id="led-online" class="led green"></div><span>ON LINE</span></div>
+               <div class="led-group"><div id="led-local" class="led amber"></div><span>LOCAL</span></div>
+            </div>
+            <div class="led-strip small">
+               <div class="led-group"><div id="led-l1" class="led green"></div><span>L1</span></div>
+               <div class="led-group"><div id="led-l2" class="led green"></div><span>L2</span></div>
+               <div class="led-group"><div id="led-l3" class="led green"></div><span>L3</span></div>
+               <div class="led-group"><div id="led-l4" class="led green"></div><span>L4</span></div>
+            </div>
+          </section>
+
+          <section class="p-block pwr">
+            <button id="btn-start" class="btn-industrial" disabled>CONNECT</button>
+            <div id="status-indicator-v" class="tagline">IDLE</div>
+          </section>
+        </div>
+
+        <!-- Bottom-bar Version: Tall Screens -->
+        <div class="panel-layout horizontal-v">
+          <div class="h-group">
+            <div class="h-label">DATA</div>
+            <div class="h-stats">
+               <span>LVL <b id="stat-level-h">01</b></span>
+               <span>GOLD <b id="stat-gold-h">0</b></span>
+               <span>SCORE <b id="stat-score-h">0</b></span>
+            </div>
+          </div>
+
+          <div class="h-group">
+            <div class="h-label">STATUS</div>
+            <div id="bot-status-h" class="h-display">READY</div>
+            <div class="led-strip small">
+               <div class="led-group"><div id="led-wait-h" class="led amber"></div><span>WAIT</span></div>
+               <div class="led-group"><div id="led-online-h" class="led green"></div><span>ONLINE</span></div>
+            </div>
+          </div>
+
+          <div class="h-group actions">
+            <button id="btn-start-h" class="btn-industrial compact" disabled>START ENGINE</button>
+          </div>
+        </div>
+
+      </aside>
+
     </div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
 </html>
