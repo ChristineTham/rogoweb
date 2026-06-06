@@ -65,17 +65,6 @@ export class TerminalShim {
     if (style & (1 << 1)) ansi += '\x1b[4m'; // Underline
     if (style & (1 << 0)) ansi += '\x1b[7m'; // Reverse
     
-    // ANTI-LIGATURE SPAN BREAKER:
-    // xterm.js DOM renderer merges characters with identical styles into a single <span>,
-    // which allows the browser's text engine to apply ligatures (like 'fi') even if disabled in CSS.
-    // By alternating between two visually identical true-color P4 Whites (#ebf0ff and #ebf0fe),
-    // we force xterm.js to create a distinct <span> for every single character.
-    if ((col % 2) === 0) {
-      ansi += '\x1b[38;2;235;240;255m'; // #ebf0ff
-    } else {
-      ansi += '\x1b[38;2;235;240;254m'; // #ebf0fe
-    }
-    
     ansi += String.fromCharCode(ch);
     
     // Reset all styles

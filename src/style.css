@@ -277,15 +277,6 @@ body, html {
   z-index: 100;
 }
 
-/* Sharp text and phosphor glow for DOM renderer */
-.xterm-rows {
-  text-rendering: geometricPrecision;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: unset;
-  text-shadow: 0 0 1px rgba(235, 240, 255, 0.4);
-  font-variant-ligatures: none; /* Crucial for fixing fi, ff spacing issues in monospace */
-  font-feature-settings: "liga" 0;
-}
-
-.xterm-screen canvas { display: none !important; } /* Ensure canvas is not used */
+/* Phosphor glow for Canvas renderer */
+.xterm-screen canvas { filter: drop-shadow(0 0 1.5px rgba(235, 240, 255, 0.4)); }
 .xterm-viewport { overflow: hidden !important; }

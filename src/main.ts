@@ -1,5 +1,6 @@
 import './style.css';
 import { Terminal as XTerm } from 'xterm';
+import { CanvasAddon } from '@xterm/addon-canvas';
 import 'xterm/css/xterm.css';
 import { TerminalShim, TermGlobals } from './terminal-shim';
 
@@ -55,6 +56,10 @@ const updateBotLEDs = (state: string) => {
   if (l4) l4.className = `led green ${state === 'danger' ? 'active' : ''}`;
 };
 (window as any).updateBotLEDs = updateBotLEDs;
+
+// Activate Canvas Renderer to fix VT323 'f' character width bug
+const canvasAddon = new CanvasAddon();
+xterm.loadAddon(canvasAddon);
 
 let engineRunning = false;
 const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
