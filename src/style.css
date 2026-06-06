@@ -23,7 +23,6 @@
   body, html {
     @apply h-screen w-screen bg-black text-p4-white overflow-hidden m-0 p-0;
   }
-
   #app { @apply h-full w-full; }
 }
 
@@ -50,96 +49,12 @@
 }
 
 /* =========================================
-   DYNAMIC HARDWARE LAYOUT (THE SPECS)
+   ADAPTIVE CONTAINER QUERIES (V4 Core)
+   The hardware-controls container itself determines the layout of its children.
 ========================================= */
-
-/* SCENARIO A: WIDE (Monitor 100vh High, Flush Left) */
-@media (min-aspect-ratio: 5/3) {
-  .vt100-workspace { @apply flex-row; }
-  
-  .monitor-unit {
-    @apply h-full;
-    width: 166.6667vh; /* 1.666 * 100vh */
-  }
-
-  .active-area { @apply h-full w-full; }
-
-  .hardware-controls {
-    @apply flex-1 flex flex-col items-center justify-center border-l-2 border-vt-beige-dark bg-vt-beige relative;
-    max-width: 400px;
-  }
-
-  /* Branding inside Sidebar */
-  .sidebar-branding {
-    @apply absolute top-5 right-5 flex items-center gap-3 select-none;
-  }
-
-  .header-branding { @apply hidden; }
-
-  /* SCALING: Narrow Sidebar Rail */
-  @media (max-width: 250px) {
-    .dashboard-full { @apply hidden; }
-    .dashboard-rail { @apply flex; }
-  }
-
-  /* COLLAPSE: Extremely Narrow */
-  @media (max-width: 100px) {
-    .hardware-controls { @apply min-w-[4px] max-w-[4px] p-0 border-l border-vt-beige-dark; }
-    .sidebar-branding, .dashboard-rail { @apply hidden; }
-  }
-}
-
-/* SCENARIO B: TALL (Monitor 100vw Wide, Flush Top) */
-@media (max-aspect-ratio: 5/3) {
-  .vt100-workspace { @apply flex-col; }
-
-  .header-branding {
-    @apply flex justify-center items-center h-10 bg-vt-beige w-full select-none shrink-0;
-  }
-
-  .monitor-unit {
-    @apply w-full mx-auto;
-    height: 60vw; /* 0.6 * 100vw */
-  }
-
-  .active-area { @apply h-full w-full; }
-
-  .hardware-controls {
-    @apply flex-1 flex flex-row items-center justify-center border-t-2 border-vt-beige-dark bg-vt-beige w-full;
-    max-height: 250px;
-  }
-
-  .sidebar-branding { @apply hidden; }
-
-  /* SCALING: Short Bottom Strip */
-  @media (max-height: 120px) {
-    .dashboard-full { @apply hidden; }
-    .dashboard-strip { @apply flex; }
-  }
-
-  /* COLLAPSE: Extremely Short */
-  @media (max-height: 40px) {
-    .hardware-controls { @apply min-h-[4px] max-h-[4px] p-0 border-t border-vt-beige-dark; }
-    .dashboard-strip { @apply hidden; }
-  }
-}
-
-/* =========================================
-   INDUSTRIAL DASHBOARD COMPONENTS
-========================================= */
-
-/* Layout Containers for Scaling Modes */
-.dashboard-full { @apply flex flex-col gap-5 w-full max-w-[320px]; }
-.dashboard-rail { @apply hidden flex-col items-center gap-6; }
-.dashboard-strip { @apply hidden flex-row items-center gap-10 h-full w-full px-5; }
-
-.panel-block {
-  @apply bg-vt-beige-dark border border-black/20 rounded p-4;
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2), 1px 1px 0 rgba(255,255,255,0.5);
-}
-
-.panel-label {
-  @apply text-[11px] font-extrabold text-[#444] uppercase tracking-wider mb-3 block;
+.hardware-controls {
+  @apply bg-vt-beige flex items-center justify-center overflow-hidden shrink-0;
+  container-type: size; /* Enable container queries on this region */
 }
 
 /* BRANDING ELEMENTS */
@@ -147,8 +62,83 @@
 .dec-logo { @apply h-6 w-auto block; }
 .vt100-badge { @apply font-bold text-lg text-[#555] tracking-widest uppercase inline-block; }
 
+/* -----------------------------------------
+   SCENARIO A: WIDE (Sidebar Layout)
+----------------------------------------- */
+@media (min-aspect-ratio: 5/3) {
+  .vt100-workspace { @apply flex-row; }
+  .monitor-unit { @apply h-full; width: 166.6667vh; }
+  .hardware-controls { 
+    @apply flex-1 h-full border-l-2 border-vt-beige-dark min-w-1 max-w-[400px]; 
+  }
+  .header-branding { @apply hidden; }
+
+  /* 1. FULL SIDEBAR (Enough Width) */
+  @container (min-width: 280px) {
+    .dashboard-full { @apply flex flex-col gap-6 w-full max-w-[320px] p-5; }
+    .dashboard-rail, .dashboard-strip { @apply hidden; }
+    .sidebar-branding { @apply absolute top-5 right-5 flex; }
+  }
+
+  /* 2. ICON RAIL (Narrow) */
+  @container (min-width: 60px) and (max-width: 279px) {
+    .dashboard-rail { @apply flex flex-col items-center gap-8 py-10; }
+    .dashboard-full, .dashboard-strip, .sidebar-branding { @apply hidden; }
+  }
+
+  /* 3. COLLAPSED SEAM (Extreme) */
+  @container (max-width: 59px) {
+    .hardware-controls { @apply bg-vt-beige-dark; }
+    .dashboard-full, .dashboard-rail, .dashboard-strip, .sidebar-branding { @apply hidden; }
+  }
+}
+
+/* -----------------------------------------
+   SCENARIO B: TALL (Header + Bottom Bar)
+----------------------------------------- */
+@media (max-aspect-ratio: 5/3) {
+  .vt100-workspace { @apply flex-col; }
+  .header-branding { @apply flex justify-center items-center h-10 bg-vt-beige w-full shrink-0; }
+  .monitor-unit { @apply w-full; height: 60vw; }
+  .hardware-controls { 
+    @apply flex-1 w-full border-t-2 border-vt-beige-dark min-h-1 max-h-[250px]; 
+  }
+  .sidebar-branding { @apply hidden; }
+
+  /* 1. FULL BOTTOM BAR (Enough Height) */
+  @container (min-height: 180px) {
+    .dashboard-full { @apply flex flex-row gap-10 items-center justify-center w-full h-full p-4; }
+    .dashboard-rail, .dashboard-strip { @apply hidden; }
+  }
+
+  /* 2. STATUS STRIP (Short) */
+  @container (min-height: 50px) and (max-height: 179px) {
+    .dashboard-strip { @apply flex flex-row items-center justify-center gap-12 h-full w-full px-10; }
+    .dashboard-full, .dashboard-rail { @apply hidden; }
+  }
+
+  /* 3. COLLAPSED BEZEL (Extreme) */
+  @container (max-height: 49px) {
+    .hardware-controls { @apply bg-vt-beige-dark; }
+    .dashboard-full, .dashboard-rail, .dashboard-strip { @apply hidden; }
+  }
+}
+
+/* =========================================
+   INDUSTRIAL DASHBOARD COMPONENTS
+========================================= */
+
+.panel-block {
+  @apply bg-vt-beige-dark border border-black/20 rounded p-4 shrink-0;
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2), 1px 1px 0 rgba(255,255,255,0.5);
+}
+
+.panel-label {
+  @apply text-[11px] font-extrabold text-[#444] uppercase tracking-wider mb-3 block;
+}
+
 /* DIGITAL READOUTS */
-.digital-readout { @apply flex justify-between items-baseline mb-2; }
+.digital-readout { @apply flex justify-between items-baseline mb-2 gap-4; }
 .readout-label { @apply text-xs text-[#555] font-semibold; }
 .readout-value {
   @apply text-xl text-p4-white font-bold bg-[#222] px-2 py-0.5 rounded min-w-[60px] text-right;
@@ -159,23 +149,17 @@
 .led-strip { @apply flex gap-4 justify-center; }
 .led-group { @apply flex flex-col items-center gap-1; }
 .led {
-  @apply w-3 h-3 rounded-full bg-[#333] border border-black/50;
+  @apply w-3.5 h-3.5 rounded-full bg-[#333] border border-black/50;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
 }
-.led.amber.active { 
-  @apply bg-[#ffaa00]; 
-  box-shadow: 0 0 10px #ffaa00, inset 0 1px 2px rgba(255,255,255,0.5); 
-}
-.led.green.active { 
-  @apply bg-[#33ff33]; 
-  box-shadow: 0 0 10px #33ff33, inset 0 1px 2px rgba(255,255,255,0.5); 
-}
-.led-label { @apply text-[9px] font-black text-[#555]; }
+.led.amber.active { @apply bg-[#ffaa00]; box-shadow: 0 0 12px #ffaa00, inset 0 1px 2px rgba(255,255,255,0.5); }
+.led.green.active { @apply bg-[#33ff33]; box-shadow: 0 0 12px #33ff33, inset 0 1px 2px rgba(255,255,255,0.5); }
+.led-label { @apply text-[10px] font-black text-[#555] uppercase; }
 
 /* CONTROLS */
 .field-group { @apply flex flex-col gap-1; }
 .terminal-input {
-  @apply bg-black border border-[#333] text-p4-white text-lg p-2 w-full rounded-sm;
+  @apply bg-black border border-[#333] text-p4-white text-lg p-2 w-full rounded-sm mb-3;
   font-family: var(--font-term);
 }
 .btn-industrial {
@@ -185,3 +169,9 @@
 .btn-industrial:active { @apply translate-y-0.5; box-shadow: 0 2px 0 #000; }
 .btn-industrial:disabled { @apply opacity-50 cursor-not-allowed; }
 
+/* CRT SCANLINES */
+.scanlines {
+  @apply absolute inset-0 pointer-events-none z-[100];
+  background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.1) 50%);
+  background-size: 100% 2px;
+}
