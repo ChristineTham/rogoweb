@@ -1,3 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-term: 'VT323', monospace;
+  --color-vt-beige: #d0ccbc;
+  --color-vt-beige-dark: #b0aca0;
+  --color-vt-black: #111112;
+  --color-p4-white: #ebf0ff;
+  --color-dec-blue: #003DA5;
+}
+
 @font-face {
   font-family: 'VT323';
   src: url('/fonts/VT323-Regular.ttf') format('truetype');
@@ -5,278 +16,177 @@
   font-style: normal;
 }
 
-:root {
-  --p4-white: #ebf0ff;
-  --vt-beige: #d0ccbc;
-  --vt-beige-dark: #b0aca0;
-  --vt-black: #111112;
-  --font-term: 'VT323', monospace;
-  --aspect: 1.666667;
-}
-
 /* =========================================
-   BASE RESET
+   BASE RESET & GLOBAL
 ========================================= */
-body, html {
-  margin: 0; padding: 0;
-  height: 100vh; width: 100vw;
-  background-color: #000;
-  color: var(--p4-white);
-  font-family: var(--font-term);
-  overflow: hidden; /* ABSOLUTELY NO SCROLLING */
-}
+@layer base {
+  body, html {
+    @apply h-screen w-screen bg-black text-p4-white overflow-hidden;
+    font-family: 'Inter', sans-serif;
+  }
 
-#app { width: 100%; height: 100%; }
+  #app { @apply h-full w-full; }
+}
 
 /* =========================================
    WORKSPACE GRID
 ========================================= */
 .vt100-workspace {
-  display: flex;
-  width: 100%; height: 100%;
+  @apply flex h-full w-full bg-vt-beige;
 }
 
-/* 1. WIDE DISPLAY: Monitor Left, Controls Right */
-@media (min-aspect-ratio: 5/3) {
-  .vt100-workspace { flex-direction: row; }
-  .monitor-unit {
-    /* Flush left, fill height */
-    height: 100vh;
-    width: calc(100vh * 5 / 3);
-    flex-shrink: 0;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .chassis-header, .chassis-footer { display: none !important; }
-  .active-area { 
-    margin: 2px !important; 
-    flex: 1;
-    height: calc(100vh - 4px);
-  }
-  
-  .hardware-controls { 
-    flex: 1; 
-    position: relative; 
-    background-color: var(--vt-beige); /* Sidebar is beige */
-    border-left: 1px solid var(--vt-beige-dark);
-  }
-  .sidebar-v { display: flex; flex-direction: column; height: 100%; justify-content: center; padding: 2vh; gap: 3vh; }
-  .horizontal-v { display: none; }
-  
-  /* Branding moved to the top right of the sidebar for wide displays */
-  .sidebar-v::before {
-    content: "digital VT100";
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-family: sans-serif;
-    font-weight: 900;
-    font-size: 2.2vh;
-    color: #555; /* Dark grey logo on beige */
-    text-transform: lowercase;
-    white-space: pre;
-    z-index: 1000;
-  }
-}
-
-/* 2. TALL DISPLAY: Monitor Top, Controls Bottom */
-@media (max-aspect-ratio: 5/3) {
-  .vt100-workspace { flex-direction: column; }
-  .monitor-unit {
-    /* Flush top, fill width */
-    width: 100vw;
-    height: calc(100vw / var(--aspect));
-    flex-shrink: 0;
-  }
-  .hardware-controls { flex: 1; }
-  .sidebar-v { display: none; }
-  .horizontal-v { 
-    display: flex; flex-direction: row; 
-    height: 100%; width: 100%; 
-    justify-content: space-around; align-items: center; 
-    padding: 10px;
-  }
-  .branding { justify-content: center; } /* Logo centered above screen when tall */
-}
-
-/* =========================================
-   MONITOR ARCHITECTURE
-========================================= */
+/* MONITOR ENCLOSURE */
 .monitor-unit {
-  background-color: var(--vt-beige);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-  border-right: 1px solid var(--vt-beige-dark);
+  @apply relative flex flex-col bg-vt-beige shrink-0 overflow-hidden;
 }
-
-.chassis-header {
-  padding: 5px 15px;
-  min-height: 30px;
-  display: flex;
-  flex-direction: column;
-}
-
-.branding {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-.digital-logo { font-family: sans-serif; font-weight: 900; font-size: 2.2vh; color: #fff; text-transform: lowercase; }
-.vt100-badge { font-family: sans-serif; font-weight: bold; font-size: 1.4vh; color: #555; }
 
 .active-area {
-  flex: 1;
-  background-color: #000;
-  margin: 2px;
-  position: relative;
-  overflow: hidden;
+  @apply flex-1 bg-black relative overflow-hidden border-[#1a1a1b];
+  border-width: 2px;
+  /* Box shadow for the CRT bezel hint */
   box-shadow: inset 0 0 40px rgba(0,0,0,1);
 }
 
 #terminal {
-  width: 100%; height: 100%;
+  @apply h-full w-full;
 }
-
-.xterm {
-  /* Remove any transforms that might have been applied inline previously */
-  transform: none !important;
-  font-variant-ligatures: none !important;
-  font-feature-settings: "liga" 0, "clig" 0, "calt" 0, "dlig" 0 !important;
-  font-kerning: none !important;
-}
-
-.chassis-footer {
-  height: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.grille { width: 15%; height: 3px; background: #999; border-radius: 2px; }
 
 /* =========================================
-   CONTROL LAYOUTS
+   AUTHENTIC BRANDING
 ========================================= */
-.hardware-controls {
-  background-color: var(--vt-beige);
-  border-left: 2px solid var(--vt-beige-dark);
-  display: flex;
-  position: relative;
+.dec-logo-container {
+  @apply flex items-center gap-3 select-none;
 }
 
-.p-block, .h-group {
-  background: var(--vt-beige-dark);
-  border: 1px solid rgba(0,0,0,0.2);
-  border-radius: 4px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
+.dec-logo {
+  @apply h-6;
+}
+
+.vt100-badge {
+  @apply font-bold text-lg text-[#555] tracking-widest uppercase;
+}
+
+/* =========================================
+   ADAPTIVE LAYOUT LOGIC
+========================================= */
+
+/* A. WIDE DISPLAY (Aspect > 5/3) */
+@media (min-aspect-ratio: 5/3) {
+  .vt100-workspace { @apply flex-row; }
+  
+  .monitor-unit {
+    @apply h-full;
+    width: 166.6667vh; /* Exact 5:3 of 100vh */
+  }
+
+  .hardware-controls {
+    @apply flex-1 flex flex-col p-5 border-l-2 border-vt-beige-dark relative;
+    max-width: 400px;
+  }
+
+  .sidebar-branding {
+    @apply absolute top-5 right-5;
+  }
+
+  .header-branding { @apply hidden; }
+}
+
+/* B. TALL DISPLAY (Aspect < 5/3) */
+@media (max-aspect-ratio: 5/3) {
+  .vt100-workspace { @apply flex-col; }
+
+  .monitor-unit {
+    @apply w-full mx-auto;
+    height: 60vw; /* Exact 3/5 of 100vw */
+  }
+
+  .hardware-controls {
+    @apply flex-1 flex flex-row p-4 border-t-2 border-vt-beige-dark justify-center;
+    max-height: 250px;
+  }
+
+  .header-branding {
+    @apply flex justify-center py-2 bg-vt-beige;
+  }
+
+  .sidebar-branding { @apply hidden; }
+}
+
+/* =========================================
+   INDUSTRIAL DASHBOARD COMPONENTS
+========================================= */
+
+.panel-block {
+  @apply bg-vt-beige-dark border border-black/20 rounded p-4 mb-5;
   box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2), 1px 1px 0 rgba(255,255,255,0.5);
-  margin-bottom: 5px;
 }
 
-.label, .h-label { 
-  font-size: 11px; 
-  min-font-size: 10px;
-  color: #333; 
-  letter-spacing: 1px; 
-  margin-bottom: 10px; 
-  font-weight: bold; 
-  text-transform: uppercase;
+.panel-label {
+  @apply text-[11px] font-extrabold text-[#444] uppercase tracking-wider mb-3 block;
 }
 
-.v-stat { display: flex; justify-content: space-between; font-size: 14px; color: #333; margin-bottom: 5px; }
-.v-stat span { color: var(--p4-white); font-weight: bold; font-size: 18px; text-shadow: 1px 1px 0 #000; }
-
-.status-box { 
-  font-size: 20px; 
-  min-height: 30px;
-  text-align: center; 
-  color: var(--p4-white); 
-  margin-bottom: 15px; 
-  background: rgba(0,0,0,0.4);
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-shadow: 1px 1px 0 #000;
+/* STATS DISPLAY */
+.digital-readout {
+  @apply flex justify-between items-baseline mb-2;
 }
 
-.led-strip { display: flex; gap: 20px; justify-content: center; margin-bottom: 10px; }
-.led-group { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #333; font-weight: bold; }
-.led { width: 10px; height: 10px; border-radius: 50%; background: #444; border: 1px solid rgba(0,0,0,0.5); }
-.led.active.amber { background: #ffaa00; box-shadow: 0 0 10px #ffaa00; }
-.led.active.green { background: #33ff33; box-shadow: 0 0 10px #33ff33; }
+.readout-label { @apply text-xs text-[#555] font-semibold; }
+.readout-value {
+  @apply text-xl text-p4-white font-bold bg-[#222] px-2 py-0.5 rounded min-w-[60px] text-right;
+  text-shadow: 1px 1px 2px #000;
+}
+
+/* LED SYSTEM */
+.led-strip {
+  @apply flex gap-4 justify-center mt-2;
+}
+
+.led-group {
+  @apply flex flex-col items-center gap-1;
+}
+
+.led {
+  @apply w-3 h-3 rounded-full bg-[#333] border border-black/50;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.led.amber.active { 
+  @apply bg-[#ffaa00]; 
+  box-shadow: 0 0 10px #ffaa00, inset 0 1px 2px rgba(255,255,255,0.5); 
+}
+
+.led.green.active { 
+  @apply bg-[#33ff33]; 
+  box-shadow: 0 0 10px #33ff33, inset 0 1px 2px rgba(255,255,255,0.5); 
+}
+
+.led-label { @apply text-[9px] font-black text-[#555]; }
+
+/* CONTROLS */
+.terminal-input {
+  @apply bg-black border border-[#333] text-p4-white text-lg p-2 w-full mb-4 rounded-sm;
+  font-family: var(--font-term);
+}
 
 .btn-industrial {
-  background: #333; 
-  color: #fff; 
-  border: 1px solid #000; 
-  padding: 12px;
-  font-family: sans-serif; 
-  font-weight: bold; 
-  font-size: 14px; 
-  cursor: pointer;
-  border-radius: 4px;
+  @apply bg-[#333] text-white border-2 border-black p-3 font-black text-sm cursor-pointer rounded w-full transition-all;
   box-shadow: 0 4px 0 #000;
-  transition: transform 0.1s, box-shadow 0.1s;
 }
+
 .btn-industrial:active {
-  transform: translateY(2px);
+  @apply translate-y-0.5;
   box-shadow: 0 2px 0 #000;
 }
-.btn-industrial:hover:not(:disabled) { background: #444; }
-.btn-industrial:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.terminal-input {
-  background: #000;
-  border: 1px solid #333;
-  color: var(--p4-white); /* White text as requested */
-  font-family: var(--font-term);
-  font-size: 16px;
-  padding: 8px;
-  width: 100%;
-  box-sizing: border-box;
+.btn-industrial:disabled { @apply opacity-50 cursor-not-allowed; }
+
+/* CRT EFFECTS */
+.xterm-screen canvas {
+  filter: drop-shadow(0 0 1.5px rgba(235, 240, 255, 0.4));
 }
 
-.field-group { margin-bottom: 15px; }
-.field-group label { display: block; font-size: 10px; color: #333; margin-bottom: 4px; font-weight: bold; }
-
-.mode-selector {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  background: rgba(0,0,0,0.05);
-  padding: 8px;
-  border-radius: 4px;
-}
-.mode-selector label { font-size: 12px; color: #000; cursor: pointer; font-weight: bold; }
-.mode-selector input { width: 16px; height: 16px; cursor: pointer; }
-
-.led-strip.small { margin-top: 10px; gap: 12px; }
-
-.tagline { font-size: 10px; text-align: center; color: #555; margin-top: 10px; font-weight: bold; }
-
-/* Horizontal Mode Specifics */
-.horizontal-v .h-stats { display: flex; gap: 20px; font-size: 1.8vh; color: #555; }
-.horizontal-v .h-stats b { color: var(--p4-white); margin-left: 5px; }
-.h-display { font-size: 2.2vh; color: var(--p4-white); }
-
-/* =========================================
-   EFFECTS
-========================================= */
 .scanlines {
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
+  @apply absolute inset-0 pointer-events-none z-[100];
   background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.1) 50%);
   background-size: 100% 2px;
-  pointer-events: none;
-  z-index: 100;
 }
-
-/* Phosphor glow for Canvas renderer */
-.xterm-screen canvas { filter: drop-shadow(0 0 1.5px rgba(235, 240, 255, 0.4)); }
-.xterm-viewport { overflow: hidden !important; }
