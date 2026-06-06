@@ -42,7 +42,7 @@ body, html {
   .monitor-unit {
     /* Flush left, fill height */
     height: 100vh;
-    width: calc(100vh * var(--aspect));
+    width: min(100vw, 160vh);
     flex-shrink: 0;
   }
   .hardware-controls { flex: 1; }
@@ -57,7 +57,7 @@ body, html {
   .monitor-unit {
     /* Flush top, fill width */
     width: 100vw;
-    height: calc(100vw / var(--aspect));
+    height: min(100vh, 62.5vw);
     flex-shrink: 0;
   }
   .hardware-controls { flex: 1; }
