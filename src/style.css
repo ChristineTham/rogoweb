@@ -160,56 +160,97 @@ body, html {
 }
 
 .p-block, .h-group {
-  background: #000;
-  border: 1px solid #1a1a1a;
-  padding: 12px;
+  background: var(--vt-beige-dark);
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2), 1px 1px 0 rgba(255,255,255,0.5);
+  margin-bottom: 5px;
 }
 
-.label, .h-label { font-size: 9px; color: #444; letter-spacing: 2px; margin-bottom: 8px; font-weight: bold; }
+.label, .h-label { 
+  font-size: 11px; 
+  min-font-size: 10px;
+  color: #333; 
+  letter-spacing: 1px; 
+  margin-bottom: 10px; 
+  font-weight: bold; 
+  text-transform: uppercase;
+}
 
-.v-stat { display: flex; justify-content: space-between; font-size: 1.4vh; color: #444; }
-.v-stat span { color: var(--p4-white); font-weight: bold; font-size: 2vh; }
+.v-stat { display: flex; justify-content: space-between; font-size: 14px; color: #333; margin-bottom: 5px; }
+.v-stat span { color: var(--p4-white); font-weight: bold; font-size: 18px; text-shadow: 1px 1px 0 #000; }
 
-.status-box { font-size: 2.5vh; text-align: center; color: var(--p4-white); margin-bottom: 10px; }
+.status-box { 
+  font-size: 20px; 
+  min-height: 30px;
+  text-align: center; 
+  color: var(--p4-white); 
+  margin-bottom: 15px; 
+  background: rgba(0,0,0,0.4);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 1px 1px 0 #000;
+}
 
-.led-strip { display: flex; gap: 15px; justify-content: center; }
-.led-group { display: flex; align-items: center; gap: 4px; font-size: 0.8vh; color: #444; font-weight: bold; }
-.led { width: 0.8vh; height: 0.8vh; border-radius: 50%; background: #222; }
-.led.active.amber { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
-.led.active.green { background: #33ff33; box-shadow: 0 0 8px #33ff33; }
+.led-strip { display: flex; gap: 20px; justify-content: center; margin-bottom: 10px; }
+.led-group { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #333; font-weight: bold; }
+.led { width: 10px; height: 10px; border-radius: 50%; background: #444; border: 1px solid rgba(0,0,0,0.5); }
+.led.active.amber { background: #ffaa00; box-shadow: 0 0 10px #ffaa00; }
+.led.active.green { background: #33ff33; box-shadow: 0 0 10px #33ff33; }
 
 .btn-industrial {
-  background: #111; color: #fff; border: 1px solid #333; padding: 15px;
-  font-family: sans-serif; font-weight: bold; font-size: 1.4vh; cursor: pointer;
+  background: #333; 
+  color: #fff; 
+  border: 1px solid #000; 
+  padding: 12px;
+  font-family: sans-serif; 
+  font-weight: bold; 
+  font-size: 14px; 
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 4px 0 #000;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
-.btn-industrial:hover:not(:disabled) { background: #222; }
+.btn-industrial:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #000;
+}
+.btn-industrial:hover:not(:disabled) { background: #444; }
+.btn-industrial:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .terminal-input {
   background: #000;
   border: 1px solid #333;
-  color: var(--p4-white);
+  color: var(--p4-white); /* White text as requested */
   font-family: var(--font-term);
-  padding: 5px;
+  font-size: 16px;
+  padding: 8px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.field-group { margin-bottom: 10px; }
-.field-group label { display: block; font-size: 0.8vh; color: #444; margin-bottom: 2px; }
+.field-group { margin-bottom: 15px; }
+.field-group label { display: block; font-size: 10px; color: #333; margin-bottom: 4px; font-weight: bold; }
 
 .mode-selector {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
+  background: rgba(0,0,0,0.05);
+  padding: 8px;
+  border-radius: 4px;
 }
-.mode-selector label { font-size: 1vh; color: #444; cursor: pointer; }
-.mode-selector input { cursor: pointer; }
+.mode-selector label { font-size: 12px; color: #000; cursor: pointer; font-weight: bold; }
+.mode-selector input { width: 16px; height: 16px; cursor: pointer; }
 
-.led-strip.small { margin-top: 5px; gap: 10px; }
+.led-strip.small { margin-top: 10px; gap: 12px; }
 
-.tagline { font-size: 0.9vh; text-align: center; color: #222; margin-top: 5px; font-weight: bold; }
+.tagline { font-size: 10px; text-align: center; color: #555; margin-top: 10px; font-weight: bold; }
 
 /* Horizontal Mode Specifics */
 .horizontal-v .h-stats { display: flex; gap: 20px; font-size: 1.8vh; color: #555; }

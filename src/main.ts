@@ -115,6 +115,16 @@ if (terminalElement) {
   });
   
   window.addEventListener('resize', scaleTerminal);
+
+  // KEYBOARD INPUT BRIDGE
+  xterm.onData((data) => {
+    const shim = (window as any).term;
+    if (shim && engineRunning) {
+      for (let i = 0; i < data.length; i++) {
+        shim.pushInput(data.charCodeAt(i));
+      }
+    }
+  });
 }
 
 // Emscripten Configuration
@@ -148,6 +158,7 @@ if (terminalElement) {
       xterm.writeln(`\x1b[1;37mlogin: ${userName}\x1b[0m`);
       
       updateLEDs(true);
+      xterm.focus(); // Capture keyboard focus
       
       const cmd = isAuto ? 'rogomatic' : 'rogue';
       xterm.writeln(`\x1b[1;37m% ${cmd}\x1b[0m`);
