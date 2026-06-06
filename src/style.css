@@ -1,103 +1,177 @@
+@font-face {
+  font-family: 'VT323';
+  src: url('/fonts/VT323-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
-  --terminal-bg: #000000;
-  --terminal-green: #00FF00;
-  --terminal-amber: #FFB000;
-  --font-mono: 'VT323', 'Fira Code', 'Courier New', monospace;
+  --p4-white: #ebf0ff;
+  --vt-beige: #d0ccbc;
+  --vt-beige-dark: #b0aca0;
+  --vt-black: #111112;
+  --font-term: 'VT323', monospace;
+  --aspect: 1.6;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #1a1a1a;
-  color: var(--terminal-green);
-  font-family: var(--font-mono);
-  overflow: hidden;
-  height: 100vh;
+/* =========================================
+   BASE RESET
+========================================= */
+body, html {
+  margin: 0; padding: 0;
+  height: 100vh; width: 100vw;
+  background-color: #000;
+  color: var(--p4-white);
+  font-family: var(--font-term);
+  overflow: hidden; /* ABSOLUTELY NO SCROLLING */
+}
+
+#app { width: 100%; height: 100%; }
+
+/* =========================================
+   WORKSPACE GRID
+========================================= */
+.vt100-workspace {
+  display: flex;
+  width: 100%; height: 100%;
+}
+
+/* 1. WIDE DISPLAY: Monitor Left, Controls Right */
+@media (min-aspect-ratio: 1.6/1) {
+  .vt100-workspace { flex-direction: row; }
+  .monitor-unit {
+    /* Flush left, fill height */
+    height: 100vh;
+    width: calc(100vh * var(--aspect));
+    flex-shrink: 0;
+  }
+  .hardware-controls { flex: 1; }
+  .sidebar-v { display: flex; flex-direction: column; height: 100%; justify-content: center; padding: 2vh; gap: 3vh; }
+  .horizontal-v { display: none; }
+  .branding { justify-content: flex-end; } /* Logo top right of screen when wide */
+}
+
+/* 2. TALL DISPLAY: Monitor Top, Controls Bottom */
+@media (max-aspect-ratio: 1.6/1) {
+  .vt100-workspace { flex-direction: column; }
+  .monitor-unit {
+    /* Flush top, fill width */
+    width: 100vw;
+    height: calc(100vw / var(--aspect));
+    flex-shrink: 0;
+  }
+  .hardware-controls { flex: 1; }
+  .sidebar-v { display: none; }
+  .horizontal-v { 
+    display: flex; flex-direction: row; 
+    height: 100%; width: 100%; 
+    justify-content: space-around; align-items: center; 
+    padding: 10px;
+  }
+  .branding { justify-content: center; } /* Logo centered above screen when tall */
+}
+
+/* =========================================
+   MONITOR ARCHITECTURE
+========================================= */
+.monitor-unit {
+  background-color: var(--vt-beige);
   display: flex;
   flex-direction: column;
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
-header {
-  padding: 10px 20px;
-  background: #000;
-  border-bottom: 2px solid #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-h1 {
-  margin: 0;
-  font-size: 24px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.dashboard {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.terminal-container {
-  flex: 3;
-  background-color: var(--terminal-bg);
-  padding: 10px;
   position: relative;
-  box-shadow: inset 0 0 100px rgba(0, 255, 0, 0.1);
+  box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+  border-right: 1px solid var(--vt-beige-dark);
 }
 
-.terminal-container::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  z-index: 2;
-  background-size: 100% 2px, 3px 100%;
-  pointer-events: none;
-}
-
-.stats-panel {
-  flex: 1;
-  background: #000;
-  border-left: 2px solid #333;
-  padding: 20px;
+.chassis-header {
+  padding: 5px 15px;
+  min-height: 30px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  font-size: 18px;
 }
 
-.panel-section {
-  border: 1px solid #333;
-  padding: 10px;
-  background: #050505;
+.branding {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
+.digital-logo { font-family: sans-serif; font-weight: 900; font-size: 2.2vh; color: #fff; text-transform: lowercase; }
+.vt100-badge { font-family: sans-serif; font-weight: bold; font-size: 1.4vh; color: #555; }
 
-.panel-title {
-  border-bottom: 1px solid #333;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-  color: var(--terminal-amber);
-  font-weight: bold;
+.active-area {
+  flex: 1;
+  background-color: #000;
+  margin: 0 1.5vh;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0,0,0,1);
 }
 
 #terminal {
-  height: 100%;
-  width: 100%;
+  width: 100%; height: 100%;
 }
 
-.xterm-viewport {
-  overflow-y: hidden !important;
+.chassis-footer {
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+.grille { width: 15%; height: 3px; background: #999; border-radius: 2px; }
+
+/* =========================================
+   CONTROL LAYOUTS
+========================================= */
+.hardware-controls {
+  background-color: #0a0a0b;
+  border-left: 2px solid #1a1a1b;
+  display: flex;
+}
+
+.p-block, .h-group {
+  background: #000;
+  border: 1px solid #1a1a1a;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.label, .h-label { font-size: 9px; color: #444; letter-spacing: 2px; margin-bottom: 8px; font-weight: bold; }
+
+.v-stat { display: flex; justify-content: space-between; font-size: 1.4vh; color: #444; }
+.v-stat span { color: var(--p4-white); font-weight: bold; font-size: 2vh; }
+
+.status-box { font-size: 2.5vh; text-align: center; color: var(--p4-white); margin-bottom: 10px; }
+
+.led-strip { display: flex; gap: 15px; justify-content: center; }
+.led-group { display: flex; align-items: center; gap: 4px; font-size: 0.8vh; color: #444; font-weight: bold; }
+.led { width: 0.8vh; height: 0.8vh; border-radius: 50%; background: #222; }
+.led.active.amber { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
+.led.active.green { background: #33ff33; box-shadow: 0 0 8px #33ff33; }
+
+.btn-industrial {
+  background: #111; color: #fff; border: 1px solid #333; padding: 15px;
+  font-family: sans-serif; font-weight: bold; font-size: 1.4vh; cursor: pointer;
+}
+.btn-industrial:hover:not(:disabled) { background: #222; }
+
+.tagline { font-size: 0.9vh; text-align: center; color: #222; margin-top: 5px; font-weight: bold; }
+
+/* Horizontal Mode Specifics */
+.horizontal-v .h-stats { display: flex; gap: 20px; font-size: 1.8vh; color: #555; }
+.horizontal-v .h-stats b { color: var(--p4-white); margin-left: 5px; }
+.h-display { font-size: 2.2vh; color: var(--p4-white); }
+
+/* =========================================
+   EFFECTS
+========================================= */
+.scanlines {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.1) 50%);
+  background-size: 100% 2px;
+  pointer-events: none;
+  z-index: 100;
+}
+.xterm-screen canvas { filter: drop-shadow(0 0 1.5px var(--p4-white)); }
+.xterm-viewport { overflow: hidden !important; }
