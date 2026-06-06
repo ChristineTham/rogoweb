@@ -7,7 +7,6 @@
   --color-vt-black: #111112;
   --color-p4-white: #ebf0ff;
   --color-dec-blue: #003DA5;
-  --aspect-5/3: 5 / 3;
 }
 
 @font-face {
@@ -34,16 +33,12 @@
   @apply flex h-full w-full bg-vt-beige m-0 p-0 overflow-hidden;
 }
 
-/* -----------------------------------------
-   THE MONITOR UNIT: MATHEMATICAL ANCHOR
-   We use container-relative units (vh/vw) to enforce the 5:3 ratio
-   because flex-box distribution can sometimes "soften" aspect-ratio.
------------------------------------------ */
+/* THE MONITOR UNIT */
 .monitor-unit {
   @apply relative flex flex-col bg-vt-beige shrink-0 overflow-hidden;
 }
 
-/* The active phosphor area must be a rigid 5:3 box */
+/* THE PHOSPHOR BOX (The mathematical 5:3 anchor) */
 .active-area {
   @apply relative bg-black overflow-hidden border-[#1a1a1b] border-2;
   box-shadow: inset 0 0 40px rgba(0,0,0,1);
@@ -54,16 +49,16 @@
 }
 
 /* -----------------------------------------
-   ADAPTIVE LAYOUT LOGIC (SMART SIDEBAR/BOTTOM)
+   ADAPTIVE HARDWARE LAYOUT (CORE MANDATES)
 ----------------------------------------- */
 
-/* SCENARIO A: WIDE (Monitor fills height) */
+/* SCENARIO A: WIDE (Monitor fills height, Flush-Left) */
 @media (min-aspect-ratio: 5/3) {
   .vt100-workspace { @apply flex-row; }
   
   .monitor-unit {
     @apply h-full;
-    width: 166.6667vh; /* 5/3 of 100vh */
+    width: 166.6667vh; /* 5/3 * 100vh */
   }
 
   .hardware-controls {
@@ -72,11 +67,10 @@
     container-type: size;
   }
 
-  /* Branding in Sidebar */
   .sidebar-branding { @apply absolute top-5 right-5 flex; }
   .header-branding { @apply hidden; }
 
-  /* Sidebar Container Queries */
+  /* Container Queries for Sidebar Modes */
   @container (min-width: 280px) {
     .dashboard-full { @apply flex flex-col gap-6 w-full max-w-[320px] p-5 m-auto; }
     .dashboard-rail { @apply hidden; }
@@ -91,7 +85,7 @@
   }
 }
 
-/* SCENARIO B: TALL (Monitor fills width) */
+/* SCENARIO B: TALL (Monitor fills width, Flush-Top below header) */
 @media (max-aspect-ratio: 5/3) {
   .vt100-workspace { @apply flex-col; }
 
@@ -99,7 +93,7 @@
 
   .monitor-unit {
     @apply w-full;
-    height: 60vw; /* 3/5 of 100vw */
+    height: 60vw; /* 3/5 * 100vw */
   }
 
   .hardware-controls {
@@ -110,7 +104,7 @@
 
   .sidebar-branding { @apply hidden; }
 
-  /* Bottom Bar Container Queries */
+  /* Container Queries for Bottom Bar Modes */
   @container (min-height: 180px) {
     .dashboard-full { @apply flex flex-row gap-10 items-center justify-center w-full h-full p-4; }
     .dashboard-strip { @apply hidden; }
@@ -135,6 +129,11 @@
 }
 
 .panel-label { @apply text-[11px] font-extrabold text-[#444] uppercase tracking-wider mb-3 block; }
+
+/* BRANDING ELEMENTS */
+.dec-logo-container { @apply flex flex-row items-center gap-3 select-none whitespace-nowrap; }
+.dec-logo { @apply h-6 w-auto block; }
+.vt100-badge { @apply font-bold text-lg text-[#555] tracking-widest uppercase inline-block; }
 
 /* DIGITAL READOUTS */
 .digital-readout { @apply flex justify-between items-baseline mb-2 gap-4; }
@@ -167,7 +166,7 @@
 .btn-industrial:active { @apply translate-y-0.5; box-shadow: 0 2px 0 #000; }
 .btn-industrial:disabled { @apply opacity-50 cursor-not-allowed; }
 
-/* CRT SCANLINES */
+/* CRT EFFECTS */
 .scanlines {
   @apply absolute inset-0 pointer-events-none z-[100];
   background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.1) 50%);
