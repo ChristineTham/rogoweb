@@ -30,172 +30,141 @@ const xterm = new XTerm({
 (window as any).Terminal = TerminalShim;
 (window as any).TermGlobals = TermGlobals;
 
-const updateLEDs = (running: boolean) => {
-  const waitLeds = [document.getElementById('led-wait'), document.getElementById('led-wait-h')];
-  const onlineLeds = [document.getElementById('led-online'), document.getElementById('led-online-h')];
+/**
+ * ASYNCHRONOUS LOGIN SIMULATION
+ */
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const simulateTyping = async (text: string, speed = 100) => {
+  for (const char of text) {
+    xterm.write(char);
+    await sleep(speed + Math.random() * 50);
+  }
+};
+
+const runLoginSequence = async (userName: string) => {
+  const waitLed = document.getElementById('led-wait');
   const localLed = document.getElementById('led-local');
+  const onlineLed = document.getElementById('led-online');
+
+  if (waitLed) waitLed.classList.add('active');
+  if (localLed) localLed.classList.remove('active');
+
+  xterm.reset();
+  xterm.writeln('4.2 BSD UNIX (ucbvax) (tty01)');
+  await sleep(500);
+  xterm.write('login: ');
+  await sleep(800);
+  await simulateTyping(userName);
+  xterm.writeln('');
   
-  waitLeds.forEach(led => {
-    if (led) led.className = `led amber ${!running ? 'active' : ''}`;
-  });
-  onlineLeds.forEach(led => {
-    if (led) led.className = `led green ${running ? 'active' : ''}`;
-  });
-  if (localLed) localLed.className = `led amber ${!running ? 'active' : ''}`;
-};
-
-const updateBotLEDs = (state: string) => {
-  const l1 = document.getElementById('led-l1');
-  const l2 = document.getElementById('led-l2');
-  const l3 = document.getElementById('led-l3');
-  const l4 = document.getElementById('led-l4');
+  await sleep(400);
+  xterm.write('Password: ');
+  await sleep(1200); // Simulate typing
+  xterm.writeln('');
   
-  if (l1) l1.className = `led green ${state === 'exploring' ? 'active' : ''}`;
-  if (l2) l2.className = `led green ${state === 'combat' ? 'active' : ''}`;
-  if (l3) l3.className = `led green ${state === 'resting' ? 'active' : ''}`;
-  if (l4) l4.className = `led green ${state === 'danger' ? 'active' : ''}`;
+  await sleep(600);
+  xterm.writeln('');
+  xterm.writeln('4.2 BSD UNIX #1: Sun Aug 14 11:15:32 PDT 1983');
+  xterm.writeln('Welcome to the UCB VAX-11/780.');
+  xterm.writeln('');
+  await sleep(400);
+  xterm.write('% ');
+  await sleep(500);
+  await simulateTyping('rogue', 150);
+  xterm.writeln('');
+  await sleep(300);
+
+  if (waitLed) waitLed.classList.remove('active');
+  if (onlineLed) onlineLed.classList.add('active');
+
+  // Trigger WASM main
+  try {
+    (window as any).Module.ccall('main', 'number', ['number', 'array'], [0, []], { async: true })
+      .then((s: number) => handleExit(s))
+      .catch((e: any) => {
+        if (e && e.name !== 'ExitStatus') handleExit(-1);
+      });
+  } catch (e: any) {
+    if (e && e.name !== 'ExitStatus') handleExit(-1);
+  }
 };
-(window as any).updateBotLEDs = updateBotLEDs;
-
-// Activate Canvas Renderer to fix VT323 'f' character width bug
-const canvasAddon = new CanvasAddon();
-xterm.loadAddon(canvasAddon);
-
-let engineRunning = false;
-const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
-const startBtnH = document.getElementById('btn-start-h') as HTMLButtonElement;
 
 /**
  * HIGH-PRECISION NATURAL SCALING (5:3 ASPECT RATIO)
- * The aspect ratio perfectly matches the VT323 font grid.
  */
 const scaleTerminal = () => {
   const container = document.getElementById('terminal-viewport');
   if (!container) return;
 
+  const targetW = container.clientWidth;
   const targetH = container.clientHeight;
   
-  if (targetH === 0) {
+  if (targetW === 0 || targetH === 0) {
     setTimeout(scaleTerminal, 100);
     return;
   }
 
-  // 1. fontSize = (containerHeight - bezelMargin) / 24
-  // Bezel margin is 4px (2px top + 2px bottom)
-  const fontSize = (targetH - 4) / 24;
-  xterm.options.fontSize = fontSize;
+  // 1. Precise Font Size for Height (2px bezel already handled by container margin)
+  const bestFontSize = (targetH / ROWS);
+  xterm.options.fontSize = bestFontSize;
+  xterm.options.letterSpacing = 0;
   xterm.options.lineHeight = 1.0;
-  xterm.options.letterSpacing = 0; // Natural spacing, no squishing
   
   xterm.resize(COLS, ROWS);
-  
-  console.log(`VT100 Lock (5:3 Natural): Font=${fontSize.toFixed(2)}px`);
+  console.log(`VT100 High-Res Lock: Font=${bestFontSize.toFixed(2)}px`);
 };
 
 const terminalElement = document.getElementById('terminal');
 if (terminalElement) {
   xterm.open(terminalElement);
 
-  // Ensure font is ready for measurement
+  // ACTIVATE CANVAS RENDERER
+  try {
+    const canvasAddon = new CanvasAddon();
+    xterm.loadAddon(canvasAddon);
+  } catch (e) {
+    console.error('Canvas addon fail', e);
+  }
+
   document.fonts.ready.then(() => {
-    const isLoaded = document.fonts.check('20px VT323');
-    console.log('Fonts ready. VT323 loaded:', isLoaded);
     setTimeout(scaleTerminal, 200);
   });
-
-  window.addEventListener('resize', () => {
-    setTimeout(scaleTerminal, 100);
-  });
-
-  // KEYBOARD INPUT BRIDGE
-  xterm.onData((data) => {
-    const shim = (window as any).term;
-    if (shim && engineRunning) {
-      for (let i = 0; i < data.length; i++) {
-        shim.pushInput(data.charCodeAt(i));
-      }
-    }
-  });
+  window.addEventListener('resize', scaleTerminal);
 }
+
+const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
 
 // Emscripten Configuration
 (window as any).Module = {
-  preRun: [() => {
-    (window as any).ENV = (window as any).ENV || {};
-    (window as any).ENV.PDC_LINES = '24';
-    (window as any).ENV.PDC_COLS = '80';
-  }],
   noInitialRun: true,
   onRuntimeInitialized: () => {
-    const initEngine = () => {
-      if (engineRunning) return;
-      
-      const userName = (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
-      const isAuto = (document.getElementById('mode-auto') as HTMLInputElement)?.checked;
-      
-      engineRunning = true;
-      if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.innerText = 'CONNECTED';
-      }
-      if (startBtnH) {
-        startBtnH.disabled = true;
-        startBtnH.innerText = 'RUNNING';
-      }
-      
-      xterm.reset();
-      xterm.writeln('\x1b[1;37m*** VT100 POWER ON : P4 ACTIVE ***\x1b[0m');
-      xterm.writeln(`\x1b[1;32m4.2 BSD UNIX (ucbvax) (tty01)\x1b[0m`);
-      xterm.writeln(`\x1b[1;37mlogin: ${userName}\x1b[0m`);
-      
-      updateLEDs(true);
-      xterm.focus(); // Capture keyboard focus
-      
-      const cmd = isAuto ? 'rogomatic' : 'rogue';
-      xterm.writeln(`\x1b[1;37m% ${cmd}\x1b[0m`);
-
-      try {
-        (window as any).Module.ccall('main', 'number', ['number', 'array'], [0, []], { async: true })
-          .then((s: number) => handleExit(s))
-          .catch((e: any) => {
-            if (e && e.name !== 'ExitStatus') handleExit(-1);
-          });
-      } catch (e: any) {
-        if (e && e.name !== 'ExitStatus') handleExit(-1);
-      }
-    };
-
     if (startBtn) {
       startBtn.disabled = false;
-      startBtn.onclick = initEngine;
-    }
-    if (startBtnH) {
-      startBtnH.disabled = false;
-      startBtnH.onclick = initEngine;
+      startBtn.onclick = () => {
+        const userName = (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
+        startBtn.disabled = true;
+        startBtn.innerText = 'ONLINE';
+        runLoginSequence(userName);
+      };
     }
   },
   locateFile: (p: string) => p.endsWith('.wasm') ? '/wasm/' + p : p,
   onExit: (s: number) => handleExit(s),
-  quit: (s: number) => handleExit(s),
-  _my_exit: (s: number) => handleExit(s)
 };
 
 const handleExit = (status: number) => {
-  engineRunning = false;
-  updateLEDs(false);
-  const shim = (window as any).term;
-  if (shim && shim.close) shim.close();
+  const onlineLed = document.getElementById('led-online');
+  const localLed = document.getElementById('led-local');
+  if (onlineLed) onlineLed.classList.remove('active');
+  if (localLed) localLed.classList.add('active');
+
   setTimeout(() => {
     xterm.write('\x1b[?1049l\x1b[H\x1b[2J');
-    xterm.writeln(`\x1b[1;31m*** POWER OFF (${status}) ***\x1b[0m`);
-    xterm.writeln('\x1b[1;32mREADY\x1b[0m');
+    xterm.writeln(`*** POWER OFF (${status}) ***`);
     if (startBtn) {
       startBtn.disabled = false;
       startBtn.innerText = 'CONNECT';
-    }
-    if (startBtnH) {
-      startBtnH.disabled = false;
-      startBtnH.innerText = 'START ENGINE';
     }
   }, 300);
 };

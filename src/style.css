@@ -119,7 +119,7 @@
 
   /* COLLAPSE: Extremely Short */
   @media (max-height: 40px) {
-    .hardware-controls { @apply min-height-[4px] max-height-[4px] p-0 border-t border-vt-beige-dark; }
+    .hardware-controls { @apply min-h-[4px] max-h-[4px] p-0 border-t border-vt-beige-dark; }
     .dashboard-strip { @apply hidden; }
   }
 }
