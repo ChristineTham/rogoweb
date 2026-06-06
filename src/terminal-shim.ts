@@ -1,4 +1,4 @@
-import { Terminal as XTerm } from 'xterm';
+import { Terminal as XTerm } from '@xterm/xterm';
 
 export class TerminalShim {
   xterm: XTerm;
