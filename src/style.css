@@ -184,12 +184,3 @@
 .btn-industrial:active { @apply translate-y-0.5; box-shadow: 0 2px 0 #000; }
 .btn-industrial:disabled { @apply opacity-50 cursor-not-allowed; }
 
-/* CRT EFFECTS */
-.xterm-screen canvas {
-  filter: drop-shadow(0 0 1.5px rgba(235, 240, 255, 0.4));
-}
-.scanlines {
-  @apply absolute inset-0 pointer-events-none z-[100];
-  background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.1) 50%);
-  background-size: 100% 2px;
-}
