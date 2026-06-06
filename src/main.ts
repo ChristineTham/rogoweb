@@ -1,6 +1,5 @@
 import './style.css';
 import { Terminal as XTerm } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
 import { TerminalShim, TermGlobals } from './terminal-shim';
 
@@ -20,7 +19,7 @@ const xterm = new XTerm({
     foreground: '#ebf0ff', // P4 White
     cursor: '#ebf0ff',
   },
-  fontFamily: '"VT323", monospace',
+  fontFamily: 'VT323, monospace',
   fontSize: 20, // Baseline
   letterSpacing: 0,
   lineHeight: 1.0,
@@ -55,66 +54,53 @@ const updateBotLEDs = (state: string) => {
   if (l3) l3.className = `led green ${state === 'resting' ? 'active' : ''}`;
   if (l4) l4.className = `led green ${state === 'danger' ? 'active' : ''}`;
 };
-
-const fitAddon = new FitAddon();
-xterm.loadAddon(fitAddon);
+(window as any).updateBotLEDs = updateBotLEDs;
 
 let engineRunning = false;
 const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
 const startBtnH = document.getElementById('btn-start-h') as HTMLButtonElement;
 
 /**
- * HIGH-PRECISION FRACTIONAL FONT SCALING
- * Fills the 1.6:1 anchor exactly.
+ * HIGH-PRECISION NATURAL SCALING (5:3 ASPECT RATIO)
+ * The aspect ratio perfectly matches the VT323 font grid.
  */
 const scaleTerminal = () => {
-  const container = document.getElementById('terminal-container');
+  const container = document.getElementById('terminal-viewport');
   if (!container) return;
 
-  const targetW = container.clientWidth;
   const targetH = container.clientHeight;
   
-  if (targetW === 0 || targetH === 0) {
+  if (targetH === 0) {
     setTimeout(scaleTerminal, 100);
     return;
   }
 
-  // 1. Precise Font Size for Height
-  // We subtract a tiny buffer (0.1px) to prevent vertical overflow/cropping
-  const bestFontSize = (targetH / ROWS) - 0.1;
-  xterm.options.fontSize = bestFontSize;
+  // 1. fontSize = (containerHeight - bezelMargin) / 24
+  // Bezel margin is 4px (2px top + 2px bottom)
+  const fontSize = (targetH - 4) / 24;
+  xterm.options.fontSize = fontSize;
   xterm.options.lineHeight = 1.0;
+  xterm.options.letterSpacing = 0; // Natural spacing, no squishing
   
-  // 2. Measure resulting width with fractional precision
-  const core = (xterm as any)._core;
-  const dims = core._renderService.dimensions;
+  xterm.resize(COLS, ROWS);
   
-  if (!dims || !dims.actualCellWidth) {
-    setTimeout(scaleTerminal, 50);
-    return;
-  }
-
-  // 3. Precise Letter Spacing for Width
-  const targetCellW = targetW / COLS;
-  const spacing = targetCellW - dims.actualCellWidth;
-  
-  xterm.options.letterSpacing = spacing;
-  
-  fitAddon.fit();
-  console.log(`VT100 High-Res Lock: Font=${bestFontSize.toFixed(2)}px, Spacing=${spacing.toFixed(2)}px`);
+  console.log(`VT100 Lock (5:3 Natural): Font=${fontSize.toFixed(2)}px`);
 };
 
 const terminalElement = document.getElementById('terminal');
 if (terminalElement) {
   xterm.open(terminalElement);
-  
+
   // Ensure font is ready for measurement
   document.fonts.ready.then(() => {
-    console.log('Fonts ready, starting scaler');
+    const isLoaded = document.fonts.check('20px VT323');
+    console.log('Fonts ready. VT323 loaded:', isLoaded);
     setTimeout(scaleTerminal, 200);
   });
-  
-  window.addEventListener('resize', scaleTerminal);
+
+  window.addEventListener('resize', () => {
+    setTimeout(scaleTerminal, 100);
+  });
 
   // KEYBOARD INPUT BRIDGE
   xterm.onData((data) => {
@@ -164,7 +150,11 @@ if (terminalElement) {
       xterm.writeln(`\x1b[1;37m% ${cmd}\x1b[0m`);
 
       try {
-        (window as any).Module.ccall('main', 'number', ['number', 'array'], [0, []], { async: true });
+        (window as any).Module.ccall('main', 'number', ['number', 'array'], [0, []], { async: true })
+          .then((s: number) => handleExit(s))
+          .catch((e: any) => {
+            if (e && e.name !== 'ExitStatus') handleExit(-1);
+          });
       } catch (e: any) {
         if (e && e.name !== 'ExitStatus') handleExit(-1);
       }

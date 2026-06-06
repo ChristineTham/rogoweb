@@ -11,7 +11,7 @@
   --vt-beige-dark: #b0aca0;
   --vt-black: #111112;
   --font-term: 'VT323', monospace;
-  --aspect: 1.6;
+  --aspect: 1.666667;
 }
 
 /* =========================================
@@ -37,12 +37,12 @@ body, html {
 }
 
 /* 1. WIDE DISPLAY: Monitor Left, Controls Right */
-@media (min-aspect-ratio: 1.6/1) {
+@media (min-aspect-ratio: 5/3) {
   .vt100-workspace { flex-direction: row; }
   .monitor-unit {
     /* Flush left, fill height */
     height: 100vh;
-    width: 160vh;
+    width: calc(100vh * 5 / 3);
     flex-shrink: 0;
     padding: 0;
     margin: 0;
@@ -82,12 +82,12 @@ body, html {
 }
 
 /* 2. TALL DISPLAY: Monitor Top, Controls Bottom */
-@media (max-aspect-ratio: 1.6/1) {
+@media (max-aspect-ratio: 5/3) {
   .vt100-workspace { flex-direction: column; }
   .monitor-unit {
     /* Flush top, fill width */
     width: 100vw;
-    height: min(100vh, 62.5vw);
+    height: calc(100vw / var(--aspect));
     flex-shrink: 0;
   }
   .hardware-controls { flex: 1; }
@@ -139,6 +139,14 @@ body, html {
 
 #terminal {
   width: 100%; height: 100%;
+}
+
+.xterm {
+  /* Remove any transforms that might have been applied inline previously */
+  transform: none !important;
+  font-variant-ligatures: none !important;
+  font-feature-settings: "liga" 0, "clig" 0, "calt" 0, "dlig" 0 !important;
+  font-kerning: none !important;
 }
 
 .chassis-footer {
@@ -268,5 +276,16 @@ body, html {
   pointer-events: none;
   z-index: 100;
 }
-.xterm-screen canvas { filter: drop-shadow(0 0 1.5px var(--p4-white)); }
+
+/* Sharp text and phosphor glow for DOM renderer */
+.xterm-rows {
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-shadow: 0 0 1px rgba(235, 240, 255, 0.4);
+  font-variant-ligatures: none; /* Crucial for fixing fi, ff spacing issues in monospace */
+  font-feature-settings: "liga" 0;
+}
+
+.xterm-screen canvas { display: none !important; } /* Ensure canvas is not used */
 .xterm-viewport { overflow: hidden !important; }
