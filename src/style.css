@@ -60,7 +60,8 @@
 /* BRANDING ELEMENTS */
 .dec-logo-container { @apply flex flex-row items-center gap-3 select-none whitespace-nowrap; }
 .dec-logo { @apply h-6 w-auto block; }
-.vt100-badge { @apply font-bold text-lg text-[#555] tracking-widest uppercase inline-block; }
+.vt100-badge { @apply font-sans font-black text-lg text-[#555] tracking-widest uppercase inline-block; }
+.rogoweb-title { @apply font-sans font-black text-dec-blue tracking-tighter; }
 
 /* DIGITAL READOUTS */
 .digital-readout { @apply flex justify-between items-baseline mb-2 gap-4; }

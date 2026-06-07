@@ -22,19 +22,25 @@ describe('VT100 Top Bar', () => {
     expect(document.body.textContent).toContain('VT100');
   });
 
-  it('should have 4 status LEDs', () => {
-    expect(document.getElementById('led-l1')).toBeTruthy();
-    expect(document.getElementById('led-l2')).toBeTruthy();
-    expect(document.getElementById('led-l3')).toBeTruthy();
-    expect(document.getElementById('led-l4')).toBeTruthy();
+  it('should have 4 status LEDs grouped with logo', () => {
+    const ledStrip = document.querySelector('.led-strip');
+    expect(ledStrip).toBeTruthy();
+    expect(ledStrip?.querySelectorAll('.led').length).toBe(4);
+  });
+
+  it('should not have labels for status LEDs', () => {
+    const ledStrip = document.querySelector('.led-strip');
+    expect(ledStrip?.textContent?.trim()).toBe('');
   });
 
   it('should have a username input', () => {
     expect(document.getElementById('unix-name')).toBeTruthy();
   });
 
-  it('should have a mode toggle', () => {
+  it('should have a mode toggle with Manual Play and Rogomatic labels', () => {
     expect(document.getElementById('mode-toggle')).toBeTruthy();
+    expect(document.body.textContent).toContain('MANUAL PLAY');
+    expect(document.body.textContent).toContain('ROGOMATIC');
   });
 
   it('should have a start button with text START GAME', () => {
