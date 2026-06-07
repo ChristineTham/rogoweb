@@ -229,7 +229,6 @@ const runLoginSequence = async (userName: string) => {
   const l1 = document.getElementById('led-l1'); // Game Active
   const l2 = document.getElementById('led-l2'); // Rogomatic Active
   const l3 = document.getElementById('led-l3'); // Status (Green/Amber/Red)
-  const l4 = document.getElementById('led-l4'); // Danger
   const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement;
   const isAuto = modeToggle?.checked;
 
@@ -414,7 +413,7 @@ const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
   onExit: (s: number) => handleExit(s),
 };
 
-const handleExit = (status: number) => {
+const handleExit = (_status: number) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
   leds.forEach(id => document.getElementById(id)?.classList.remove('active'));
 

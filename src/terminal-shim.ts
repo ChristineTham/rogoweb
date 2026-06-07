@@ -71,7 +71,6 @@ export class TerminalShim {
     }
   }
 
-  private statusLineBuffer: string[] = new Array(80).fill(' ');
   private parseTimeout: any = null;
 
   private parseStatusLine() {
