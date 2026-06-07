@@ -166,7 +166,7 @@ const handleExit = (status: number) => {
     xterm.writeln(`*** POWER OFF (${status}) ***`);
     if (startBtn) {
       startBtn.disabled = false;
-      startBtn.innerText = 'CONNECT';
+      startBtn.innerText = 'START';
     }
   }, 300);
 };

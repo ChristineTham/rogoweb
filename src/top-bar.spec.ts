@@ -43,9 +43,9 @@ describe('VT100 Top Bar', () => {
     expect(document.body.textContent).toContain('ROGOMATIC');
   });
 
-  it('should have a start button with text START GAME', () => {
+  it('should have a start button with text START', () => {
     const btn = document.getElementById('btn-start');
     expect(btn).toBeTruthy();
-    expect(btn?.textContent).toBe('START GAME');
+    expect(btn?.textContent).toBe('START');
   });
 });

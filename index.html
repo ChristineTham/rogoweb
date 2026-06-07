@@ -9,8 +9,8 @@
   <div id="app">
     <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
       
-      <!-- RESPONSIVE TOP BAR (AUTHENTIC VT100 AESTHETICS - REFINED) -->
-      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-1.5 py-0 flex items-center justify-between z-50 shrink-0 h-5">
+      <!-- RESPONSIVE TOP BAR (AUTHENTIC VT100 AESTHETICS - REFINED V4) -->
+      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0 flex items-center justify-between z-50 shrink-0 h-5">
         
         <div class="flex items-center gap-3 shrink-0 h-full">
           <div class="flex items-center gap-1 h-full">
@@ -22,7 +22,7 @@
           </div>
 
           <!-- VT100 STATUS LIGHTS (GROUPED WITH LOGO) -->
-          <div class="led-strip flex gap-1.5 ml-2">
+          <div class="led-strip flex gap-1.5 ml-2 items-center h-full">
             <div id="led-l1" class="led green w-1.5 h-1.5"></div>
             <div id="led-l2" class="led green w-1.5 h-1.5"></div>
             <div id="led-l3" class="led green w-1.5 h-1.5"></div>
@@ -34,19 +34,19 @@
           <!-- USER & CONTROLS -->
           <div class="flex items-center gap-1 h-full">
             <label for="unix-name" class="led-label text-[7px] leading-none">USER</label>
-            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-14 h-3 px-1 py-0 text-[9px] border-black/20 bg-black/5 leading-none">
+            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-14 h-3.5 px-1 py-0 text-[9px] border-black/20 bg-black/5 leading-none self-center">
           </div>
           
-          <div class="flex items-center gap-1 bg-black/5 px-1 h-3.5 rounded-sm border border-black/5">
+          <div class="flex items-center gap-1 bg-black/5 px-1 h-3.5 rounded-sm border border-black/5 self-center">
              <span class="led-label text-[7px] whitespace-nowrap leading-none">MANUAL PLAY</span>
              <label class="relative inline-flex items-center cursor-pointer scale-[0.55]">
                <input type="checkbox" id="mode-toggle" class="sr-only peer">
-               <div class="w-5 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2 after:w-2 after:transition-all peer-checked:bg-dec-blue"></div>
+               <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
              </label>
              <span class="led-label text-[7px] whitespace-nowrap leading-none">ROGOMATIC</span>
           </div>
 
-          <button id="btn-start" class="btn-industrial h-3.5 py-0 px-1 text-[8px] w-auto m-0 shadow-none border flex items-center justify-center leading-none" disabled>START GAME</button>
+          <button id="btn-start" class="btn-industrial h-3.5 py-0 px-2 text-[8px] w-auto m-0 shadow-none border leading-none self-center" disabled>START</button>
         </div>
 
       </header>
