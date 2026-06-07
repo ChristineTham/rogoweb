@@ -9,10 +9,9 @@
   <div id="app">
     <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
       
-      <!-- RESPONSIVE TOP BAR -->
-      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0 flex items-center justify-between z-50 shrink-0 h-5">
+      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0.5 sm:py-0 flex flex-col sm:flex-row items-center justify-between z-50 shrink-0 h-auto sm:h-5 gap-1 sm:gap-0">
         
-        <div class="flex items-center gap-3 shrink-0 h-full">
+        <div class="flex items-center justify-between sm:justify-start gap-3 shrink-0 w-full sm:w-auto h-5 sm:h-full">
           <div class="flex items-center gap-1 h-full">
             <span class="rogoweb-title font-sans font-black text-[#FE5000] tracking-tighter text-base leading-none">rogoweb</span>
             <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 h-3">
@@ -29,20 +28,20 @@
           </div>
         </div>
         
-        <div class="flex items-center gap-2 shrink-0 h-full">
+        <div class="flex items-center justify-between sm:justify-start gap-2 shrink-0 w-full sm:w-auto h-5 sm:h-full">
           <!-- USER & CONTROLS -->
           <div class="flex items-center gap-1 h-full">
             <label for="unix-name" class="led-label text-sm font-black text-[#555] uppercase leading-none">USER</label>
-            <input type="text" id="unix-name" value="rogue" class="terminal-input m-1 w-20 h-3 p-2 text-base rounded-sm text-black border border-black/20 bg-black/5 leading-none self-center">
+            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0.5 sm:m-1 w-14 sm:w-20 h-3 p-1 sm:p-2 text-xs sm:text-base rounded-sm text-p4-white border border-black/20 bg-black/5 leading-none self-center">
           </div>
           
           <div class="flex items-center gap-1 bg-black/5 px-1 h-3 rounded-sm border border-black/5 self-center">
-             <span class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none">MANUAL PLAY</span>
+             <span class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none max-sm:text-[10px]">MANUAL PLAY</span>
              <label class="relative inline-flex items-center cursor-pointer">
                <input type="checkbox" id="mode-toggle" class="sr-only peer">
                <div class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
              </label>
-             <span class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none">ROGOMATIC</span>
+             <span class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none max-sm:text-[10px]">ROGOMATIC</span>
           </div>
 
           <button id="btn-start" class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center" disabled>START</button>
