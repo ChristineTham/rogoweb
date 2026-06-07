@@ -98,25 +98,47 @@ const runLoginSequence = async (userName: string) => {
  * HIGH-PRECISION NATURAL SCALING (5:3 ASPECT RATIO)
  */
 const scaleTerminal = () => {
-  const container = document.getElementById('terminal-viewport');
-  if (!container) return;
+  const mainArea = document.getElementById('main-container');
+  const viewport = document.getElementById('terminal-viewport');
+  if (!mainArea || !viewport) return;
 
-  const targetW = container.clientWidth;
-  const targetH = container.clientHeight;
-  
-  if (targetW === 0 || targetH === 0) {
+  const containerW = mainArea.clientWidth;
+  const containerH = mainArea.clientHeight;
+
+  if (containerW === 0 || containerH === 0) {
     setTimeout(scaleTerminal, 100);
     return;
   }
+
+  const RATIO = 5 / 3;
+  let targetW, targetH;
+
+  if (containerH * RATIO <= containerW) {
+    // Height constrained (Wide Screen)
+    targetH = containerH;
+    targetW = containerH * RATIO;
+    mainArea.classList.remove('flex-col', 'justify-start');
+    mainArea.classList.add('flex-row', 'justify-center', 'items-center');
+  } else {
+    // Width constrained (Tall Screen)
+    targetW = containerW;
+    targetH = containerW / RATIO;
+    mainArea.classList.remove('flex-row', 'justify-center');
+    mainArea.classList.add('flex-col', 'justify-start', 'items-center');
+  }
+
+  // Update Viewport Dimensions
+  viewport.style.width = `${targetW}px`;
+  viewport.style.height = `${targetH}px`;
 
   // 1. Precise Font Size for Height
   const bestFontSize = (targetH / ROWS);
   xterm.options.fontSize = bestFontSize;
   xterm.options.letterSpacing = 0;
   xterm.options.lineHeight = 1.0;
-  
+
   xterm.resize(COLS, ROWS);
-  console.log(`VT100 High-Res Lock: Font=${bestFontSize.toFixed(2)}px`);
+  console.log(`VT100 High-Res Lock: ${targetW.toFixed(0)}x${targetH.toFixed(0)} Font=${bestFontSize.toFixed(2)}px`);
 };
 
 const terminalElement = document.getElementById('terminal');
