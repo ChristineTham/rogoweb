@@ -1,0 +1,31 @@
+# Makefile for rogomatic player (Emscripten / WASM)
+
+PROGRAM  = ../../public/wasm/rogomatic
+O        = o
+HDRS     = globals.h install.h termtokens.h types.h getroguetoken.h
+OBJS     = arms.$(O) command.$(O) config.$(O) database.$(O) debug.$(O) \
+           explore.$(O) io.$(O) learn.$(O) ltm.$(O) main.$(O) mess.$(O) \
+           monsters.$(O) pack.$(O) rand.$(O) replay.$(O) rooms.$(O) \
+           scorefile.$(O) search.$(O) stats.$(O) strategy.$(O) survival.$(O) \
+           tactics.$(O) things.$(O) titlepage.$(O) utility.$(O) worth.$(O) \
+           getroguetoken.$(O) debuglog.$(O)
+
+CC       = emcc
+# Asyncify is required for blocking terminal reads (getch)
+FEATURES = -D__EMSCRIPTEN__ -DPLAYER
+CFLAGS   = -g3 -O0 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -I../../rogue-54-for-rogomatic/emcurses -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
+           -s EMULATE_FUNCTION_POINTER_CASTS=1 -std=gnu89 -Wno-deprecated-non-prototype \
+           -s EXPORTED_FUNCTIONS="['_main']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
+LIBS     = ../../rogue-54-for-rogomatic/emcurses/emscripten/libpdcurses.a
+LDFLAGS  = 
+OUTFLAG  = -o
+EXE      = .js
+
+.c.o:
+	$(CC) $(CFLAGS) $(FEATURES) -c $*.c
+
+$(PROGRAM).js: $(HDRS) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) $(OUTFLAG)$@
+
+clean:
+	rm -f $(OBJS) $(PROGRAM).js $(PROGRAM).wasm
