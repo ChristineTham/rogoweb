@@ -56,21 +56,46 @@ export class TerminalShim {
   setChar(ch: number, row: number, col: number, style: number) {
     let ansi = '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
     
-    // Style bits from emcurses/emscripten/pdcdisp.c:
-    // style |= 1<<0; // REVERSE
-    // style |= 1<<1; // UNDERLINE
-    // style |= 1<<4; // BOLD
-    
     if (style & (1 << 4)) ansi += '\x1b[1m'; // Bold
     if (style & (1 << 1)) ansi += '\x1b[4m'; // Underline
     if (style & (1 << 0)) ansi += '\x1b[7m'; // Reverse
     
     ansi += String.fromCharCode(ch);
-    
-    // Reset all styles
-    ansi += '\x1b[0m'; 
+    if (style !== 0) ansi += '\x1b[0m'; 
     
     this.xterm.write(ansi);
+
+    // STATUS LINE PARSING (Row 23 is the typical Rogue status line)
+    if (row === 23) {
+       this.parseStatusLine();
+    }
+  }
+
+  private statusLineBuffer: string[] = new Array(80).fill(' ');
+  private parseTimeout: any = null;
+
+  private parseStatusLine() {
+    // Debounce parsing to avoid overhead
+    if (this.parseTimeout) clearTimeout(this.parseTimeout);
+    this.parseTimeout = setTimeout(() => {
+      // Extract line from xterm buffer if possible, or maintain internal buffer
+      // For now, let's just assume we can get it from xterm
+      const line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || "";
+      console.log("Parsing status line:", line);
+
+      // Regex patterns for Rogue stats
+      const hpMatch = line.match(/Hp:\s*(\d+\(\d+\))/i);
+      const strMatch = line.match(/Str:\s*(\d+\(\d+\))/i);
+      const goldMatch = line.match(/Gold:\s*(\d+)/i);
+      const levelMatch = line.match(/Level:\s*(\d+)/i);
+
+      TermGlobals.setStats({
+        hp: hpMatch ? hpMatch[1] : undefined,
+        str: strMatch ? strMatch[1] : undefined,
+        gold: goldMatch ? goldMatch[1] : undefined,
+        level: levelMatch ? levelMatch[1] : undefined
+      });
+    }, 100);
   }
 
   cursorSet(row: number, col: number) {
@@ -101,5 +126,32 @@ export const TermGlobals = {
   },
   setColor: (color: number, str: string) => {
     console.log('TermGlobals.setColor', color, str);
+  },
+  setStats: (stats: any) => {
+    console.log('TermGlobals.setStats', stats);
+    if (stats.hp !== undefined) {
+      const el = document.getElementById('stat-hp');
+      if (el) el.innerText = stats.hp;
+    }
+    if (stats.str !== undefined) {
+      const el = document.getElementById('stat-str');
+      if (el) el.innerText = stats.str;
+    }
+    if (stats.gold !== undefined) {
+      const el = document.getElementById('stat-gold');
+      if (el) el.innerText = stats.gold;
+    }
+    if (stats.level !== undefined) {
+      const el = document.getElementById('stat-level');
+      if (el) el.innerText = stats.level;
+    }
+    if (stats.botState !== undefined) {
+      const el = document.getElementById('bot-state');
+      if (el) el.innerText = stats.botState;
+    }
+    if (stats.botGen !== undefined) {
+      const el = document.getElementById('bot-gen');
+      if (el) el.innerText = stats.botGen;
+    }
   }
 };

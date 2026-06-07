@@ -16,8 +16,7 @@
           <div class="flex items-center gap-1 h-full">
             <span class="rogoweb-title text-base leading-none">rogoweb</span>
             <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 h-3">
-              <img src="/assets/dec-logo-blue.svg" alt="digital" class="h-3">
-              <span class="vt100-badge text-[10px] leading-none pt-0.5">VT100</span>
+              <img src="/assets/vt100-logo.jpg" class="h-5" alt="logo">
             </div>
           </div>
 
@@ -34,69 +33,61 @@
           <!-- USER & CONTROLS -->
           <div class="flex items-center gap-1 h-full">
             <label for="unix-name" class="led-label text-[7px] leading-none">USER</label>
-            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-14 h-3.5 px-1 py-0 text-[9px] border-black/20 bg-black/5 leading-none self-center">
+            <input type="text" id="unix-name" value="rogue" class="terminal-input m-1 w-20 h-3 p-2 text-base border-black/20 bg-black/5 leading-none self-center">
           </div>
           
-          <div class="flex items-center gap-1 bg-black/5 px-1 h-3.5 rounded-sm border border-black/5 self-center">
-             <span class="led-label text-[7px] whitespace-nowrap leading-none">MANUAL PLAY</span>
-             <label class="relative inline-flex items-center cursor-pointer scale-[0.55]">
+          <div class="flex items-center gap-1 bg-black/5 px-1 h-3 rounded-sm border border-black/5 self-center">
+             <span class="led-label text-sm whitespace-nowrap leading-none">MANUAL PLAY</span>
+             <label class="relative inline-flex items-center cursor-pointer">
                <input type="checkbox" id="mode-toggle" class="sr-only peer">
-               <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
+               <div class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
              </label>
-             <span class="led-label text-[7px] whitespace-nowrap leading-none">ROGOMATIC</span>
+             <span class="led-label text-sm whitespace-nowrap leading-none">ROGOMATIC</span>
           </div>
 
-          <button id="btn-start" class="btn-industrial h-3.5 py-0 px-2 text-[8px] w-auto m-0 shadow-none border leading-none self-center" disabled>START</button>
+          <button id="btn-start" class="btn-industrial inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border leading-none self-center" disabled>START</button>
         </div>
 
       </header>
 
       <!-- MAIN AREA -->
-      <main id="main-container" class="flex-1 relative overflow-hidden flex flex-col items-center justify-center bg-black p-0.5">
+      <main id="main-container" class="flex-1 relative overflow-hidden flex flex-col items-center justify-center bg-vt-beige p-0.5">
         
-        <div id="terminal-viewport" class="active-area shadow-2xl relative">
+        <div id="terminal-viewport" class="active-area shadow-2xl relative" style="visibility: hidden;">
           <div id="terminal"></div>
         </div>
 
         <!-- ADAPTIVE STATS PANEL -->
-        <aside id="stats-panel" class="hidden panel-block border border-black/20 bg-vt-beige-dark m-1 p-2 shrink-0">
+        <aside id="stats-panel" class="hidden panel-block border border-black/20 bg-vt-beige-dark m-0 p-1 shrink-0 min-w-[130px]">
            
-           <div class="flex flex-col gap-3">
+           <div class="flex flex-col gap-2">
              <!-- ROGUE STATS -->
              <section>
-               <span class="panel-label text-[8px] mb-1">CHARACTER DATA</span>
-               <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                 <div class="digital-readout m-0 gap-2">
-                   <span class="readout-label text-[8px]">HP</span>
-                   <span id="stat-hp" class="readout-value text-xs py-0 px-1 min-w-[30px]">00/00</span>
-                 </div>
-                 <div class="digital-readout m-0 gap-2">
-                   <span class="readout-label text-[8px]">STR</span>
-                   <span id="stat-str" class="readout-value text-xs py-0 px-1 min-w-[30px]">00</span>
-                 </div>
-                 <div class="digital-readout m-0 gap-2">
-                   <span class="readout-label text-[8px]">GOLD</span>
-                   <span id="stat-gold" class="readout-value text-xs py-0 px-1 min-w-[30px]">000</span>
-                 </div>
-                 <div class="digital-readout m-0 gap-2">
-                   <span class="readout-label text-[8px]">LEVEL</span>
-                   <span id="stat-level" class="readout-value text-xs py-0 px-1 min-w-[30px]">01</span>
-                 </div>
+               <span class="panel-label mb-1 leading-tight">ROGUE STATS</span>
+               <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
+                 <span class="readout-label leading-none">HP</span>
+                 <span id="stat-hp" class="readout-value py-0 px-1 min-w-[50px] text-right leading-none">0/0</span>
+                 
+                 <span class="readout-label leading-none">STR</span>
+                 <span id="stat-str" class="readout-value text-sm py-0 px-1 min-w-[50px] text-right leading-none">0</span>
+                 
+                 <span class="readout-label leading-none">GOLD</span>
+                 <span id="stat-gold" class="readout-value text-sm py-0 px-1 min-w-[50px] text-right leading-none">0</span>
+                 
+                 <span class="readout-label leading-none">LVL</span>
+                 <span id="stat-level" class="readout-value text-sm py-0 px-1 min-w-[50px] text-right leading-none">1</span>
                </div>
              </section>
 
              <!-- BOT STATS -->
-             <section class="border-t border-black/10 pt-2">
-               <span class="panel-label text-[8px] mb-1">BOT ENGINE</span>
-               <div class="flex flex-col gap-1">
-                 <div class="digital-readout m-0 justify-between">
-                   <span class="readout-label text-[8px]">STATE</span>
-                   <span id="bot-state" class="readout-value text-[10px] py-0 px-1 text-left min-w-[80px]">IDLE</span>
-                 </div>
-                 <div class="digital-readout m-0 justify-between">
-                   <span class="readout-label text-[8px]">GEN</span>
-                   <span id="bot-gen" class="readout-value text-[10px] py-0 px-1 text-left min-w-[80px]">000</span>
-                 </div>
+             <section class="border-t border-black/10 pt-1.5">
+               <span class="panel-label mb-1 leading-tight">ROGOMATIC STATS</span>
+               <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
+                 <span class="readout-label leading-none">STATE</span>
+                 <span id="bot-state" class="readout-value py-0 px-1 text-right w-full truncate leading-none">IDLE</span>
+                 
+                 <span class="readout-label leading-none">GEN</span>
+                 <span id="bot-gen" class="readout-value py-0 px-1 text-right w-full truncate leading-none">0</span>
                </div>
              </section>
            </div>

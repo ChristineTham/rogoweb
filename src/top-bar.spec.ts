@@ -18,8 +18,9 @@ describe('VT100 Top Bar', () => {
     expect(document.body.textContent?.toLowerCase()).toContain('rogoweb');
   });
 
-  it('should render the VT100 badge', () => {
-    expect(document.body.textContent).toContain('VT100');
+  it('should render the VT100 logo', () => {
+    const logo = document.querySelector('img[alt="logo"]');
+    expect(logo).toBeTruthy();
   });
 
   it('should have 4 status LEDs grouped with logo', () => {
