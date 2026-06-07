@@ -1,7 +1,7 @@
 # Makefile for rogue (Emscripten / WASM)
 # Based on Makefile.std
 
-PROGRAM  = rogue
+PROGRAM  = ../public/wasm/rogue
 O        = o
 HDRS     = rogue.h extern.h score.h
 OBJS1    = vers.$(O) extern.$(O) armor.$(O) chase.$(O) command.$(O) \
