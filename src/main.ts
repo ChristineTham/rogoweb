@@ -427,6 +427,19 @@ const handleExit = (_status: number) => {
   }, 300);
 };
 
+const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement;
+if (modeToggle) {
+  // Restore state
+  const savedMode = localStorage.getItem('rogoweb-mode');
+  if (savedMode !== null) {
+    modeToggle.checked = savedMode === 'auto';
+  }
+
+  modeToggle.onchange = () => {
+    localStorage.setItem('rogoweb-mode', modeToggle.checked ? 'auto' : 'manual');
+    window.location.reload();
+  };
+}
 const script = document.createElement('script');
-script.src = '/wasm/rogue.js';
+script.src = modeToggle?.checked ? '/wasm/rogomatic.js' : '/wasm/rogue.js';
 document.body.appendChild(script);
