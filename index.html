@@ -3,110 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DEC VT100 :: Rogue Port</title>
+  <title>rogoweb :: VT100 Rogue</title>
 </head>
 <body>
   <div id="app">
-    <div class="vt100-workspace">
+    <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
       
-      <!-- MONITOR SECTION: ALWAYS 5:3 -->
-      <main id="monitor-unit" class="monitor-unit">
+      <!-- RESPONSIVE TOP BAR (RUTHLESSLY COMPACT) -->
+      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-1 py-0 flex items-center justify-between gap-1 z-50 shrink-0 h-7">
         
-        <!-- Header Branding: ONLY VISIBLE ON TALL DISPLAYS -->
-        <header class="header-branding">
-          <div class="dec-logo-container whitespace-nowrap">
-            <img src="/assets/dec-logo-blue.svg" alt="digital" class="dec-logo">
-            <span class="vt100-badge">VT100</span>
+        <div class="flex items-center gap-1.5 px-1">
+          <span class="text-dec-blue font-bold text-base tracking-tighter select-none">rogoweb</span>
+          <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 select-none">
+            <img src="/assets/dec-logo-blue.svg" alt="digital" class="h-3">
+            <span class="font-sans font-black text-[10px] text-[#555] tracking-widest">VT100</span>
           </div>
-        </header>
+        </div>
+        
+        <!-- VT100 STATUS LIGHTS -->
+        <div class="led-strip flex gap-2 bg-vt-beige-dark px-1.5 py-0.5 rounded-sm border border-black/5">
+          <div class="led-group flex flex-col items-center">
+            <div id="led-l1" class="led green w-2 h-2"></div>
+            <span class="led-label text-[6px] leading-[1]">L1</span>
+          </div>
+          <div class="led-group flex flex-col items-center">
+            <div id="led-l2" class="led green w-2 h-2"></div>
+            <span class="led-label text-[6px] leading-[1]">L2</span>
+          </div>
+          <div class="led-group flex flex-col items-center">
+            <div id="led-l3" class="led green w-2 h-2"></div>
+            <span class="led-label text-[6px] leading-[1]">L3</span>
+          </div>
+          <div class="led-group flex flex-col items-center">
+            <div id="led-l4" class="led amber w-2 h-2"></div>
+            <span class="led-label text-[6px] leading-[1]">L4</span>
+          </div>
+        </div>
 
-        <div id="terminal-viewport" class="active-area">
+        <!-- USER & CONTROLS -->
+        <div class="flex items-center gap-2 pr-1">
+          <div class="flex items-center gap-1">
+            <label for="unix-name" class="led-label text-[7px]">USER</label>
+            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-14 h-4 px-1 py-0 text-[10px] border-black/20 bg-black/5">
+          </div>
+          
+          <div class="flex items-center gap-1 bg-black/5 px-1 rounded-sm border border-black/5 h-4">
+             <span class="led-label text-[7px]">M</span>
+             <label class="relative inline-flex items-center cursor-pointer">
+               <input type="checkbox" id="mode-toggle" class="sr-only peer">
+               <div class="w-5 h-2.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2 after:w-2 after:transition-all peer-checked:bg-dec-blue"></div>
+             </label>
+             <span class="led-label text-[7px]">A</span>
+          </div>
+
+          <button id="btn-start" class="btn-industrial h-4 py-0 px-2 text-[8px] w-auto m-0 shadow-none border" disabled>START GAME</button>
+        </div>
+
+      </header>
+
+      <!-- MAIN TERMINAL AREA -->
+      <main class="flex-1 relative overflow-hidden flex items-center justify-center bg-black p-1">
+        
+        <div id="terminal-viewport" class="active-area shadow-2xl">
           <div id="terminal"></div>
         </div>
 
+        <!-- ADAPTIVE STATS PANEL (Initially Hidden) -->
+        <aside id="stats-panel" class="hidden panel-block min-w-[200px] border-2 border-vt-beige-dark bg-vt-beige">
+           <span class="panel-label text-[10px]">SYSTEM DATA</span>
+           <div id="stats-content" class="flex flex-col gap-1">
+             <!-- To be populated by main.ts -->
+           </div>
+        </aside>
+
       </main>
-
-      <!-- HARDWARE MARGIN: For controls and status -->
-      <aside class="hardware-controls">
-        
-        <!-- Sidebar Branding: ONLY VISIBLE ON WIDE DISPLAYS -->
-        <div class="dec-logo-container sidebar-branding">
-          <img src="/assets/dec-logo-blue.svg" alt="digital" class="dec-logo">
-          <span class="vt100-badge">VT100</span>
-        </div>
-
-        <!-- DASHBOARD SCALING MODES -->
-        
-        <!-- 1. FULL DASHBOARD (Standard) -->
-        <div class="dashboard-full">
-          
-          <section class="panel-block">
-            <span class="panel-label">VAX LOGIN CONFIG</span>
-            <div class="field-group">
-              <label for="unix-name" class="led-label" style="display:block;margin-bottom:5px">USER ID</label>
-              <input type="text" id="unix-name" value="rogue" class="terminal-input">
-            </div>
-            <button id="btn-start" class="btn-industrial" disabled>CONNECT</button>
-          </section>
-
-          <section class="panel-block">
-            <span class="panel-label">VAX-11/780 DATA</span>
-            <div class="digital-readout">
-              <span class="readout-label">LEVEL</span>
-              <span id="stat-level" class="readout-value">00</span>
-            </div>
-            <div class="digital-readout">
-              <span class="readout-label">GOLD</span>
-              <span id="stat-gold" class="readout-value">000</span>
-            </div>
-            <div class="digital-readout">
-              <span class="readout-label">SCORE</span>
-              <span id="stat-score" class="readout-value">000</span>
-            </div>
-          </section>
-
-          <section class="panel-block">
-            <span class="panel-label">TERMINAL STATUS</span>
-            <div class="led-strip">
-              <div class="led-group"><div id="led-wait" class="led amber"></div><span class="led-label">WAIT</span></div>
-              <div class="led-group"><div id="led-online" class="led green"></div><span class="led-label">ONLINE</span></div>
-              <div class="led-group"><div id="led-local" class="led amber active"></div><span class="led-label">LOCAL</span></div>
-            </div>
-            <div class="led-strip" style="margin-top:20px">
-              <div class="led-group"><div id="led-l1" class="led green"></div><span class="led-label">L1</span></div>
-              <div class="led-group"><div id="led-l2" class="led green"></div><span class="led-label">L2</span></div>
-              <div class="led-group"><div id="led-l3" class="led green"></div><span class="led-label">L3</span></div>
-              <div class="led-group"><div id="led-l4" class="led green"></div><span class="led-label">L4</span></div>
-            </div>
-          </section>
-        </div>
-
-        <!-- 2. ICON RAIL (Narrow Sidebar) -->
-        <div class="dashboard-rail">
-           <div class="led amber active" title="LOCAL"></div>
-           <div class="led green" title="ONLINE"></div>
-           <div class="led amber" title="WAIT"></div>
-           <div style="margin-top:20px" class="led green" title="L1"></div>
-           <div class="led green" title="L2"></div>
-           <div class="led green" title="L3"></div>
-           <div class="led green" title="L4"></div>
-        </div>
-
-        <!-- 3. STATUS STRIP (Short Bottom Bar) -->
-        <div class="dashboard-strip">
-           <div class="led-strip">
-              <div class="led amber active"></div>
-              <div class="led green"></div>
-              <div class="led amber"></div>
-           </div>
-           <div class="digital-readout" style="gap:20px">
-              <span class="readout-value">L:01</span>
-              <span class="readout-value">G:000</span>
-              <span class="readout-value">S:000</span>
-           </div>
-        </div>
-
-      </aside>
 
     </div>
   </div>

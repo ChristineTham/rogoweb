@@ -43,12 +43,15 @@ const simulateTyping = async (text: string, speed = 100) => {
 };
 
 const runLoginSequence = async (userName: string) => {
-  const waitLed = document.getElementById('led-wait');
-  const localLed = document.getElementById('led-local');
-  const onlineLed = document.getElementById('led-online');
+  const l1 = document.getElementById('led-l1'); // Game Active
+  const l2 = document.getElementById('led-l2'); // Rogomatic Active
+  const l3 = document.getElementById('led-l3'); // Status (Green/Amber/Red)
+  const l4 = document.getElementById('led-l4'); // Danger
+  const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement;
+  const isAuto = modeToggle?.checked;
 
-  if (waitLed) waitLed.classList.add('active');
-  if (localLed) localLed.classList.remove('active');
+  if (l1) l1.classList.add('active');
+  if (l3) l3.classList.add('active'); // Start with green health
 
   xterm.reset();
   xterm.writeln('4.2 BSD UNIX (ucbvax) (tty01)');
@@ -71,12 +74,13 @@ const runLoginSequence = async (userName: string) => {
   await sleep(400);
   xterm.write('% ');
   await sleep(500);
-  await simulateTyping('rogue', 150);
+  
+  const cmd = isAuto ? 'rogomatic' : 'rogue';
+  await simulateTyping(cmd, 150);
   xterm.writeln('');
   await sleep(300);
 
-  if (waitLed) waitLed.classList.remove('active');
-  if (onlineLed) onlineLed.classList.add('active');
+  if (isAuto && l2) l2.classList.add('active');
 
   // Trigger WASM main
   try {
@@ -105,7 +109,7 @@ const scaleTerminal = () => {
     return;
   }
 
-  // 1. Precise Font Size for Height (2px bezel already handled by container margin)
+  // 1. Precise Font Size for Height
   const bestFontSize = (targetH / ROWS);
   xterm.options.fontSize = bestFontSize;
   xterm.options.letterSpacing = 0;
@@ -154,10 +158,8 @@ const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
 };
 
 const handleExit = (status: number) => {
-  const onlineLed = document.getElementById('led-online');
-  const localLed = document.getElementById('led-local');
-  if (onlineLed) onlineLed.classList.remove('active');
-  if (localLed) localLed.classList.add('active');
+  const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
+  leds.forEach(id => document.getElementById(id)?.classList.remove('active'));
 
   setTimeout(() => {
     xterm.write('\x1b[?1049l\x1b[H\x1b[2J');
