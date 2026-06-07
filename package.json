@@ -8,6 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
     "build:emcurses": "make -C rogue/emcurses/emscripten CC=emcc AR=emar RANLIB=emranlib libs",
     "build:rogue": "make -C rogue -f Makefile.wasm",
     "build:rogomatic": "make -C rogomatic/src -f Makefile.wasm",
@@ -15,11 +17,16 @@
     "clean:wasm": "make -C rogue/emcurses/emscripten clean && make -C rogue -f Makefile.wasm clean && make -C rogomatic/src -f Makefile.wasm clean"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^25.9.2",
     "@vitest/browser": "^4.1.8",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
+    "prettier": "^3.8.3",
     "typescript": "~6.0.2",
+    "typescript-eslint": "^8.60.1",
     "vite": "^8.0.12",
     "vitest": "^4.1.8"
   },

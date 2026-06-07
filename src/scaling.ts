@@ -39,14 +39,7 @@ export const calculateTerminalFit = (
   rows: number,
   borderPx = VIEWPORT_BORDER_PX,
 ) => {
-  const fontSize = calculateFontSize(
-    containerW,
-    containerH,
-    cellScale,
-    cols,
-    rows,
-    borderPx,
-  );
+  const fontSize = calculateFontSize(containerW, containerH, cellScale, cols, rows, borderPx);
 
   return {
     fontSize,

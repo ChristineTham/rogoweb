@@ -19,12 +19,12 @@ export class TerminalShim {
     console.log('TerminalShim constructor', conf);
     this.xterm = (window as any).xtermInstance;
     (window as any).term = this; // Explicitly set global for emcurses
-    
+
     this.conf.cols = conf.cols || 80;
     this.conf.rows = conf.rows || 24;
     this.maxCols = this.conf.cols;
     this.maxLines = this.conf.rows;
-    
+
     if (conf.handler) this.handler = conf.handler;
     if (conf.initHandler) (this as any).initHandler = conf.initHandler;
 
@@ -32,8 +32,12 @@ export class TerminalShim {
     this.clear();
   }
 
-  get cols(): number { return this.conf.cols; }
-  get rows(): number { return this.conf.rows; }
+  get cols(): number {
+    return this.conf.cols;
+  }
+  get rows(): number {
+    return this.conf.rows;
+  }
 
   clear() {
     this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
@@ -84,19 +88,19 @@ export class TerminalShim {
     this.styleBuf[row][col] = style;
 
     let ansi = '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
-    
+
     if (style & 4) ansi += '\x1b[1m'; // Bold
     if (style & 2) ansi += '\x1b[4m'; // Underline
     if (style & 1) ansi += '\x1b[7m'; // Reverse
-    
+
     ansi += String.fromCharCode(ch || 32);
-    if (style !== 0) ansi += '\x1b[0m'; 
-    
+    if (style !== 0) ansi += '\x1b[0m';
+
     this.xterm.write(ansi);
 
     // STATUS LINE PARSING (Row 23 is the typical Rogue status line)
     if (row === 23) {
-       this.parseStatusLine();
+      this.parseStatusLine();
     }
   }
 
@@ -108,8 +112,8 @@ export class TerminalShim {
     this.parseTimeout = setTimeout(() => {
       // Extract line from xterm buffer if possible, or maintain internal buffer
       // For now, let's just assume we can get it from xterm
-      const line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || "";
-      console.log("Parsing status line:", line);
+      const line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || '';
+      console.log('Parsing status line:', line);
 
       // Regex patterns for Rogue stats
       const hpMatch = line.match(/Hp:\s*(\d+\(\d+\))/i);
@@ -121,7 +125,7 @@ export class TerminalShim {
         hp: hpMatch ? hpMatch[1] : undefined,
         str: strMatch ? strMatch[1] : undefined,
         gold: goldMatch ? goldMatch[1] : undefined,
-        level: levelMatch ? levelMatch[1] : undefined
+        level: levelMatch ? levelMatch[1] : undefined,
       });
     }, 100);
   }
@@ -150,7 +154,7 @@ export class TerminalShim {
 export const TermGlobals = {
   getColorString: (color: number) => {
     console.log('TermGlobals.getColorString', color);
-    return "#ffffff";
+    return '#ffffff';
   },
   setColor: (color: number, str: string) => {
     console.log('TermGlobals.setColor', color, str);
@@ -181,5 +185,5 @@ export const TermGlobals = {
       const el = document.getElementById('bot-gen');
       if (el) el.innerText = stats.botGen;
     }
-  }
+  },
 };

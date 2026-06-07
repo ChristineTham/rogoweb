@@ -17,7 +17,9 @@ A project focused on porting the classic dungeon crawler **Rogue** and its autom
 ## Building and Running
 
 ### Rogue (the game)
+
 Located in `rogue/`.
+
 1. `cd rogue`
 2. `./bootstrap` (if `configure` is missing)
 3. `./configure`
@@ -25,7 +27,9 @@ Located in `rogue/`.
 5. Run with `./rogue54`
 
 ### Rog-O-Matic (the player)
+
 Located in `rogomatic/`.
+
 1. `cd rogomatic`
 2. `./bootstrap` (if `configure` is missing)
 3. `./configure`

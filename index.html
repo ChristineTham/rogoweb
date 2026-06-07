@@ -1,102 +1,192 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rogoweb :: VT100 Rogue</title>
-</head>
-<body>
-  <div id="app">
-    <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
-      
-      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0.5 sm:py-0 flex flex-col sm:flex-row items-center justify-between z-50 shrink-0 h-auto sm:h-5 gap-1 sm:gap-0">
-        
-        <div class="flex items-center justify-between sm:justify-start gap-3 shrink-0 w-full sm:w-auto h-5 sm:h-full">
-          <div class="flex items-center gap-1 h-full">
-            <span class="rogoweb-title font-sans font-black text-[#FE5000] tracking-tighter text-base leading-none">rogoweb</span>
-            <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 h-3">
-              <img src="/assets/vt100-logo.jpg" class="h-5" alt="logo">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rogoweb :: VT100 Rogue</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
+        <header
+          class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0.5 sm:py-0 flex flex-col sm:flex-row items-center justify-between z-50 shrink-0 h-auto sm:h-5 gap-1 sm:gap-0"
+        >
+          <div
+            class="flex items-center justify-between sm:justify-start gap-3 shrink-0 w-full sm:w-auto h-5 sm:h-full"
+          >
+            <div class="flex items-center gap-1 h-full">
+              <span
+                class="rogoweb-title font-sans font-black text-[#FE5000] tracking-tighter text-base leading-none"
+                >rogoweb</span
+              >
+              <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 h-3">
+                <img src="/assets/vt100-logo.jpg" class="h-5" alt="logo" />
+              </div>
+            </div>
+
+            <!-- VT100 STATUS LIGHTS -->
+            <div class="led-strip flex gap-1.5 ml-2 items-center h-full">
+              <div
+                id="led-l1"
+                class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+              ></div>
+              <div
+                id="led-l2"
+                class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+              ></div>
+              <div
+                id="led-l3"
+                class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+              ></div>
+              <div
+                id="led-l4"
+                class="led amber w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-amber [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-amber),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+              ></div>
             </div>
           </div>
 
-          <!-- VT100 STATUS LIGHTS -->
-          <div class="led-strip flex gap-1.5 ml-2 items-center h-full">
-            <div id="led-l1" class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"></div>
-            <div id="led-l2" class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"></div>
-            <div id="led-l3" class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"></div>
-            <div id="led-l4" class="led amber w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-amber [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-amber),inset_0_1px_2px_rgba(255,255,255,0.5)]"></div>
+          <div
+            class="flex items-center justify-between sm:justify-start gap-2 shrink-0 w-full sm:w-auto h-5 sm:h-full"
+          >
+            <!-- USER & CONTROLS -->
+            <div class="flex items-center gap-1 h-full">
+              <label
+                for="unix-name"
+                class="led-label text-sm font-black text-[#555] uppercase leading-none"
+                >USER</label
+              >
+              <input
+                type="text"
+                id="unix-name"
+                value="rogue"
+                class="terminal-input m-0.5 sm:m-1 w-14 sm:w-20 h-3 p-1 sm:p-2 text-xs sm:text-base rounded-sm text-black border border-black/20 bg-black/5 leading-none self-center"
+              />
+            </div>
+
+            <div
+              class="flex items-center gap-1 bg-black/5 px-1 h-3 rounded-sm border border-black/5 self-center"
+            >
+              <span
+                class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none max-sm:text-[10px]"
+                >MANUAL PLAY</span
+              >
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="mode-toggle" class="sr-only peer" />
+                <div
+                  class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"
+                ></div>
+              </label>
+              <span
+                class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none max-sm:text-[10px]"
+                >ROGOMATIC</span
+              >
+            </div>
+
+            <button
+              id="btn-start"
+              class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center"
+              disabled
+            >
+              START
+            </button>
           </div>
-        </div>
-        
-        <div class="flex items-center justify-between sm:justify-start gap-2 shrink-0 w-full sm:w-auto h-5 sm:h-full">
-          <!-- USER & CONTROLS -->
-          <div class="flex items-center gap-1 h-full">
-            <label for="unix-name" class="led-label text-sm font-black text-[#555] uppercase leading-none">USER</label>
-            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0.5 sm:m-1 w-14 sm:w-20 h-3 p-1 sm:p-2 text-xs sm:text-base rounded-sm text-black border border-black/20 bg-black/5 leading-none self-center">
-          </div>
-          
-          <div class="flex items-center gap-1 bg-black/5 px-1 h-3 rounded-sm border border-black/5 self-center">
-             <span class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none max-sm:text-[10px]">MANUAL PLAY</span>
-             <label class="relative inline-flex items-center cursor-pointer">
-               <input type="checkbox" id="mode-toggle" class="sr-only peer">
-               <div class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
-             </label>
-             <span class="led-label text-sm font-black text-[#555] uppercase whitespace-nowrap leading-none max-sm:text-[10px]">ROGOMATIC</span>
+        </header>
+
+        <!-- MAIN AREA -->
+        <main
+          id="main-container"
+          class="flex-1 relative overflow-hidden flex flex-col items-center justify-center bg-vt-beige p-0.5"
+        >
+          <div
+            id="terminal-viewport"
+            class="active-area relative bg-black overflow-hidden border-[#1a1a1b] border-2 box-border shadow-2xl"
+            style="visibility: hidden"
+          >
+            <div id="terminal" class="h-full w-full"></div>
           </div>
 
-          <button id="btn-start" class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center" disabled>START</button>
-        </div>
+          <!-- ADAPTIVE STATS PANEL -->
+          <aside
+            id="stats-panel"
+            class="hidden panel-block bg-vt-beige-dark border border-black/20 rounded-md p-1 shrink-0 min-w-[130px] [box-shadow:inset_1px_1px_3px_rgba(0,0,0,0.2),_1px_1px_0_rgba(255,255,255,0.5)]"
+          >
+            <div class="flex flex-col gap-2">
+              <!-- ROGUE STATS -->
+              <section>
+                <span
+                  class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
+                  >ROGUE STATS</span
+                >
+                <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
+                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
+                    >HP</span
+                  >
+                  <span
+                    id="stat-hp"
+                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    >0/0</span
+                  >
 
-      </header>
+                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
+                    >STR</span
+                  >
+                  <span
+                    id="stat-str"
+                    class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    >0</span
+                  >
 
-      <!-- MAIN AREA -->
-      <main id="main-container" class="flex-1 relative overflow-hidden flex flex-col items-center justify-center bg-vt-beige p-0.5">
-        
-        <div id="terminal-viewport" class="active-area relative bg-black overflow-hidden border-[#1a1a1b] border-2 box-border shadow-2xl" style="visibility: hidden;">
-          <div id="terminal" class="h-full w-full"></div>
-        </div>
+                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
+                    >GOLD</span
+                  >
+                  <span
+                    id="stat-gold"
+                    class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    >0</span
+                  >
 
-        <!-- ADAPTIVE STATS PANEL -->
-        <aside id="stats-panel" class="hidden panel-block bg-vt-beige-dark border border-black/20 rounded-md p-1 shrink-0 min-w-[130px] [box-shadow:inset_1px_1px_3px_rgba(0,0,0,0.2),_1px_1px_0_rgba(255,255,255,0.5)]">
-           
-           <div class="flex flex-col gap-2">
-             <!-- ROGUE STATS -->
-             <section>
-               <span class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight">ROGUE STATS</span>
-               <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
-                 <span class="readout-label text-sm text-[#555] font-semibold leading-none">HP</span>
-                 <span id="stat-hp" class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none">0/0</span>
-                 
-                 <span class="readout-label text-sm text-[#555] font-semibold leading-none">STR</span>
-                 <span id="stat-str" class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none">0</span>
-                 
-                 <span class="readout-label text-sm text-[#555] font-semibold leading-none">GOLD</span>
-                 <span id="stat-gold" class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none">0</span>
-                 
-                 <span class="readout-label text-sm text-[#555] font-semibold leading-none">LVL</span>
-                 <span id="stat-level" class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none">1</span>
-               </div>
-             </section>
+                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
+                    >LVL</span
+                  >
+                  <span
+                    id="stat-level"
+                    class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    >1</span
+                  >
+                </div>
+              </section>
 
-             <!-- BOT STATS -->
-             <section class="border-t border-black/10 pt-1.5">
-               <span class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight">ROGOMATIC STATS</span>
-               <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
-                 <span class="readout-label text-sm text-[#555] font-semibold leading-none">STATE</span>
-                 <span id="bot-state" class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none">IDLE</span>
-                 
-                 <span class="readout-label text-sm text-[#555] font-semibold leading-none">GEN</span>
-                 <span id="bot-gen" class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none">0</span>
-               </div>
-             </section>
-           </div>
+              <!-- BOT STATS -->
+              <section class="border-t border-black/10 pt-1.5">
+                <span
+                  class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
+                  >ROGOMATIC STATS</span
+                >
+                <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
+                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
+                    >STATE</span
+                  >
+                  <span
+                    id="bot-state"
+                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none"
+                    >IDLE</span
+                  >
 
-        </aside>
-
-      </main>
-
+                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
+                    >GEN</span
+                  >
+                  <span
+                    id="bot-gen"
+                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none"
+                    >0</span
+                  >
+                </div>
+              </section>
+            </div>
+          </aside>
+        </main>
+      </div>
     </div>
-  </div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

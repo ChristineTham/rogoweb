@@ -3,11 +3,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   base: '/rogoweb/',
-  plugins: [
-    tailwindcss(),
-  ],
+  plugins: [tailwindcss()],
   test: {
     include: ['src/**/*.spec.ts'],
   },
 });
-

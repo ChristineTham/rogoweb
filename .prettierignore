@@ -1,0 +1,7 @@
+node_modules/
+dist/
+public/
+rogue/
+rogomatic/
+pnpm-lock.yaml
+package-lock.json

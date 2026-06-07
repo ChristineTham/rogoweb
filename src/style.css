@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --font-term: 'VT323', monospace;
@@ -6,7 +6,7 @@
   --color-vt-beige-dark: #b0aca0;
   --color-vt-black: #111112;
   --color-p4-white: #ebf0ff;
-  --color-dec-blue: #003DA5;
+  --color-dec-blue: #003da5;
   --color-vt-led-red: #ff0000;
   --color-vt-led-amber: #ffaa00;
   --color-vt-led-green: #33ff33;
@@ -23,10 +23,12 @@
    BASE RESET & GLOBAL
 ========================================= */
 @layer base {
-  body, html {
+  body,
+  html {
     @apply h-screen w-screen bg-black text-p4-white overflow-hidden m-0 p-0;
     font-family: var(--font-term);
   }
-  #app { @apply h-full w-full; }
+  #app {
+    @apply h-full w-full;
+  }
 }
-

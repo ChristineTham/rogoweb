@@ -36,13 +36,15 @@ const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
 (window as any).Terminal = TerminalShim;
 (window as any).TermGlobals = TermGlobals;
 
-const nextFrame = () => new Promise<void>((resolve) => {
-  requestAnimationFrame(() => resolve());
-});
+const nextFrame = () =>
+  new Promise<void>((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
 
-const settleRender = () => new Promise<void>((resolve) => {
-  setTimeout(() => resolve(), 32);
-});
+const settleRender = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), 32);
+  });
 
 const getRenderedViewport = () => {
   const canvas = (xterm as any)?._core?._renderService?.dimensions?.css?.canvas;
@@ -102,13 +104,13 @@ const findBestTerminalFit = async (containerW: number, containerH: number, runId
   let high = MAX_FONT_SIZE;
   let bestFit = {
     fontSize: FONT_SIZE_PRECISION,
-    ...(await applyTerminalFontSize(FONT_SIZE_PRECISION, runId) ?? {
+    ...((await applyTerminalFontSize(FONT_SIZE_PRECISION, runId)) ?? {
       width: VIEWPORT_BORDER_PX,
       height: VIEWPORT_BORDER_PX,
     }),
   };
 
-  while ((high - low) >= FONT_SIZE_PRECISION) {
+  while (high - low >= FONT_SIZE_PRECISION) {
     if (!isScaleRunCurrent(runId)) return null;
 
     const fontSize = quantizeFontSize((low + high) / 2);
@@ -136,9 +138,7 @@ const refineTerminalFit = async (
   let renderedViewport = await applyTerminalFontSize(fontSize, runId);
   if (!renderedViewport) return null;
 
-  while (
-    renderedViewport.width > containerW || renderedViewport.height > containerH
-  ) {
+  while (renderedViewport.width > containerW || renderedViewport.height > containerH) {
     const nextFontSize = quantizeFontSize(fontSize - FONT_SIZE_PRECISION);
     if (nextFontSize === fontSize || nextFontSize < FONT_SIZE_PRECISION) {
       break;
@@ -210,15 +210,13 @@ const settleBestTerminalFit = async (containerW: number, containerH: number, run
 
   if (!isScaleRunCurrent(runId)) return null;
 
-  return renderedViewport
-    ? { fontSize: bestFit.fontSize, ...renderedViewport }
-    : bestFit;
+  return renderedViewport ? { fontSize: bestFit.fontSize, ...renderedViewport } : bestFit;
 };
 
 /**
  * ASYNCHRONOUS LOGIN SIMULATION
  */
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const simulateTyping = async (text: string, speed = 100) => {
   for (const char of text) {
@@ -244,21 +242,21 @@ const runLoginSequence = async (userName: string) => {
   await sleep(800);
   await simulateTyping(userName);
   xterm.writeln('');
-  
+
   await sleep(400);
   xterm.write('Password: ');
   await sleep(1200); // Simulate typing
   xterm.writeln('');
-  
+
   await sleep(600);
   xterm.writeln('');
   xterm.writeln('4.2 BSD UNIX #1: Sun Aug 14 11:15:32 PDT 1983');
-  xterm.writeln("UC Berkeley VAX-11/780 (ucbvax)");
+  xterm.writeln('UC Berkeley VAX-11/780 (ucbvax)');
   xterm.writeln('');
   await sleep(400);
   xterm.write('% ');
   await sleep(500);
-  
+
   const cmd = isAuto ? 'rogomatic' : 'rogue';
   await simulateTyping(cmd, 150);
   xterm.writeln('');
@@ -272,7 +270,7 @@ const runLoginSequence = async (userName: string) => {
   // Trigger WASM main
   try {
     const Module = (window as any).Module;
-    
+
     // Set environment variable for the C code's getenv
     // The WASM wrapper has been patched to pick this up via Module.ENV reference.
     if (!Module.ENV) Module.ENV = {};
@@ -281,13 +279,13 @@ const runLoginSequence = async (userName: string) => {
 
     if (typeof Module._setenv === 'function') {
       const userKeyPtr = Module.stackAlloc(5);
-      Module.stringToUTF8("USER", userKeyPtr, 5);
+      Module.stringToUTF8('USER', userKeyPtr, 5);
       const userValPtr = Module.stackAlloc(userName.length * 4 + 1);
       Module.stringToUTF8(userName, userValPtr, userName.length * 4 + 1);
       Module._setenv(userKeyPtr, userValPtr, 1);
 
       const logKeyPtr = Module.stackAlloc(8);
-      Module.stringToUTF8("LOGNAME", logKeyPtr, 8);
+      Module.stringToUTF8('LOGNAME', logKeyPtr, 8);
       const logValPtr = Module.stackAlloc(userName.length * 4 + 1);
       Module.stringToUTF8(userName, logValPtr, userName.length * 4 + 1);
       Module._setenv(logKeyPtr, logValPtr, 1);
@@ -296,7 +294,7 @@ const runLoginSequence = async (userName: string) => {
     console.log(`Starting engine for user: ${userName} (Auto: ${isAuto})`);
 
     const args = isAuto ? ['ZZ', '0', '0', userName] : ['-n', userName];
-    
+
     // Use manual stack allocation to construct char** argv
     // This provides exact control over arguments and avoids the non-async wrapper logic of callMain
     const fullArgs = isAuto ? ['rogomatic', ...args] : ['rogue', ...args];
@@ -314,13 +312,13 @@ const runLoginSequence = async (userName: string) => {
       Module._main(argc, argv);
     } catch (e: any) {
       if (e && e.name !== 'ExitStatus' && e !== 'unwind') {
-        console.error("Startup Error:", e);
+        console.error('Startup Error:', e);
         handleExit(-1);
       }
     }
   } catch (e: any) {
     if (e && e.name !== 'ExitStatus') {
-      console.error("Startup Error:", e);
+      console.error('Startup Error:', e);
       handleExit(-1);
     }
   }
@@ -357,7 +355,14 @@ const scaleTerminal = async () => {
 
   // ADAPTIVE LAYOUT LOGIC
   statsPanel.classList.add('hidden');
-  mainArea.classList.remove('flex-row', 'flex-col', 'justify-center', 'justify-start', 'items-center', 'gap-4');
+  mainArea.classList.remove(
+    'flex-row',
+    'flex-col',
+    'justify-center',
+    'justify-start',
+    'items-center',
+    'gap-4',
+  );
   mainArea.style.justifyContent = '';
 
   const MIN_STATS_W = 140;
@@ -367,16 +372,16 @@ const scaleTerminal = async () => {
     // WIDE SCREEN: Stats on the right
     mainArea.classList.add('flex-row', 'justify-center', 'items-center', 'gap-2');
     statsPanel.classList.remove('hidden');
-    console.log("Layout: WIDE (Stats Right)");
+    console.log('Layout: WIDE (Stats Right)');
   } else if (containerH >= targetH + MIN_STATS_H + 10) {
     // TALL SCREEN: Stats at the bottom
     mainArea.classList.add('flex-col', 'justify-center', 'items-center', 'gap-2');
     statsPanel.classList.remove('hidden');
-    console.log("Layout: TALL (Stats Bottom)");
+    console.log('Layout: TALL (Stats Bottom)');
   } else {
     // COMPACT: Center terminal, hide stats
     mainArea.classList.add('flex-col', 'justify-center', 'items-center');
-    console.log("Layout: COMPACT (Stats Hidden)");
+    console.log('Layout: COMPACT (Stats Hidden)');
   }
 
   // Update Viewport Dimensions
@@ -401,7 +406,7 @@ const scheduleScaleTerminal = (delay = RESIZE_SETTLE_MS) => {
 };
 const handleExit = (_status: number) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
-  leds.forEach(id => document.getElementById(id)?.classList.remove('active'));
+  leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
 
   xterm.write('\r\n*** Press RETURN to continue ***\r\n');
 
@@ -424,9 +429,10 @@ const handleExit = (_status: number) => {
     if (startBtn) {
       startBtn.disabled = false;
       startBtn.onclick = () => {
-        const userName = (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
+        const userName =
+          (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
         localStorage.setItem('rogoweb-username', userName);
-        
+
         // Ensure USER is set in ENV before callMain
         if ((window as any).Module.ENV) {
           (window as any).Module.ENV['USER'] = userName;
@@ -438,7 +444,7 @@ const handleExit = (_status: number) => {
       };
     }
   },
-  locateFile: (p: string) => p.endsWith('.wasm') ? '/rogoweb/wasm/' + p : p,
+  locateFile: (p: string) => (p.endsWith('.wasm') ? '/rogoweb/wasm/' + p : p),
   onExit: (s: number) => handleExit(s),
   print: (text: string) => {
     console.log('WASM stdout:', text);
