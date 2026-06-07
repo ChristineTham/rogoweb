@@ -5,7 +5,7 @@
 
   The specific rogue code is located at:
 
-  https://github.com/flowerbug/rogue-54-for-rogomatic
+  https://github.com/flowerbug/rogue
 
 
   My webpage for rogomatic and rogue is at:

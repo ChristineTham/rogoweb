@@ -21,7 +21,7 @@ CFLAGS   = -g3 -O0 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -Iemcurses -s ALLOW
            -s EMULATE_FUNCTION_POINTER_CASTS=1 -std=gnu89 -Wno-deprecated-non-prototype \
            -s EXPORTED_FUNCTIONS="['_main', '_my_exit']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
 LIBS     = emcurses/emscripten/libpdcurses.a
-LDFLAGS  = 
+LDFLAGS  = --pre-js emcurses/emscripten/termlib.js
 OUTFLAG  = -o
 EXE      = .js
 

@@ -1,0 +1,8 @@
+{
+  "track_id": "vt100_ui_redesign_20260607",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-07T12:00:00Z",
+  "updated_at": "2026-06-07T12:00:00Z",
+  "description": "redesign UI. Continue to use Tailwind. 1. screen is fixed, no scrolling. 2. there is a top bar, containing logo (digital image and VT100 text), the 4 status lights, username input box, manual vs rogomatic toggle, and control button (start game.) 3. the top bar should just be one line on a wide display, but may be up to 3 lines on a narrow display. use breakpoints to determine. 4. the terminal screen is the current implementation (fixed 5:3 aspect ratio). It will stretch to either the remaining height of browser screen, or the max width of the screen, whichever constraint applies. 5. if the terminal screen takes up the entire remaining height, center the screen using mx-auto, unless there is room to add additional status information (representing in game statistics, or rogomatic statistics). If there is, put the terminal screen on the left, and the statistics on the right. 6. if the terminal screen takes up the entire width of browser display, and there is significant space left at the bottom, put the statistic information at the bottom."
+}
