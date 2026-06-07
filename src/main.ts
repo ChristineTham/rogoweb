@@ -100,7 +100,8 @@ const runLoginSequence = async (userName: string) => {
 const scaleTerminal = () => {
   const mainArea = document.getElementById('main-container');
   const viewport = document.getElementById('terminal-viewport');
-  if (!mainArea || !viewport) return;
+  const statsPanel = document.getElementById('stats-panel');
+  if (!mainArea || !viewport || !statsPanel) return;
 
   const containerW = mainArea.clientWidth;
   const containerH = mainArea.clientHeight;
@@ -113,18 +114,38 @@ const scaleTerminal = () => {
   const RATIO = 5 / 3;
   let targetW, targetH;
 
+  // Initial calculation without stats
   if (containerH * RATIO <= containerW) {
-    // Height constrained (Wide Screen)
+    // Height constrained
     targetH = containerH;
     targetW = containerH * RATIO;
-    mainArea.classList.remove('flex-col', 'justify-start');
-    mainArea.classList.add('flex-row', 'justify-center', 'items-center');
   } else {
-    // Width constrained (Tall Screen)
+    // Width constrained
     targetW = containerW;
     targetH = containerW / RATIO;
-    mainArea.classList.remove('flex-row', 'justify-center');
+  }
+
+  // ADAPTIVE LAYOUT LOGIC
+  statsPanel.classList.add('hidden');
+  mainArea.classList.remove('flex-row', 'flex-col', 'justify-center', 'justify-start');
+
+  const MIN_STATS_W = 180;
+  const MIN_STATS_H = 120;
+
+  if (containerW >= targetW + MIN_STATS_W + 20) {
+    // WIDE SCREEN: Stats on the right
+    mainArea.classList.add('flex-row', 'justify-start', 'items-center');
+    statsPanel.classList.remove('hidden');
+    console.log("Layout: WIDE (Stats Right)");
+  } else if (containerH >= targetH + MIN_STATS_H + 20) {
+    // TALL SCREEN: Stats at the bottom
     mainArea.classList.add('flex-col', 'justify-start', 'items-center');
+    statsPanel.classList.remove('hidden');
+    console.log("Layout: TALL (Stats Bottom)");
+  } else {
+    // COMPACT: Center terminal, hide stats
+    mainArea.classList.add('flex-col', 'justify-center', 'items-center');
+    console.log("Layout: COMPACT (Stats Hidden)");
   }
 
   // Update Viewport Dimensions
@@ -138,7 +159,6 @@ const scaleTerminal = () => {
   xterm.options.lineHeight = 1.0;
 
   xterm.resize(COLS, ROWS);
-  console.log(`VT100 High-Res Lock: ${targetW.toFixed(0)}x${targetH.toFixed(0)} Font=${bestFontSize.toFixed(2)}px`);
 };
 
 const terminalElement = document.getElementById('terminal');

@@ -9,55 +9,98 @@
   <div id="app">
     <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
       
-      <!-- RESPONSIVE TOP BAR (AUTHENTIC VT100 AESTHETICS - REFINED V4) -->
+      <!-- RESPONSIVE TOP BAR -->
       <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0 flex items-center justify-between z-50 shrink-0 h-5">
         
         <div class="flex items-center gap-3 shrink-0 h-full">
+          <div class="flex items-center gap-1 h-full">
             <span class="rogoweb-title text-base leading-none">rogoweb</span>
-            <img src="/assets/vt100-logo.jpg" alt="digital" class="h-3">
-          <!-- VT100 STATUS LIGHTS (GROUPED WITH LOGO) -->
-          <div class="led-strip flex gap-1 items-center h-full">
-            <div id="led-l1" class="led green w-1 h-1"></div>
-            <div id="led-l2" class="led green w-1 h-1"></div>
-            <div id="led-l3" class="led green w-1 h-1"></div>
-            <div id="led-l4" class="led amber w-1 h-1"></div>
+            <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 h-3">
+              <img src="/assets/dec-logo-blue.svg" alt="digital" class="h-3">
+              <span class="vt100-badge text-[10px] leading-none pt-0.5">VT100</span>
+            </div>
+          </div>
+
+          <!-- VT100 STATUS LIGHTS -->
+          <div class="led-strip flex gap-1.5 ml-2 items-center h-full">
+            <div id="led-l1" class="led green w-1.5 h-1.5"></div>
+            <div id="led-l2" class="led green w-1.5 h-1.5"></div>
+            <div id="led-l3" class="led green w-1.5 h-1.5"></div>
+            <div id="led-l4" class="led amber w-1.5 h-1.5"></div>
           </div>
         </div>
         
         <div class="flex items-center gap-2 shrink-0 h-full">
           <!-- USER & CONTROLS -->
           <div class="flex items-center gap-1 h-full">
-            <label for="unix-name" class="led-label text-base leading-none">USER</label>
-            <input type="text" id="unix-name" value="rogue" class="terminal-input m-1 w-16 h-3 p-1 text-base border-black/20 bg-black/5 leading-none self-center">
+            <label for="unix-name" class="led-label text-[7px] leading-none">USER</label>
+            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-14 h-3.5 px-1 py-0 text-[9px] border-black/20 bg-black/5 leading-none self-center">
           </div>
           
           <div class="flex items-center gap-1 bg-black/5 px-1 h-3.5 rounded-sm border border-black/5 self-center">
-             <span class="led-label text-sm whitespace-nowrap leading-none">PLAY</span>
-             <label class="relative inline-flex items-center cursor-pointer">
+             <span class="led-label text-[7px] whitespace-nowrap leading-none">MANUAL PLAY</span>
+             <label class="relative inline-flex items-center cursor-pointer scale-[0.55]">
                <input type="checkbox" id="mode-toggle" class="sr-only peer">
-               <div class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
+               <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
              </label>
-             <span class="led-label text-sm whitespace-nowrap leading-none">ROGOMATIC</span>
-             <button id="btn-start" class="btn-industrial w-auto shadow-none border leading-none self-center" disabled>START</button>
+             <span class="led-label text-[7px] whitespace-nowrap leading-none">ROGOMATIC</span>
           </div>
 
+          <button id="btn-start" class="btn-industrial h-3.5 py-0 px-2 text-[8px] w-auto m-0 shadow-none border leading-none self-center" disabled>START</button>
         </div>
 
       </header>
 
-      <!-- MAIN TERMINAL AREA -->
+      <!-- MAIN AREA -->
       <main id="main-container" class="flex-1 relative overflow-hidden flex flex-col items-center justify-center bg-black p-0.5">
-
+        
         <div id="terminal-viewport" class="active-area shadow-2xl relative">
           <div id="terminal"></div>
         </div>
 
-        <!-- ADAPTIVE STATS PANEL (Initially Hidden) -->
-        <aside id="stats-panel" class="hidden panel-block min-w-[150px] border-2 border-vt-beige-dark bg-vt-beige m-1">
-           <span class="panel-label text-[9px]">SYSTEM DATA</span>
-           <div id="stats-content" class="flex flex-col gap-0.5">
-             <!-- To be populated by main.ts -->
+        <!-- ADAPTIVE STATS PANEL -->
+        <aside id="stats-panel" class="hidden panel-block border border-black/20 bg-vt-beige-dark m-1 p-2 shrink-0">
+           
+           <div class="flex flex-col gap-3">
+             <!-- ROGUE STATS -->
+             <section>
+               <span class="panel-label text-[8px] mb-1">CHARACTER DATA</span>
+               <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                 <div class="digital-readout m-0 gap-2">
+                   <span class="readout-label text-[8px]">HP</span>
+                   <span id="stat-hp" class="readout-value text-xs py-0 px-1 min-w-[30px]">00/00</span>
+                 </div>
+                 <div class="digital-readout m-0 gap-2">
+                   <span class="readout-label text-[8px]">STR</span>
+                   <span id="stat-str" class="readout-value text-xs py-0 px-1 min-w-[30px]">00</span>
+                 </div>
+                 <div class="digital-readout m-0 gap-2">
+                   <span class="readout-label text-[8px]">GOLD</span>
+                   <span id="stat-gold" class="readout-value text-xs py-0 px-1 min-w-[30px]">000</span>
+                 </div>
+                 <div class="digital-readout m-0 gap-2">
+                   <span class="readout-label text-[8px]">LEVEL</span>
+                   <span id="stat-level" class="readout-value text-xs py-0 px-1 min-w-[30px]">01</span>
+                 </div>
+               </div>
+             </section>
+
+             <!-- BOT STATS -->
+             <section class="border-t border-black/10 pt-2">
+               <span class="panel-label text-[8px] mb-1">BOT ENGINE</span>
+               <div class="flex flex-col gap-1">
+                 <div class="digital-readout m-0 justify-between">
+                   <span class="readout-label text-[8px]">STATE</span>
+                   <span id="bot-state" class="readout-value text-[10px] py-0 px-1 text-left min-w-[80px]">IDLE</span>
+                 </div>
+                 <div class="digital-readout m-0 justify-between">
+                   <span class="readout-label text-[8px]">GEN</span>
+                   <span id="bot-gen" class="readout-value text-[10px] py-0 px-1 text-left min-w-[80px]">000</span>
+                 </div>
+               </div>
+             </section>
            </div>
+
         </aside>
 
       </main>
