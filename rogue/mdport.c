@@ -127,7 +127,7 @@ md_init()
   _fmode = _O_BINARY;
 #endif
 
-#ifndef __EMSCRIPTEN__
+#ifndef ROGOWEB
 #if defined(HAVE_ESCDELAY) || defined(NCURSES_VERSION)
 # ifdef NCURSES_OPAQUE
   setenv("ESCDELAY", "64", 0 /* don't overwrite */);
@@ -376,7 +376,7 @@ md_chmod(char *filename, int mode)
 void
 md_normaluser()
 {
-#ifndef __EMSCRIPTEN__
+#ifndef ROGOWEB
 #if defined(HAVE_GETGID) && defined(HAVE_GETUID)
   gid_t realgid = getgid();
   uid_t realuid = getuid();
@@ -444,6 +444,13 @@ md_getusername()
 {
   static char login[80];
   char *l = NULL;
+#ifdef ROGOWEB
+  if ((l = getenv("USER")) != NULL && *l != '\0') {
+    strncpy(login, l, 80);
+    login[79] = 0;
+    return login;
+  }
+#endif
 #ifdef _WIN32
   LPSTR mybuffer;
   DWORD size = UNLEN + 1;

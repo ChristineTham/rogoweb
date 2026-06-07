@@ -9,19 +9,37 @@ export class TerminalShim {
   lock: boolean = false;
   crsrBlinkMode: boolean = true;
   crsrBlockMode: boolean = true;
+  inputChar: number = 0;
+  charBuf: any[][] = [];
+  styleBuf: any[][] = [];
+  maxLines: number = 24;
+  maxCols: number = 80;
 
   constructor(conf: any) {
     console.log('TerminalShim constructor', conf);
     this.xterm = (window as any).xtermInstance;
     (window as any).term = this; // Explicitly set global for emcurses
-    if (conf.cols) this.conf.cols = conf.cols;
-    if (conf.rows) this.conf.rows = conf.rows;
+    
+    this.conf.cols = conf.cols || 80;
+    this.conf.rows = conf.rows || 24;
+    this.maxCols = this.conf.cols;
+    this.maxLines = this.conf.rows;
+    
     if (conf.handler) this.handler = conf.handler;
     if (conf.initHandler) (this as any).initHandler = conf.initHandler;
+
+    // Initialize legacy buffers to prevent "undefined" access errors in emcurses
+    this.clear();
   }
 
   get cols(): number { return this.conf.cols; }
   get rows(): number { return this.conf.rows; }
+
+  clear() {
+    this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
+    this.styleBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
+    this.xterm.reset();
+  }
 
   hasInput(): boolean {
     return this.inputQueue.length > 0;
@@ -54,13 +72,24 @@ export class TerminalShim {
   }
 
   setChar(ch: number, row: number, col: number, style: number) {
+    if (row < 0 || row >= this.maxLines || col < 0 || col >= this.maxCols) {
+      // console.warn(`setChar out of bounds: ${row},${col}`);
+      return;
+    }
+
+    if (!this.charBuf[row]) this.charBuf[row] = Array(this.maxCols).fill(0);
+    if (!this.styleBuf[row]) this.styleBuf[row] = Array(this.maxCols).fill(0);
+
+    this.charBuf[row][col] = ch;
+    this.styleBuf[row][col] = style;
+
     let ansi = '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
     
-    if (style & (1 << 4)) ansi += '\x1b[1m'; // Bold
-    if (style & (1 << 1)) ansi += '\x1b[4m'; // Underline
-    if (style & (1 << 0)) ansi += '\x1b[7m'; // Reverse
+    if (style & 4) ansi += '\x1b[1m'; // Bold
+    if (style & 2) ansi += '\x1b[4m'; // Underline
+    if (style & 1) ansi += '\x1b[7m'; // Reverse
     
-    ansi += String.fromCharCode(ch);
+    ansi += String.fromCharCode(ch || 32);
     if (style !== 0) ansi += '\x1b[0m'; 
     
     this.xterm.write(ansi);

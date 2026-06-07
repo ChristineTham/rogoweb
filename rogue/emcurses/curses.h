@@ -82,7 +82,7 @@ extern "C"
  *
  */
 
-#if defined(__EMSCRIPTEN__)
+#if defined(ROGOWEB)
 # include <stdbool.h>
 #else
 typedef unsigned char bool;    /* PDCurses Boolean type */

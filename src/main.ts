@@ -30,6 +30,8 @@ const xterm = new XTerm({
   lineHeight: 1.0,
 });
 
+const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
+
 (window as any).xtermInstance = xterm;
 (window as any).Terminal = TerminalShim;
 (window as any).TermGlobals = TermGlobals;
@@ -269,19 +271,56 @@ const runLoginSequence = async (userName: string) => {
 
   // Trigger WASM main
   try {
-    const mainPromise = (window as any).Module.ccall('main', 'number', ['number', 'array'], [0, []], { async: true });
+    const Module = (window as any).Module;
     
-    mainPromise
-      .then((s: number) => handleExit(s))
-      .catch((e: any) => {
-        if (e && e.name !== 'ExitStatus') {
-          console.error("Engine crash:", e);
-          handleExit(-1);
-        }
-      });
+    // Set environment variable for the C code's getenv
+    // The WASM wrapper has been patched to pick this up via Module.ENV reference.
+    if (!Module.ENV) Module.ENV = {};
+    Module.ENV['USER'] = userName;
+    Module.ENV['LOGNAME'] = userName;
+
+    if (typeof Module._setenv === 'function') {
+      const userKeyPtr = Module.stackAlloc(5);
+      Module.stringToUTF8("USER", userKeyPtr, 5);
+      const userValPtr = Module.stackAlloc(userName.length * 4 + 1);
+      Module.stringToUTF8(userName, userValPtr, userName.length * 4 + 1);
+      Module._setenv(userKeyPtr, userValPtr, 1);
+
+      const logKeyPtr = Module.stackAlloc(8);
+      Module.stringToUTF8("LOGNAME", logKeyPtr, 8);
+      const logValPtr = Module.stackAlloc(userName.length * 4 + 1);
+      Module.stringToUTF8(userName, logValPtr, userName.length * 4 + 1);
+      Module._setenv(logKeyPtr, logValPtr, 1);
+    }
+
+    console.log(`Starting engine for user: ${userName} (Auto: ${isAuto})`);
+
+    const args = isAuto ? ['ZZ', '0', '0', userName] : ['-n', userName];
+    
+    // Use manual stack allocation to construct char** argv
+    // This provides exact control over arguments and avoids the non-async wrapper logic of callMain
+    const fullArgs = isAuto ? ['rogomatic', ...args] : ['rogue', ...args];
+    const argc = fullArgs.length;
+    const argv = Module.stackAlloc((argc + 1) * 4);
+    for (let i = 0; i < argc; i++) {
+      const strLen = fullArgs[i].length * 4 + 1; // Safe upper bound for UTF-8
+      const strPtr = Module.stackAlloc(strLen);
+      Module.stringToUTF8(fullArgs[i], strPtr, strLen);
+      Module.setValue(argv + i * 4, strPtr, 'i32');
+    }
+    Module.setValue(argv + argc * 4, 0, 'i32');
+
+    try {
+      Module._main(argc, argv);
+    } catch (e: any) {
+      if (e && e.name !== 'ExitStatus' && e !== 'unwind') {
+        console.error("Startup Error:", e);
+        handleExit(-1);
+      }
+    }
   } catch (e: any) {
     if (e && e.name !== 'ExitStatus') {
-      console.error("ccall error:", e);
+      console.error("Startup Error:", e);
       handleExit(-1);
     }
   }
@@ -360,11 +399,61 @@ const scheduleScaleTerminal = (delay = RESIZE_SETTLE_MS) => {
     void scaleTerminal();
   }, delay);
 };
+const handleExit = (_status: number) => {
+  const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
+  leds.forEach(id => document.getElementById(id)?.classList.remove('active'));
+
+  xterm.write('\r\n*** Press RETURN to continue ***\r\n');
+
+  const onDataListener = xterm.onData((data) => {
+    if (data === '\r' || data === '\n') {
+      onDataListener.dispose();
+      window.location.reload();
+    }
+  });
+};
+
+// Emscripten Configuration
+(window as any).Module = {
+  noInitialRun: true,
+  ENV: {},
+  TerminalShim: TerminalShim,
+  onRuntimeInitialized: () => {
+    console.log('WASM Runtime Initialized');
+    xterm.writeln('*** SYSTEM READY (Press START to begin) ***');
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.onclick = () => {
+        const userName = (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
+        localStorage.setItem('rogoweb-username', userName);
+        
+        // Ensure USER is set in ENV before callMain
+        if ((window as any).Module.ENV) {
+          (window as any).Module.ENV['USER'] = userName;
+        }
+
+        startBtn.disabled = true;
+        startBtn.innerText = 'ONLINE';
+        runLoginSequence(userName);
+      };
+    }
+  },
+  locateFile: (p: string) => p.endsWith('.wasm') ? '/rogoweb/wasm/' + p : p,
+  onExit: (s: number) => handleExit(s),
+  print: (text: string) => {
+    console.log('WASM stdout:', text);
+    xterm.writeln(text);
+  },
+  printErr: (text: string) => {
+    console.error('WASM stderr:', text);
+    xterm.writeln(`\x1b[31m${text}\x1b[0m`);
+  },
+};
 
 const terminalElement = document.getElementById('terminal');
 if (terminalElement) {
   xterm.open(terminalElement);
-  xterm.writeln('*** POWER OFF (Press START to play) ***');
+  xterm.writeln('*** POWERING ON... ***');
 
   // ACTIVATE CANVAS RENDERER
   try {
@@ -393,39 +482,11 @@ if (terminalElement) {
   });
 }
 
-const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
-
-// Emscripten Configuration
-(window as any).Module = {
-  noInitialRun: true,
-  onRuntimeInitialized: () => {
-    if (startBtn) {
-      startBtn.disabled = false;
-      startBtn.onclick = () => {
-        const userName = (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
-        startBtn.disabled = true;
-        startBtn.innerText = 'ONLINE';
-        runLoginSequence(userName);
-      };
-    }
-  },
-  locateFile: (p: string) => p.endsWith('.wasm') ? '/wasm/' + p : p,
-  onExit: (s: number) => handleExit(s),
-};
-
-const handleExit = (_status: number) => {
-  const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
-  leds.forEach(id => document.getElementById(id)?.classList.remove('active'));
-
-  setTimeout(() => {
-    xterm.write('\x1b[?1049l\x1b[H\x1b[2J');
-    xterm.writeln(`*** POWER OFF (Press START to play) ***`);
-    if (startBtn) {
-      startBtn.disabled = false;
-      startBtn.innerText = 'START';
-    }
-  }, 300);
-};
+const savedName = localStorage.getItem('rogoweb-username');
+const unixNameInput = document.getElementById('unix-name') as HTMLInputElement;
+if (unixNameInput && savedName) {
+  unixNameInput.value = savedName;
+}
 
 const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement;
 if (modeToggle) {
@@ -441,5 +502,5 @@ if (modeToggle) {
   };
 }
 const script = document.createElement('script');
-script.src = modeToggle?.checked ? '/wasm/rogomatic.js' : '/wasm/rogue.js';
+script.src = modeToggle?.checked ? '/rogoweb/wasm/rogomatic.js' : '/rogoweb/wasm/rogue.js';
 document.body.appendChild(script);

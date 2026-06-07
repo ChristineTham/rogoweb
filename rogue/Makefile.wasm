@@ -16,10 +16,10 @@ OBJS     = $(OBJS1) $(OBJS2)
 CC       = emcc
 # Asyncify is required for blocking terminal reads (getch)
 # Emulate function pointer casts for legacy K&R compatibility (fixes signature mismatch crashes)
-FEATURES = -DALLSCORES -DSCOREFILE=\"rogue.scr\" -DLOCKFILE=\"rogue.lck\" -D__EMSCRIPTEN__
+FEATURES = -DALLSCORES -DSCOREFILE=\"rogue.scr\" -DLOCKFILE=\"rogue.lck\" -D__EMSCRIPTEN__ -DROGOWEB
 CFLAGS   = -g3 -O0 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -Iemcurses -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
-           -s EMULATE_FUNCTION_POINTER_CASTS=1 -std=gnu89 -Wno-deprecated-non-prototype \
-           -s EXPORTED_FUNCTIONS="['_main', '_my_exit']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
+           -s EMULATE_FUNCTION_POINTER_CASTS=1 -std=gnu89 -Wno-deprecated-non-prototype -s EXIT_RUNTIME=1 \
+           -s EXPORTED_FUNCTIONS="['_main', '_my_exit', '_malloc', '_free', '_setenv']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'run', 'addFunction', 'stackAlloc', 'stackSave', 'stackRestore', 'getValue', 'setValue']"
 LIBS     = emcurses/emscripten/libpdcurses.a
 LDFLAGS  = --pre-js emcurses/emscripten/termlib.js
 OUTFLAG  = -o

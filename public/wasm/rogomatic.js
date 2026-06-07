@@ -8823,15 +8823,15 @@ var ASM_CONSTS = {
  93164: () => { return term.getKey(); },  
  93190: () => { term.inputChar = 0 },  
  93209: () => { term.close() },  
- 93222: () => { term = new Terminal({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
- 93403: ($0, $1) => { term.resizeTo($0, $1); },  
- 93430: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
- 93830: () => { throw 'SimulateInfiniteLoop' },  
- 93859: ($0, $1) => { term.resizeTo($0, $1); },  
- 93886: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
- 93954: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
- 94002: () => { term.cursorOn() },  
- 94018: () => { term.cursorOff() }
+ 93222: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
+ 93431: ($0, $1) => { term.resizeTo($0, $1); },  
+ 93458: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
+ 93858: () => { throw 'SimulateInfiniteLoop' },  
+ 93887: ($0, $1) => { term.resizeTo($0, $1); },  
+ 93914: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
+ 93982: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
+ 94030: () => { term.cursorOn() },  
+ 94046: () => { term.cursorOff() }
 };
 
 // Imports from the Wasm binary.

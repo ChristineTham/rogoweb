@@ -184,11 +184,15 @@ int wgetch(WINDOW *win)
     /* refresh window when wgetch is called if there have been changes 
        to it and it is not a pad */
 
-    if (!(win->_flags & _PAD) && ((!win->_leaveit &&
-         (win->_begx + win->_curx != SP->curscol ||
-          win->_begy + win->_cury != SP->cursrow)) || is_wintouched(win)))
+#ifdef ROGOWEB
+    if (!(win->_flags & _PAD) && is_wintouched(win))
         wrefresh(win);
-
+#else
+    if (!(win->_flags & _PAD) && ((!win->_leaveit &&
+        (win->_begx + win->_curx != SP->curscol ||
+            win->_begy + win->_cury != SP->cursrow)) || is_wintouched(win)))
+        wrefresh(win);
+#endif
     /* if ungotten char exists, remove and return it */
 
     if (c_ungind)

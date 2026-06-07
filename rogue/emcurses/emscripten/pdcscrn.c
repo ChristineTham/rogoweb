@@ -33,7 +33,11 @@ int PDC_scr_open(int argc, char **argv)
         return ERR;
 
     EM_ASM(
+#ifdef ROGOWEB
+        term = new (Module['TerminalShim'] || Terminal)({
+#else
         term = new Terminal({
+#endif
             termDiv: 'termDiv',
             handler: function() {},
             x: 0, y: 0,

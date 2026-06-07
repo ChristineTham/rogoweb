@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:emcurses": "make -C rogue/emcurses/emscripten CC=emcc AR=emar RANLIB=emranlib libs",
+    "build:rogue": "make -C rogue -f Makefile.wasm",
+    "build:rogomatic": "make -C rogomatic/src -f Makefile.wasm",
+    "build:wasm": "npm run build:emcurses && npm run build:rogue && npm run build:rogomatic",
+    "clean:wasm": "make -C rogue/emcurses/emscripten clean && make -C rogue -f Makefile.wasm clean && make -C rogomatic/src -f Makefile.wasm clean"
   },
   "devDependencies": {
     "@types/jsdom": "^28.0.3",

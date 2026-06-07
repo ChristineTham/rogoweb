@@ -56,4 +56,5 @@ To achieve a pure WASM port while overcoming these challenges:
 *   Add testing harnesses to simulate deterministic seeds and verify Rogomatic wins at expected rates.
 
 ## 5. Migration & Rollback Strategy
-*   We will use `#ifdef __EMSCRIPTEN__` blocks for all WASM-specific C modifications (e.g., the pipe replacements and asyncify hooks) to ensure the native desktop builds remain 100% intact and functional.
+*   We will use `#ifdef ROGOWEB` blocks for all WASM-specific C modifications (e.g., the pipe replacements and asyncify hooks) to ensure the native desktop builds remain 100% intact and functional.
+*   Avoid making changes to rogue and rogomatic source code unless absolutely necessary because they are legacy code that should be preserved.

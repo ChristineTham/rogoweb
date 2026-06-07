@@ -13,7 +13,7 @@ osdir		= $(PDCURSES_SRCDIR)/emscripten
 PDCURSES_EMSCRIPTEN_H	= $(osdir)/pdcemscripten.h
 
 # If your system doesn't have these, remove the defines here
-SFLAGS		+= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
+SFLAGS		+= -DHAVE_VSNPRINTF -DHAVE_VSSCANF -DROGOWEB
 
 ifeq ($(DEBUG),Y)
 	CFLAGS  = -g -Wall -DPDCDEBUG
