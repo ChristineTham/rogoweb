@@ -1,34 +1,36 @@
 import { describe, it, expect } from 'vitest';
 
 /**
- * MOCK ADAPTIVE LAYOUT LOGIC
+ * ADAPTIVE LAYOUT LOGIC FOR TESTING
  */
 const determineLayout = (containerW: number, containerH: number, targetW: number, targetH: number) => {
-  const MIN_STATS_W = 180;
-  const MIN_STATS_H = 120;
+  const MIN_STATS_W = 140;
+  const MIN_STATS_H = 110;
 
-  if (containerW >= targetW + MIN_STATS_W + 20) {
+  if (containerW >= targetW + MIN_STATS_W + 5) {
     return 'WIDE';
-  } else if (containerH >= targetH + MIN_STATS_H + 20) {
+  } else if (containerH >= targetH + MIN_STATS_H + 10) {
     return 'TALL';
   } else {
     return 'COMPACT';
   }
 };
 
-describe('Adaptive Stats Panel Layout', () => {
-  it('should use WIDE layout when horizontal space is available', () => {
-    const layout = determineLayout(1000, 500, 800, 480);
+describe('Adaptive Layout Engine', () => {
+  it('chooses WIDE layout when horizontal space accommodates stats panel', () => {
+    // target width = 640. MIN_STATS_W + 5 = 145. WIDE if containerW >= 785
+    const layout = determineLayout(800, 500, 640, 480);
     expect(layout).toBe('WIDE');
   });
 
-  it('should use TALL layout when vertical space is available but horizontal is not', () => {
-    const layout = determineLayout(800, 800, 800, 480);
+  it('chooses TALL layout when vertical space accommodates stats panel but horizontal does not', () => {
+    // target width = 640, height = 480. MIN_STATS_H + 10 = 120. TALL if containerH >= 600
+    const layout = determineLayout(700, 650, 640, 480);
     expect(layout).toBe('TALL');
   });
 
-  it('should use COMPACT layout when space is constrained', () => {
-    const layout = determineLayout(810, 490, 800, 480);
+  it('chooses COMPACT layout and hides stats when space is restricted', () => {
+    const layout = determineLayout(700, 500, 640, 480);
     expect(layout).toBe('COMPACT');
   });
 });

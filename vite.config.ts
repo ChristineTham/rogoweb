@@ -6,4 +6,8 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
+  test: {
+    include: ['src/**/*.spec.ts'],
+  },
 });
+
