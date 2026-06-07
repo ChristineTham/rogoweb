@@ -9,44 +9,44 @@
   <div id="app">
     <div class="vt100-workspace flex flex-col h-screen w-screen overflow-hidden">
       
-      <!-- RESPONSIVE TOP BAR (AUTHENTIC VT100 AESTHETICS) -->
-      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-2 py-0 flex items-center justify-between z-50 shrink-0 h-6">
+      <!-- RESPONSIVE TOP BAR (AUTHENTIC VT100 AESTHETICS - REFINED) -->
+      <header class="vt100-top-bar bg-vt-beige border-b border-vt-beige-dark px-1.5 py-0 flex items-center justify-between z-50 shrink-0 h-5">
         
-        <div class="flex items-center gap-4 shrink-0 h-full">
-          <div class="flex items-center gap-1.5 h-full">
-            <span class="rogoweb-title text-xl leading-none pt-0.5">rogoweb</span>
-            <div class="flex items-center gap-1 border-l border-black/10 pl-2 h-4">
-              <img src="/assets/dec-logo-blue.svg" alt="digital" class="h-4">
-              <span class="vt100-badge text-sm leading-none pt-0.5">VT100</span>
+        <div class="flex items-center gap-3 shrink-0 h-full">
+          <div class="flex items-center gap-1 h-full">
+            <span class="rogoweb-title text-base leading-none">rogoweb</span>
+            <div class="flex items-center gap-1 border-l border-black/10 pl-1.5 h-3">
+              <img src="/assets/dec-logo-blue.svg" alt="digital" class="h-3">
+              <span class="vt100-badge text-[10px] leading-none pt-0.5">VT100</span>
             </div>
           </div>
 
           <!-- VT100 STATUS LIGHTS (GROUPED WITH LOGO) -->
-          <div class="led-strip flex gap-2 ml-4">
-            <div id="led-l1" class="led green w-2 h-2"></div>
-            <div id="led-l2" class="led green w-2 h-2"></div>
-            <div id="led-l3" class="led green w-2 h-2"></div>
-            <div id="led-l4" class="led amber w-2 h-2"></div>
+          <div class="led-strip flex gap-1.5 ml-2">
+            <div id="led-l1" class="led green w-1.5 h-1.5"></div>
+            <div id="led-l2" class="led green w-1.5 h-1.5"></div>
+            <div id="led-l3" class="led green w-1.5 h-1.5"></div>
+            <div id="led-l4" class="led amber w-1.5 h-1.5"></div>
           </div>
         </div>
         
-        <div class="flex items-center gap-3 shrink-0 h-full">
+        <div class="flex items-center gap-2 shrink-0 h-full">
           <!-- USER & CONTROLS -->
-          <div class="flex items-center gap-1.5 h-full">
-            <label for="unix-name" class="led-label text-[8px] leading-none pt-0.5">USER</label>
-            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-16 h-4 px-1 py-0 text-[10px] border-black/20 bg-black/5 flex items-center">
+          <div class="flex items-center gap-1 h-full">
+            <label for="unix-name" class="led-label text-[7px] leading-none">USER</label>
+            <input type="text" id="unix-name" value="rogue" class="terminal-input m-0 w-14 h-3 px-1 py-0 text-[9px] border-black/20 bg-black/5 leading-none">
           </div>
           
-          <div class="flex items-center gap-1.5 bg-black/5 px-1.5 h-4 rounded-sm border border-black/5">
-             <span class="led-label text-[8px] whitespace-nowrap leading-none pt-0.5">MANUAL PLAY</span>
-             <label class="relative inline-flex items-center cursor-pointer scale-[0.6]">
+          <div class="flex items-center gap-1 bg-black/5 px-1 h-3.5 rounded-sm border border-black/5">
+             <span class="led-label text-[7px] whitespace-nowrap leading-none">MANUAL PLAY</span>
+             <label class="relative inline-flex items-center cursor-pointer scale-[0.55]">
                <input type="checkbox" id="mode-toggle" class="sr-only peer">
-               <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"></div>
+               <div class="w-5 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2 after:w-2 after:transition-all peer-checked:bg-dec-blue"></div>
              </label>
-             <span class="led-label text-[8px] whitespace-nowrap leading-none pt-0.5">ROGOMATIC</span>
+             <span class="led-label text-[7px] whitespace-nowrap leading-none">ROGOMATIC</span>
           </div>
 
-          <button id="btn-start" class="btn-industrial h-4 py-0 px-2 text-[9px] w-auto m-0 shadow-none border flex items-center justify-center" disabled>START GAME</button>
+          <button id="btn-start" class="btn-industrial h-3.5 py-0 px-1 text-[8px] w-auto m-0 shadow-none border flex items-center justify-center leading-none" disabled>START GAME</button>
         </div>
 
       </header>
