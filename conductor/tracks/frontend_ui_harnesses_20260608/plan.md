@@ -1,10 +1,10 @@
 # Implementation Plan: Phase 6 - Frontend UI & Harnesses
 
-## Phase 1: Core UI Structure and Styling
-- [ ] Task: Create tests for basic VT100 dashboard DOM layout
-- [ ] Task: Implement HTML structure for VT100 bezel, terminal container, stats panel, log pane, and controls
-- [ ] Task: Apply CSS styling for industrial/retro VT100 aesthetic
-- [ ] Task: Conductor - User Manual Verification 'Core UI Structure and Styling' (Protocol in workflow.md)
+## Phase 1: Core UI Structure and Styling [checkpoint: 15bbe2f]
+- [x] Task: Create tests for basic VT100 dashboard DOM layout 15bbe2f
+- [x] Task: Implement HTML structure for VT100 bezel, terminal container, stats panel, log pane, and controls 15bbe2f
+- [x] Task: Apply CSS styling for industrial/retro VT100 aesthetic 15bbe2f
+- [x] Task: Conductor - User Manual Verification 'Core UI Structure and Styling' (Protocol in workflow.md) 15bbe2f
 
 ## Phase 2: Transport Controls (Rogue & Rog-O-Matic)
 - [ ] Task: Create tests for transport control event listeners (Start, Stop, Pause)
