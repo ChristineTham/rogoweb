@@ -116,7 +116,6 @@ class SharedIPC {
  */
 class HeadlessTerminal {
   constructor(conf) {
-    console.log('HeadlessTerminal initialized', conf);
     this.conf = conf || { rows: 24, cols: 80 };
     if (!this.conf.rows) this.conf.rows = 24;
     if (!this.conf.cols) this.conf.cols = 80;
@@ -141,7 +140,6 @@ class HeadlessTerminal {
     if (!ipc) return 0;
     const buf = new Uint8Array(1);
     if (ipc.rogomaticToRogue.read(buf) === 1) {
-      console.log(`HeadlessTerminal: Rogue READ key: ${buf[0]} ('${String.fromCharCode(buf[0])}')`);
       return buf[0];
     }
     return 0;
