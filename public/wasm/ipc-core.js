@@ -40,16 +40,23 @@ class SharedRingBuffer {
   }
 
   /**
-   * Reads data from the buffer.
+   * Reads data from the buffer. Blocks if empty.
    * @returns The number of bytes read.
    */
-  read(dest) {
-    const head = Atomics.load(this.head, 0);
-    const tail = Atomics.load(this.tail, 0);
+  read(dest, block = false) {
+    let head = Atomics.load(this.head, 0);
+    let tail = Atomics.load(this.tail, 0);
 
-    const available = this.getAvailableReadInternal(head, tail);
+    let available = this.getAvailableReadInternal(head, tail);
+    
+    if (available === 0 && block) {
+      // Wait for tail to change (indicating data written)
+      Atomics.wait(this.tail, 0, tail);
+      tail = Atomics.load(this.tail, 0);
+      available = this.getAvailableReadInternal(head, tail);
+    }
+
     const toRead = Math.min(dest.length, available);
-
     if (toRead === 0) return 0;
 
     for (let i = 0; i < toRead; i++) {
@@ -119,22 +126,57 @@ class HeadlessTerminal {
     this.styleBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
     this.lock = false;
     this.closed = false;
+    this.cursorRow = 0;
+    this.cursorCol = 0;
+    self.term = this; // Global for emcurses
   }
   open() { if (this.initHandler) this.initHandler(); }
   close() { this.closed = true; }
-  hasInput() { return false; }
-  getKey() { return 0; }
+  hasInput() { return this.ipc && this.ipc.rogomaticToRogue.getAvailableRead() > 0; }
+  getKey() {
+    if (!this.ipc) return 0;
+    const buf = new Uint8Array(1);
+    // Non-blocking for poll
+    if (this.ipc.rogomaticToRogue.read(buf) === 1) {
+      return buf[0];
+    }
+    return 0;
+  }
   setChar(ch, row, col, style) {
     if (row >= 0 && row < this.maxLines && col >= 0 && col < this.maxCols) {
       this.charBuf[row][col] = ch;
       this.styleBuf[row][col] = style;
+      
+      // Emit VT100 codes to Rogue->Rogomatic pipe
+      if (this.ipc) {
+        // Move to position
+        this.writeToPipe(`\x1b[${row + 1};${col + 1}H`);
+        // Set style (simplified)
+        if (style !== 0) this.writeToPipe('\x1b[7m'); // Assume inverse for now
+        this.writeToPipe(String.fromCharCode(ch || 32));
+        if (style !== 0) this.writeToPipe('\x1b[0m');
+      }
     }
   }
-  cursorSet(row, col) { }
+  cursorSet(row, col) {
+    this.cursorRow = row;
+    this.cursorCol = col;
+    if (this.ipc) {
+       this.writeToPipe(`\x1b[${row + 1};${col + 1}H`);
+    }
+  }
   cursorOn() { }
   cursorOff() { }
   clear() {
     this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
+    if (this.ipc) {
+       this.writeToPipe('\x1b[2J\x1b[H');
+    }
+  }
+  writeToPipe(str) {
+    if (!this.ipc) return;
+    const data = new TextEncoder().encode(str);
+    this.ipc.rogueToRogomatic.write(data);
   }
 }
 

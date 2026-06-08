@@ -22,6 +22,9 @@ self.onmessage = (e: MessageEvent) => {
     const SharedIPC = (self as any).SharedIPC;
     ipc = new SharedIPC(sab);
 
+    const term = new ((self as any).Terminal)();
+    term.ipc = ipc;
+
     (self as any).Module = {
       noInitialRun: true,
       ENV: { USER: userName, LOGNAME: userName },
@@ -29,7 +32,7 @@ self.onmessage = (e: MessageEvent) => {
       wasm_pipe_read: (_fd: number, ptr: number, count: number) => {
         if (!ipc) return 0;
         const dest = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-        const read = ipc.rogomaticToRogue.read(dest);
+        const read = ipc.rogomaticToRogue.read(dest, true); // BLOCKING READ
         if (read > 0) {
           console.log(`Rogue Worker: READ ${read} bytes from Rogomatic:`, new TextDecoder().decode(dest.subarray(0, read)));
         }
