@@ -24,11 +24,11 @@
 - [x] Task: Conductor - User Manual Verification 'Synchronization Triggers and JS Hooks' (Protocol in workflow.md) [e4ddd11]
 
 ## Phase 3: Error Handling and Notifications
-- [~] Task: Implement IDBFS Error Catching
-    - [ ] Wrap the `FS.mount` and `FS.syncfs` calls in try/catch blocks or check their callback error arguments.
-- [ ] Task: Relay Errors to Main Thread
-    - [ ] If an error occurs, post a message (`postMessage`) from the worker to the main thread indicating a persistence failure.
-- [ ] Task: Display UI Notification
-    - [ ] In the main thread, listen for persistence error messages.
-    - [ ] Display a non-intrusive UI toast or banner warning the user that their data will not be saved (e.g., due to incognito mode).
-- [ ] Task: Conductor - User Manual Verification 'Error Handling and Notifications' (Protocol in workflow.md)
+- [x] Task: Implement IDBFS Error Catching [e96b95a]
+    - [x] Wrap the `FS.mount` and `FS.syncfs` calls in try/catch blocks or check their callback error arguments. [e96b95a]
+- [x] Task: Relay Errors to Main Thread [e96b95a]
+    - [x] If an error occurs, post a message (`postMessage`) from the worker to the main thread indicating a persistence failure. [e96b95a]
+- [x] Task: Display UI Notification [e96b95a]
+    - [x] In the main thread, listen for persistence error messages. [e96b95a]
+    - [x] Display a non-intrusive UI toast or banner warning the user that their data will not be saved (e.g., due to incognito mode). [e96b95a]
+- [~] Task: Conductor - User Manual Verification 'Error Handling and Notifications' (Protocol in workflow.md)
