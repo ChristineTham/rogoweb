@@ -74,11 +74,17 @@ char *
 getname (void)
 {
   static char name[100];
+#ifdef ROGOWEB
+  char *user = getenv("USER");
+  if (user) strncpy(name, user, 100);
+  else strcpy(name, "rogue");
+#else
   int   i;
   struct passwd *passwd;
 
   passwd = getpwuid (getuid ());
   strncpy (name, passwd->pw_name, 100);
+#endif
 //  getpw (getuid (), name);
 //  i = 0;
 //  while (name[i] != ':' && name[i] != ',')
