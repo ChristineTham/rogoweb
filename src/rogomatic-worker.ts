@@ -2,8 +2,10 @@
 declare var Module: any;
 declare var importScripts: (...args: string[]) => void;
 
+let ipc: any = null;
+
 self.onmessage = (e: MessageEvent) => {
-  const { type, userName } = e.data;
+  const { type, sab, userName } = e.data;
 
   if (type === 'init') {
     importScripts('/rogoweb/wasm/ipc-core.js');
@@ -34,7 +36,7 @@ self.onmessage = (e: MessageEvent) => {
       },
       onRuntimeInitialized: () => {
         console.log('Rogomatic Worker: WASM Runtime Initialized');
-        (self as any).Module.callMain(['ZZ', '0', '0', userName]);
+        Module.callMain(['ZZ', '0', '0', userName]);
       },
       locateFile: (path: string) => {
         if (path.endsWith('.wasm')) {
