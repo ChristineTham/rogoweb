@@ -4,6 +4,11 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
+- [ ] **Track: Phase 4: Virtual Pipe IPC Integration. Implement a SharedArrayBuffer ring buffer in JavaScript. Expose C-level hooks in both WASM modules. Connect Worker streams.**
+  _Link: [./tracks/virtual_pipe_ipc_20260608/](./tracks/virtual_pipe_ipc_20260608/)_
+
+---
+
 ## Archived Tracks
 
 - [x] **Track: Phase 3: Rogomatic WASM Port. Modify rogomatic build to target WASM. Refactor setup.c to remove fork/exec. Audit ltm.c and gene.c for 32-bit dependencies.**

@@ -1,0 +1,8 @@
+{
+  "track_id": "virtual_pipe_ipc_20260608",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-08T13:05:00Z",
+  "updated_at": "2026-06-08T13:05:00Z",
+  "description": "Phase 4: Virtual Pipe IPC Integration. Implement a SharedArrayBuffer ring buffer in JavaScript. Expose C-level hooks in both WASM modules. Connect Worker streams."
+}
