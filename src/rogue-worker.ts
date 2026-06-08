@@ -41,6 +41,6 @@ self.onmessage = (e: MessageEvent) => {
       printErr: (text: string) => console.error('Rogue stderr:', text),
     };
 
-    import('/rogoweb/wasm/rogue.js');
+    import(/* @vite-ignore */ '/rogoweb/wasm/rogue.js');
   }
 };

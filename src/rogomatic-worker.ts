@@ -42,6 +42,6 @@ self.onmessage = (e: MessageEvent) => {
       printErr: (text: string) => console.error('Rogomatic stderr:', text),
     };
 
-    import('/rogoweb/wasm/rogomatic.js');
+    import(/* @vite-ignore */ '/rogoweb/wasm/rogomatic.js');
   }
 };
