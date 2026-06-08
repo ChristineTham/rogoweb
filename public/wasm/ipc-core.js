@@ -111,6 +111,8 @@ class HeadlessTerminal {
   constructor(conf) {
     console.log('HeadlessTerminal initialized', conf);
     this.conf = conf || { rows: 24, cols: 80 };
+    if (!this.conf.rows) this.conf.rows = 24;
+    if (!this.conf.cols) this.conf.cols = 80;
     this.maxLines = this.conf.rows || 24;
     this.maxCols = this.conf.cols || 80;
     this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
@@ -120,6 +122,8 @@ class HeadlessTerminal {
   }
   open() { if (this.initHandler) this.initHandler(); }
   close() { this.closed = true; }
+  hasInput() { return false; }
+  getKey() { return 0; }
   setChar(ch, row, col, style) {
     if (row >= 0 && row < this.maxLines && col >= 0 && col < this.maxCols) {
       this.charBuf[row][col] = ch;

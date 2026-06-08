@@ -29,12 +29,20 @@ self.onmessage = (e: MessageEvent) => {
       wasm_pipe_read: (_fd: number, ptr: number, count: number) => {
         if (!ipc) return 0;
         const dest = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-        return ipc.rogomaticToRogue.read(dest);
+        const read = ipc.rogomaticToRogue.read(dest);
+        if (read > 0) {
+          console.log(`Rogue Worker: READ ${read} bytes from Rogomatic:`, new TextDecoder().decode(dest.subarray(0, read)));
+        }
+        return read;
       },
       wasm_pipe_write: (_fd: number, ptr: number, count: number) => {
         if (!ipc) return 0;
         const src = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-        return ipc.rogueToRogomatic.write(src);
+        const written = ipc.rogueToRogomatic.write(src);
+        if (written > 0) {
+          console.log(`Rogue Worker: WROTE ${written} bytes to Rogomatic:`, new TextDecoder().decode(src.subarray(0, written)));
+        }
+        return written;
       },
       onRuntimeInitialized: () => {
         console.log('Rogue Worker: WASM Runtime Initialized');

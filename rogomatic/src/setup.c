@@ -150,7 +150,7 @@ main (int argc, char *argv[])
     extern int player_main(int argc, char *argv[]);
 
     player_argv[0] = "player";
-    player_argv[1] = "ZZ"; /* placeholder for pipes */
+    player_argv[1] = "aa"; /* placeholder for pipes (avoid 'Z' which triggers replay) */
     player_argv[2] = "0";  /* placeholder for pid */
     player_argv[3] = options;
     player_argv[4] = roguename;

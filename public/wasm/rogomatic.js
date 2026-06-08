@@ -4068,7 +4068,7 @@ function updateMemoryViews() {
   var b = wasmMemory.buffer;
   HEAP8 = new Int8Array(b);
   HEAP16 = new Int16Array(b);
-  HEAPU8 = new Uint8Array(b);
+  Module['HEAPU8'] = HEAPU8 = new Uint8Array(b);
   HEAPU16 = new Uint16Array(b);
   HEAP32 = new Int32Array(b);
   HEAPU32 = new Uint32Array(b);
@@ -8599,6 +8599,7 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
       return ret;
     };
 
+
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.preloadFile = FS_preloadFile;
   FS.staticInit();;
@@ -8818,7 +8819,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'INT53_MIN',
   'bigintToI53Checked',
   'HEAP8',
-  'HEAPU8',
   'HEAP16',
   'HEAPU16',
   'HEAP32',
@@ -9075,26 +9075,26 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onSbrkGrow');
 }
 var ASM_CONSTS = {
-  93484: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
- 93533: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
- 93583: ($0, $1) => { term.cursorSet($0, $1); },  
- 93611: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
- 93645: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
- 93709: () => { return term.conf.rows; },  
- 93736: () => { return term.conf.cols; },  
- 93763: () => { return term.hasInput(); },  
- 93791: () => { return term.getKey(); },  
- 93817: () => { term.inputChar = 0 },  
- 93836: () => { term.close() },  
- 93849: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
- 94058: ($0, $1) => { term.resizeTo($0, $1); },  
- 94085: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
- 94485: () => { throw 'SimulateInfiniteLoop' },  
- 94514: ($0, $1) => { term.resizeTo($0, $1); },  
- 94541: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
- 94609: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
- 94657: () => { term.cursorOn() },  
- 94673: () => { term.cursorOff() }
+  93500: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
+ 93549: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
+ 93599: ($0, $1) => { term.cursorSet($0, $1); },  
+ 93627: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
+ 93661: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
+ 93725: () => { return term.conf.rows; },  
+ 93752: () => { return term.conf.cols; },  
+ 93779: () => { return term.hasInput(); },  
+ 93807: () => { return term.getKey(); },  
+ 93833: () => { term.inputChar = 0 },  
+ 93852: () => { term.close() },  
+ 93865: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
+ 94074: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94101: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
+ 94501: () => { throw 'SimulateInfiniteLoop' },  
+ 94530: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94557: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
+ 94625: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
+ 94673: () => { term.cursorOn() },  
+ 94689: () => { term.cursorOff() }
 };
 
 // Imports from the Wasm binary.

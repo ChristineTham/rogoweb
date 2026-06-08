@@ -29,16 +29,24 @@ self.onmessage = (e: MessageEvent) => {
       wasm_pipe_read: (_fd: number, ptr: number, count: number) => {
         if (!ipc) return 0;
         const dest = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-        return ipc.rogueToRogomatic.read(dest);
+        const read = ipc.rogueToRogomatic.read(dest);
+        if (read > 0) {
+          console.log(`Rogomatic Worker: READ ${read} bytes from Rogue:`, new TextDecoder().decode(dest.subarray(0, read)));
+        }
+        return read;
       },
       wasm_pipe_write: (_fd: number, ptr: number, count: number) => {
         if (!ipc) return 0;
         const src = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-        return ipc.rogomaticToRogue.write(src);
+        const written = ipc.rogomaticToRogue.write(src);
+        if (written > 0) {
+          console.log(`Rogomatic Worker: WROTE ${written} bytes to Rogue:`, new TextDecoder().decode(src.subarray(0, written)));
+        }
+        return written;
       },
       onRuntimeInitialized: () => {
         console.log('Rogomatic Worker: WASM Runtime Initialized');
-        Module.callMain(['ZZ', '0', '0', userName]);
+        Module.callMain(['aa', '0', '0', userName]);
       },
       locateFile: (path: string) => {
         if (path.endsWith('.wasm')) {

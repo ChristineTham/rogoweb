@@ -21,7 +21,7 @@ LDFLAGS  = --pre-js ../../emcurses/emscripten/termlib.js \
            -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
            -s EMULATE_FUNCTION_POINTER_CASTS=1 \
            -s EXPORTED_FUNCTIONS="['_main', '_wasm_pipe_read', '_wasm_pipe_write']" \
-           -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
+           -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction', 'HEAPU8']"
 OUTFLAG  = -o
 EXE      = .js
 
