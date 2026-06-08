@@ -62,12 +62,18 @@ self.onmessage = (e: MessageEvent) => {
           mkdirSync('/var/games/rogomatic');
 
           console.log('Rogomatic Worker: Mounting IDBFS...');
-          FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+          try {
+            FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+          } catch (e: any) {
+            console.error('Rogomatic Worker: IDBFS mount failed:', e);
+            self.postMessage({ type: 'fs_error', message: 'Failed to mount persistent storage.' });
+          }
 
           console.log('Rogomatic Worker: Starting IDBFS sync...');
           FS.syncfs(true, (err: any) => {
             if (err) {
               console.error('Rogomatic Worker: IDBFS syncfs(true) failed:', err);
+              self.postMessage({ type: 'fs_error', message: 'Failed to synchronize persistent storage.' });
             } else {
               console.log('Rogomatic Worker: IDBFS synced');
             }

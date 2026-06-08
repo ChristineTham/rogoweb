@@ -282,6 +282,14 @@ const runLoginSequence = async (userName: string) => {
     const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
     const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
 
+    const handleWorkerError = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'fs_error') {
+        showPersistenceError();
+      }
+    };
+    rogueWorker.onmessage = handleWorkerError;
+    rogomaticWorker.onmessage = handleWorkerError;
+
     rogueWorker.postMessage({ type: 'init', sab, userName });
     rogomaticWorker.postMessage({ type: 'init', sab, userName });
 
@@ -427,6 +435,30 @@ const scheduleScaleTerminal = (delay = RESIZE_SETTLE_MS) => {
     void scaleTerminal();
   }, delay);
 };
+
+let hasShownPersistenceError = false;
+const showPersistenceError = () => {
+  if (hasShownPersistenceError) return;
+  hasShownPersistenceError = true;
+  
+  const toast = document.createElement('div');
+  toast.className = 'fixed top-4 right-4 bg-red-900 border border-red-500 text-white px-4 py-3 rounded shadow-lg z-50 animate-pulse';
+  toast.innerHTML = `
+    <div class="flex items-center">
+      <svg class="w-6 h-6 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      <div>
+        <p class="font-bold font-mono text-sm tracking-wider">PERSISTENCE ERROR</p>
+        <p class="text-xs text-red-200 mt-1">Browser storage is unavailable. Your progress will not be saved. (Incognito mode?)</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove('animate-pulse');
+    setTimeout(() => toast.remove(), 8000);
+  }, 2000);
+};
+
 const handleExit = (_status: number) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
   leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
@@ -465,12 +497,21 @@ const handleExit = (_status: number) => {
       mkdirSync('/var/games/rogomatic');
 
       console.log('Main Thread: Mounting IDBFS...');
-      FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+      try {
+        FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+      } catch (e: any) {
+        console.error('Main Thread: IDBFS mount failed:', e);
+        showPersistenceError();
+      }
 
       console.log('Main Thread: Starting IDBFS sync...');
       FS.syncfs(true, (err: any) => {
-        if (err) console.error('Main Thread: IDBFS syncfs(true) failed:', err);
-        else console.log('Main Thread: IDBFS synced');
+        if (err) {
+          console.error('Main Thread: IDBFS syncfs(true) failed:', err);
+          showPersistenceError();
+        } else {
+          console.log('Main Thread: IDBFS synced');
+        }
 
         const scoreFile = '/var/games/rogomatic/rogue.scr';
         try {
