@@ -16,7 +16,7 @@ OBJS     = $(OBJS1) $(OBJS2)
 CC       = emcc
 # Asyncify is required for blocking terminal reads (getch)
 # Emulate function pointer casts for legacy K&R compatibility (fixes signature mismatch crashes)
-FEATURES = -DALLSCORES -DSCOREFILE=\"rogue.scr\" -DLOCKFILE=\"rogue.lck\" -D__EMSCRIPTEN__ -DROGOWEB
+FEATURES = -DALLSCORES -DSCOREFILE=\"/var/games/rogomatic/rogue.scr\" -DLOCKFILE=\"/var/games/rogomatic/rogue.lck\" -D__EMSCRIPTEN__ -DROGOWEB
 CFLAGS   = -g3 -O0 -std=gnu89 -Wno-deprecated-non-prototype -I../emcurses           
 LIBS     = ../emcurses/emscripten/libpdcurses.a
 LDFLAGS  = --pre-js ../emcurses/emscripten/termlib.js \
