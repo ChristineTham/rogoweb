@@ -32,3 +32,45 @@
     @apply h-full w-full;
   }
 }
+
+/* =========================================
+   VT100 INDUSTRIAL COMPONENTS
+========================================= */
+@layer components {
+  .btn-industrial {
+    @apply border-2 border-black/60 shadow-[2px_2px_0_rgba(0,0,0,0.5),_inset_1px_1px_0_rgba(255,255,255,0.2)] 
+           hover:bg-[#444] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 
+           font-black tracking-widest uppercase disabled:opacity-30 disabled:pointer-events-none;
+  }
+
+  .panel-block {
+    @apply bg-vt-beige-dark border-2 border-black/40 rounded-sm shadow-[inset_1px_1px_2px_rgba(255,255,255,0.3),_2px_2px_4px_rgba(0,0,0,0.3)];
+  }
+
+  .panel-label {
+    @apply text-[#333] drop-shadow-[0_1px_0_rgba(255,255,255,0.4)];
+  }
+
+  .readout-value {
+    @apply border border-black/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)];
+    font-family: 'VT323', monospace;
+  }
+
+  .terminal-input {
+    @apply focus:outline-none focus:ring-1 focus:ring-vt-led-amber/50;
+  }
+
+  /* Custom scrollbar for retro look */
+  #observer-log::-webkit-scrollbar {
+    width: 8px;
+  }
+  #observer-log::-webkit-scrollbar-track {
+    @apply bg-[#222];
+  }
+  #observer-log::-webkit-scrollbar-thumb {
+    @apply bg-[#444] border border-black/50;
+  }
+  #observer-log::-webkit-scrollbar-thumb:hover {
+    @apply bg-[#555];
+  }
+}

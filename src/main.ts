@@ -32,6 +32,10 @@ const xterm = new XTerm({
 });
 
 const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
+const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement;
+const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement;
+const runTestBtn = document.getElementById('btn-run-test') as HTMLButtonElement;
+const seedInput = document.getElementById('seed-input') as HTMLInputElement;
 
 (window as any).xtermInstance = xterm;
 (window as any).Terminal = TerminalShim;
@@ -41,6 +45,8 @@ const nextFrame = () =>
   new Promise<void>((resolve) => {
     requestAnimationFrame(() => resolve());
   });
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const settleRender = () =>
   new Promise<void>((resolve) => {
@@ -217,8 +223,6 @@ const settleBestTerminalFit = async (containerW: number, containerH: number, run
 /**
  * ASYNCHRONOUS LOGIN SIMULATION
  */
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const simulateTyping = async (text: string, speed = 100) => {
   for (const char of text) {
     xterm.write(char);
@@ -235,6 +239,15 @@ const runLoginSequence = async (userName: string) => {
 
   if (l1) l1.classList.add('active');
   if (l3) l3.classList.add('active'); // Start with green health
+
+  // SEED HANDLING
+  const seedValue = seedInput?.value;
+  if (seedValue) {
+    const Module = (window as any).Module;
+    if (Module && !Module.ENV) Module.ENV = {};
+    if (Module) Module.ENV['SEED'] = seedValue;
+    console.log(`Main Thread: Using custom seed ${seedValue}`);
+  }
 
   // xterm.reset();
   // await sleep(800);
@@ -545,7 +558,38 @@ const handleExit = (_status: number) => {
 
           startBtn.disabled = true;
           startBtn.innerText = 'ONLINE';
+
+          if (stopBtn) stopBtn.disabled = false;
+          if (pauseBtn) pauseBtn.disabled = false;
+
           runLoginSequence(userName);
+        };
+      }
+
+      if (stopBtn) {
+        stopBtn.onclick = () => {
+          window.location.reload();
+        };
+      }
+
+      if (pauseBtn) {
+        pauseBtn.onclick = () => {
+          if (pauseBtn.innerText === 'PAUSE') {
+            pauseBtn.innerText = 'RESUME';
+            pauseBtn.classList.add('active');
+          } else {
+            pauseBtn.innerText = 'PAUSE';
+            pauseBtn.classList.remove('active');
+            xterm.focus();
+          }
+        };
+      }
+
+      if (runTestBtn) {
+        runTestBtn.onclick = () => {
+          if (startBtn && !startBtn.disabled) {
+            startBtn.click();
+          }
         };
       }
     }

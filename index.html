@@ -82,13 +82,29 @@
               >
             </div>
 
-            <button
-              id="btn-start"
-              class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center"
-              disabled
-            >
-              START
-            </button>
+            <div class="flex items-center gap-1 shrink-0">
+              <button
+                id="btn-start"
+                class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center"
+                disabled
+              >
+                START
+              </button>
+              <button
+                id="btn-pause"
+                class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center"
+                disabled
+              >
+                PAUSE
+              </button>
+              <button
+                id="btn-stop"
+                class="btn-industrial bg-[#333] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center h-3 py-0 px-2 text-sm w-auto m-0 shadow-none border border-black leading-none self-center"
+                disabled
+              >
+                STOP
+              </button>
+            </div>
           </div>
         </header>
 
@@ -180,6 +196,49 @@
                     class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none"
                     >0</span
                   >
+                </div>
+              </section>
+
+              <!-- OBSERVER LOG PANE -->
+              <section class="border-t border-black/10 pt-1.5">
+                <span
+                  class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
+                  >OBSERVER LOG</span
+                >
+                <div
+                  id="observer-log"
+                  class="w-full h-32 bg-[#111] text-p4-white font-mono text-[9px] p-1 border border-black/30 rounded-sm overflow-y-auto [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                >
+                  <div class="text-[#0f0] opacity-50 italic">System ready...</div>
+                </div>
+              </section>
+
+              <!-- TESTING HARNESS -->
+              <section class="border-t border-black/10 pt-1.5">
+                <span
+                  class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
+                  >TEST HARNESS</span
+                >
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex flex-col gap-0.5">
+                    <label
+                      for="seed-input"
+                      class="readout-label text-[10px] text-[#555] font-black uppercase leading-none"
+                      >RANDOM SEED</label
+                    >
+                    <input
+                      type="text"
+                      id="seed-input"
+                      class="terminal-input w-full h-4 p-1 text-xs rounded-sm text-white border border-black/50 bg-[#222] leading-none"
+                      placeholder="e.g. 12345"
+                    />
+                  </div>
+                  <button
+                    id="btn-run-test"
+                    class="btn-industrial bg-dec-blue text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-[10px] h-4 w-full shadow-none border border-black leading-none"
+                  >
+                    RUN TEST
+                  </button>
                 </div>
               </section>
             </div>
