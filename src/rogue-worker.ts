@@ -41,6 +41,6 @@ self.onmessage = (e: MessageEvent) => {
       printErr: (text: string) => console.error('Rogue stderr:', text),
     };
 
-    importScripts('/rogoweb/wasm/rogue.js');
+    import('/rogoweb/wasm/rogue.js');
   }
 };
