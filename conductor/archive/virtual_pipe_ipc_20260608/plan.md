@@ -1,0 +1,25 @@
+# Implementation Plan: Phase 4 - Virtual Pipe IPC Integration
+
+## Phase 1: JavaScript Ring Buffer Implementation [checkpoint: c2c6660]
+
+- [x] Task: Implement `SharedArrayBuffer` ring buffer in TypeScript. 0481e53
+    - [x] Sub-task: Create a TypeScript class/module for a bidirectional ring buffer utilizing a single `SharedArrayBuffer` and `Atomics` for thread-safe operations. 0481e53
+    - [x] Sub-task: Write isolated unit tests (using Vitest) to verify ring buffer logic, including read/write boundaries, overflow, and underflow conditions. 0481e53
+- [x] Task: Conductor - User Manual Verification 'Phase 1: JavaScript Ring Buffer Implementation' (Protocol in workflow.md) c2c6660
+
+## Phase 2: C-Level Hooks & WASM Export [checkpoint: c10d362]
+
+- [x] Task: Implement WASM pipe hooks in C. 8bcb717
+    - [x] Sub-task: Create C source files defining `wasm_pipe_read()` and `wasm_pipe_write()` designed to interface with the JS `SharedArrayBuffer`. 8bcb717
+    - [x] Sub-task: Replace standard `read()` and `write()` calls in Rogue and Rogomatic's IPC logic with these new hooks, wrapped in `#ifdef ROGOWEB`. 8bcb717
+    - [x] Sub-task: Update `Makefile.wasm` for both projects to include the new C files and export the functions via `EXPORTED_FUNCTIONS`. 65b50a9
+- [x] Task: Conductor - User Manual Verification 'Phase 2: C-Level Hooks & WASM Export' (Protocol in workflow.md) c10d362
+
+## Phase 3: Worker Integration & IPC Testing [checkpoint: <placeholder>]
+
+- [x] Task: Connect Workers and perform End-to-End Handshake. [DONE]
+    - [x] Sub-task: Create a minimal WASM IPC test harness to verify bidirectional communication between two simulated workers. 58aa85c
+    - [x] Sub-task: Update `main.ts` and the worker instantiation scripts to create the shared SAB and pass it to both the Rogue and Rogomatic workers upon startup. 65455c8
+    - [x] Sub-task: Verify that Rogomatic successfully completes its initial handshake with Rogue via the virtual pipes.
+        - Verified via worker logs: bidirectional VT100 stream established.
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Worker Integration & IPC Testing' (Protocol in workflow.md) <placeholder>

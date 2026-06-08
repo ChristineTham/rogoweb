@@ -4,17 +4,15 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [x] **Track: Phase 4: Virtual Pipe IPC Integration. Implement a SharedArrayBuffer ring buffer in JavaScript. Expose C-level hooks in both WASM modules. Connect Worker streams.**
-  _Link: [./tracks/virtual_pipe_ipc_20260608/](./tracks/virtual_pipe_ipc_20260608/)_
-
----
-
 - [ ] **Track: Phase 5: File System Persistence. Configure Emscripten's FS.mkdir('/var/games/rogomatic') and FS.mount(IDBFS, ...). Implement a JS hook to call FS.syncfs(false) whenever a game ends or a gene pool is updated.**
   _Link: [./tracks/file_system_persistence_20260608/](./tracks/file_system_persistence_20260608/)_
 
 ---
 
 ## Archived Tracks
+
+- [x] **Track: Phase 4: Virtual Pipe IPC Integration. Implement a SharedArrayBuffer ring buffer in JavaScript. Expose C-level hooks in both WASM modules. Connect Worker streams.**
+  _Link: [./archive/virtual_pipe_ipc_20260608/](./archive/virtual_pipe_ipc_20260608/)_
 
 - [x] **Track: Phase 3: Rogomatic WASM Port. Modify rogomatic build to target WASM. Refactor setup.c to remove fork/exec. Audit ltm.c and gene.c for 32-bit dependencies.**
   _Link: [./archive/wasm_port_20260608/](./archive/wasm_port_20260608/)_
