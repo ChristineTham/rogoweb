@@ -9,6 +9,11 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
+- [ ] **Track: Phase 3: Rogomatic WASM Port. Modify rogomatic build to target WASM. Refactor setup.c to remove fork/exec. Audit ltm.c and gene.c for 32-bit dependencies.**
+  _Link: [./tracks/wasm_port_20260608/](./tracks/wasm_port_20260608/)_
+
+---
+
 ## Archived Tracks
 
 - [x] **Track: VT100 UI and UX design for rogomatic**
