@@ -159,7 +159,8 @@ saveltm (int score)
 
 #ifdef ROGOWEB
   printf("Rogomatic: LTM saved, triggering sync...\n");
-  EM_ASM(if (self.syncFS) self.syncFS());
+  void trigger_syncfs(void);
+  trigger_syncfs();
 #endif
 }
 

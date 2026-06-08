@@ -236,11 +236,8 @@ const runLoginSequence = async (userName: string) => {
   if (l1) l1.classList.add('active');
   if (l3) l3.classList.add('active'); // Start with green health
 
-  xterm.reset();
-  xterm.writeln('4.2 BSD UNIX (ucbvax) (tty01)');
-  await sleep(500);
-  xterm.write('login: ');
-  await sleep(800);
+  // xterm.reset();
+  // await sleep(800);
   await simulateTyping(userName);
   xterm.writeln('');
 
@@ -450,24 +447,66 @@ const handleExit = (_status: number) => {
   ENV: {},
   TerminalShim: TerminalShim,
   onRuntimeInitialized: () => {
-    console.log('WASM Runtime Initialized');
-    xterm.writeln('(PRESS START TO BEGIN)\r\n>>>');
-    if (startBtn) {
-      startBtn.disabled = false;
-      startBtn.onclick = () => {
-        const userName =
-          (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
-        localStorage.setItem('rogoweb-username', userName);
-
-        // Ensure USER is set in ENV before callMain
-        if ((window as any).Module.ENV) {
-          (window as any).Module.ENV['USER'] = userName;
+    console.log('Main Thread: WASM Runtime Initialized');
+    
+    const FS = (window as any).Module.FS;
+    if (FS) {
+      const mkdirSync = (path: string) => {
+        try {
+          FS.mkdir(path);
+          console.log(`Main Thread: Created directory ${path}`);
+        } catch (e: any) {
+          if (e.errno !== 20) console.warn(`Main Thread: mkdir ${path} info:`, e.message);
         }
-
-        startBtn.disabled = true;
-        startBtn.innerText = 'ONLINE';
-        runLoginSequence(userName);
       };
+
+      mkdirSync('/var');
+      mkdirSync('/var/games');
+      mkdirSync('/var/games/rogomatic');
+
+      console.log('Main Thread: Mounting IDBFS...');
+      FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+
+      console.log('Main Thread: Starting IDBFS sync...');
+      FS.syncfs(true, (err: any) => {
+        if (err) console.error('Main Thread: IDBFS syncfs(true) failed:', err);
+        else console.log('Main Thread: IDBFS synced');
+
+        const scoreFile = '/var/games/rogomatic/rogue.scr';
+        try {
+          if (!FS.analyzePath(scoreFile).exists) {
+            console.log(`Main Thread: Creating empty file ${scoreFile}`);
+            FS.writeFile(scoreFile, '');
+          }
+        } catch (e) {
+          console.error(`Main Thread: Error checking/creating ${scoreFile}:`, e);
+        }
+        
+        setupLoginUI();
+      });
+    } else {
+      setupLoginUI();
+    }
+
+    function setupLoginUI() {
+      xterm.write('4.2 BSD UNIX (ucbvax) (tty01)\r\nlogin: ');
+      if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.onclick = () => {
+          const userName =
+            (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
+          localStorage.setItem('rogoweb-username', userName);
+
+          // Ensure USER is set in ENV before callMain
+          if ((window as any).Module.ENV) {
+            (window as any).Module.ENV['USER'] = userName;
+          }
+
+          startBtn.disabled = true;
+          startBtn.innerText = 'ONLINE';
+          runLoginSequence(userName);
+        };
+      }
     }
   },
   locateFile: (p: string) => (p.endsWith('.wasm') ? '/rogoweb/wasm/' + p : p),
@@ -480,12 +519,30 @@ const handleExit = (_status: number) => {
     console.error('WASM stderr:', text);
     xterm.writeln(`\x1b[31m${text}\x1b[0m`);
   },
+  syncFS: () => {
+    console.log('Main Thread: Syncing FS to IDBFS...');
+    return new Promise<void>((resolve) => {
+      const FS = (window as any).Module.FS;
+      if (FS && FS.syncfs) {
+        FS.syncfs(false, (err: any) => {
+          if (err) console.error('Main Thread: syncfs(false) failed:', err);
+          else console.log('Main Thread: syncfs(false) complete');
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
 };
+
+// Ensure syncFS is globally available on window for EM_ASM
+(window as any).syncFS = (window as any).Module.syncFS;
 
 const terminalElement = document.getElementById('terminal');
 if (terminalElement) {
   xterm.open(terminalElement);
-  xterm.writeln('CPU HALTED, SOMM CLEAR, STEP=NONE, CLOCK=NORM.\r\nRAD=HEX, ADD=PHYS, DAT LONG, FILL=00, REL=000000.\r\nINIT SEQ DONE.\r\nHALTED AT 00000000.');
+  xterm.writeln('Press START to play');
 
   // ACTIVATE CANVAS RENDERER
   try {

@@ -4,21 +4,27 @@
 
 #ifdef ROGOWEB
 
-/* 
- * These functions will be provided by JavaScript via Emscripten's 
- * runtime or linked as EXPORTED_FUNCTIONS that JS calls.
- * Actually, it's easier to define them here and have JS call them,
- * or have them call JS functions.
- * 
- * For 'wasm_pipe_read', the C code calls it. It needs to:
- * 1. Check JS for data.
- * 2. If no data and synchronous, use Atomics.wait (handled by JS or Emscripten).
- * 
- * However, the simplest way is to use EM_JS or EM_ASM to interface with the 
- * SharedArrayBuffer logic defined in Phase 1.
- */
-
 #include <emscripten.h>
+
+EM_ASYNC_JS(void, trigger_syncfs, (), {
+  return new Promise(function(resolve) {
+    var syncFn = null;
+    if (typeof self !== 'undefined' && self.syncFS) syncFn = self.syncFS;
+    else if (typeof window !== 'undefined' && window.syncFS) syncFn = window.syncFS;
+    else if (typeof Module !== 'undefined' && Module.syncFS) syncFn = Module.syncFS;
+
+    if (syncFn) {
+      var p = syncFn();
+      if (p && p.then) {
+        p.then(resolve);
+      } else {
+        resolve();
+      }
+    } else {
+      resolve();
+    }
+  });
+});
 
 /*
  * wasm_pipe_read:

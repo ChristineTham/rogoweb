@@ -104,13 +104,18 @@ self.onmessage = (e: MessageEvent) => {
         printErr: (text: string) => console.error('Rogomatic stderr:', text),
         syncFS: () => {
           console.log('Rogomatic Worker: Syncing FS to IDBFS...');
-          const FS = (self as any).Module.FS;
-          if (FS && FS.syncfs) {
-            FS.syncfs(false, (err: any) => {
-              if (err) console.error('Rogomatic Worker: syncfs(false) failed:', err);
-              else console.log('Rogomatic Worker: syncfs(false) complete');
-            });
-          }
+          return new Promise<void>((resolve) => {
+            const FS = (self as any).Module.FS;
+            if (FS && FS.syncfs) {
+              FS.syncfs(false, (err: any) => {
+                if (err) console.error('Rogomatic Worker: syncfs(false) failed:', err);
+                else console.log('Rogomatic Worker: syncfs(false) complete');
+                resolve();
+              });
+            } else {
+              resolve();
+            }
+          });
         }
       };
 

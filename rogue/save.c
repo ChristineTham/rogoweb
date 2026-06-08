@@ -162,7 +162,8 @@ save_file(FILE *savef)
 
 #ifdef ROGOWEB
   printf("Rogue: Game saved, triggering sync...\n");
-  EM_ASM(if (self.syncFS) self.syncFS());
+  void trigger_syncfs(void);
+  trigger_syncfs();
 #endif
 
   my_exit(0);
@@ -404,6 +405,7 @@ wr_score(SCORE *top_ten)
 
 #ifdef ROGOWEB
   printf("Rogue: Scores written, triggering sync...\n");
-  EM_ASM(if (self.syncFS) self.syncFS());
+  void trigger_syncfs(void);
+  trigger_syncfs();
 #endif
 }
