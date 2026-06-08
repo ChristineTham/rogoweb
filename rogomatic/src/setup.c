@@ -91,6 +91,7 @@ main (int argc, char *argv[])
     exit (1);
   }
 
+# ifndef ROGOWEB
   /* Find which rogue to use */
   if (*rfilearg) {
     if (access (rfilearg, R_OK|X_OK) == 0)	rfile = rfilearg;
@@ -110,8 +111,15 @@ main (int argc, char *argv[])
     perror ("rogue");
     exit (1);
   }
+# endif
 
-  if (!replay && !score) quitat = findscore (rfile, "Rog-O-Matic");
+  if (!replay && !score) {
+# ifdef ROGOWEB
+    quitat = 2147483647;
+# else
+    quitat = findscore (rfile, "Rog-O-Matic");
+# endif
+  }
 
   sprintf (options, "%d,%d,%d,%d,%d,%d,%d,%d",
            cheat, noterm, echo, nohalf, emacs, terse, user,quitat);
@@ -124,6 +132,27 @@ main (int argc, char *argv[])
 
   if (replay) { replaylog (argc==1 ? argv[0] : ROGUELOG, options); exit (0); }
 
+# ifdef ROGOWEB
+  {
+    /* In ROGOWEB, we are already inside the worker that will be the player.
+       We don't fork. We setup the fake file descriptors and call the player logic.
+       However, setup.c is normally the parent. In WASM, we'll likely make
+       main in main.c the entry point. But to follow the track, I'll define
+       the bypass here.
+    */
+    char *player_argv[6];
+    extern int player_main(int argc, char *argv[]);
+
+    player_argv[0] = "player";
+    player_argv[1] = "ZZ"; /* placeholder for pipes */
+    player_argv[2] = "0";  /* placeholder for pid */
+    player_argv[3] = options;
+    player_argv[4] = roguename;
+    player_argv[5] = NULL;
+
+    return player_main(5, player_argv);
+  }
+# else
   if ((pipe (ptc) < 0) || (pipe (ctp) < 0)) {
     fprintf (stderr, "Cannot get pipes!\n");
     exit (1);
@@ -175,6 +204,7 @@ main (int argc, char *argv[])
     printf ("Rogomatic not available, 'player' binary missing.\n");
     kill (child, SIGKILL);
   }
+# endif
 }
 
 /*
