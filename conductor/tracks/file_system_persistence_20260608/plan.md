@@ -14,17 +14,17 @@
     - [x] If they don't exist, create them as empty files or with default seed data to prevent crashes. [5d7daa2]
 - [x] Task: Conductor - User Manual Verification 'Setup IDBFS and Mount Points' (Protocol in workflow.md) [0135b47]
 
-## Phase 2: Synchronization Triggers and JS Hooks
+## Phase 2: Synchronization Triggers and JS Hooks [checkpoint: 5f2bbba]
 - [x] Task: Define JS Hook for Synchronization [f427d43]
     - [x] Implement a function in the worker scope (or exposed via `Module`) that calls `FS.syncfs(false, callback)`. [f427d43]
 - [x] Task: Instrument C Code for Event-Driven Sync [e79d4fc]
     - [x] Identify the points in the C source code where a game ends (e.g., `score()` or death routines) and where the gene pool is saved. [e79d4fc]
     - [x] Inject `EM_ASM` calls or exported C-to-JS callbacks to trigger the JS sync hook at these specific points. [e79d4fc]
     - [x] Ensure the sync operates asynchronously and doesn't block the WASM execution unnecessarily, or handles the callback properly. [e79d4fc]
-- [~] Task: Conductor - User Manual Verification 'Synchronization Triggers and JS Hooks' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Synchronization Triggers and JS Hooks' (Protocol in workflow.md) [e4ddd11]
 
 ## Phase 3: Error Handling and Notifications
-- [ ] Task: Implement IDBFS Error Catching
+- [~] Task: Implement IDBFS Error Catching
     - [ ] Wrap the `FS.mount` and `FS.syncfs` calls in try/catch blocks or check their callback error arguments.
 - [ ] Task: Relay Errors to Main Thread
     - [ ] If an error occurs, post a message (`postMessage`) from the worker to the main thread indicating a persistence failure.
