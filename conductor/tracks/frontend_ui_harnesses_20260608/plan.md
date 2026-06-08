@@ -6,11 +6,11 @@
 - [x] Task: Apply CSS styling for industrial/retro VT100 aesthetic 15bbe2f
 - [x] Task: Conductor - User Manual Verification 'Core UI Structure and Styling' (Protocol in workflow.md) 15bbe2f
 
-## Phase 2: Transport Controls (Rogue & Rog-O-Matic)
-- [ ] Task: Create tests for transport control event listeners (Start, Stop, Pause)
-- [ ] Task: Implement logic in `main.ts` to dispatch start/stop commands to Web Workers
-- [ ] Task: Wire up UI buttons to dispatch these commands
-- [ ] Task: Conductor - User Manual Verification 'Transport Controls (Rogue & Rog-O-Matic)' (Protocol in workflow.md)
+## Phase 2: Transport Controls (Rogue & Rog-O-Matic) [checkpoint: 15bbe2f]
+- [x] Task: Create tests for transport control event listeners (Start, Stop, Pause) 15bbe2f
+- [x] Task: Implement logic in `main.ts` to dispatch start/stop commands to Web Workers 15bbe2f
+- [x] Task: Wire up UI buttons to dispatch these commands 15bbe2f
+- [x] Task: Conductor - User Manual Verification 'Transport Controls (Rogue & Rog-O-Matic)' (Protocol in workflow.md) 15bbe2f
 
 ## Phase 3: Telemetry Data Flow (postMessage)
 - [ ] Task: Create tests for structured telemetry message handling in main thread
