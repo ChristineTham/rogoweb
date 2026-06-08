@@ -133,11 +133,11 @@ class HeadlessTerminal {
   open() { if (this.initHandler) this.initHandler(); }
   close() { this.closed = true; }
   hasInput() { 
-    const ipc = (self as any).ipc;
+    const ipc = self.ipc;
     return ipc && ipc.rogomaticToRogue.getAvailableRead() > 0; 
   }
   getKey() {
-    const ipc = (self as any).ipc;
+    const ipc = self.ipc;
     if (!ipc) return 0;
     const buf = new Uint8Array(1);
     if (ipc.rogomaticToRogue.read(buf) === 1) {
@@ -151,7 +151,7 @@ class HeadlessTerminal {
       this.charBuf[row][col] = ch;
       this.styleBuf[row][col] = style;
       
-      const ipc = (self as any).ipc;
+      const ipc = self.ipc;
       if (ipc) {
         // Emit VT100 codes to Rogue->Rogomatic pipe
         this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
@@ -164,7 +164,7 @@ class HeadlessTerminal {
   cursorSet(row, col) {
     this.cursorRow = row;
     this.cursorCol = col;
-    const ipc = (self as any).ipc;
+    const ipc = self.ipc;
     if (ipc) {
        this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
     }
@@ -173,7 +173,7 @@ class HeadlessTerminal {
   cursorOff() { }
   clear() {
     this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
-    const ipc = (self as any).ipc;
+    const ipc = self.ipc;
     if (ipc) {
        this.writeToPipe(ipc, '\x1b[2J\x1b[H');
     }
