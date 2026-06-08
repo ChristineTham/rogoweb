@@ -9,11 +9,11 @@
 
 ## Phase 2: C-Level Hooks & WASM Export [~]
 
-- [~] Task: Implement WASM pipe hooks in C.
-    - [~] Sub-task: Create C source files defining `wasm_pipe_read()` and `wasm_pipe_write()` designed to interface with the JS `SharedArrayBuffer`.
-    - [ ] Sub-task: Replace standard `read()` and `write()` calls in Rogue and Rogomatic's IPC logic with these new hooks, wrapped in `#ifdef ROGOWEB`.
-    - [ ] Sub-task: Update `Makefile.wasm` for both projects to include the new C files and export the functions via `EXPORTED_FUNCTIONS`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: C-Level Hooks & WASM Export' (Protocol in workflow.md)
+- [x] Task: Implement WASM pipe hooks in C. 8bcb717
+    - [x] Sub-task: Create C source files defining `wasm_pipe_read()` and `wasm_pipe_write()` designed to interface with the JS `SharedArrayBuffer`. 8bcb717
+    - [x] Sub-task: Replace standard `read()` and `write()` calls in Rogue and Rogomatic's IPC logic with these new hooks, wrapped in `#ifdef ROGOWEB`. 8bcb717
+    - [x] Sub-task: Update `Makefile.wasm` for both projects to include the new C files and export the functions via `EXPORTED_FUNCTIONS`. 8bcb717
+- [~] Task: Conductor - User Manual Verification 'Phase 2: C-Level Hooks & WASM Export' (Protocol in workflow.md)
 
 ## Phase 3: Worker Integration & IPC Testing
 
