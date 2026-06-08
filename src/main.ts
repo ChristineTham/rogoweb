@@ -3,6 +3,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { CanvasAddon } from '@xterm/addon-canvas';
 import '@xterm/xterm/css/xterm.css';
 import { TerminalShim, TermGlobals } from './terminal-shim';
+import { SharedIPC } from './ipc/ring-buffer';
 
 /* =========================================
    VT100 TECHNICAL CONSTANTS
@@ -266,6 +267,22 @@ const runLoginSequence = async (userName: string) => {
 
   // FOCUS: Bring focus to terminal for immediate play
   xterm.focus();
+
+  if (isAuto) {
+    // DUAL WORKER MODE (Phase 4)
+    console.log('Starting Dual Worker IPC Mode...');
+    const sab = SharedIPC.createSAB();
+    
+    const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url), { type: 'module' });
+    const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url), { type: 'module' });
+
+    rogueWorker.postMessage({ type: 'init', sab, userName });
+    rogomaticWorker.postMessage({ type: 'init', sab, userName });
+
+    // Note: In Phase 4, Rogue output still needs to be piped to xterm.
+    // This will be handled in Phase 6, but for now we prove the IPC link.
+    return;
+  }
 
   // Trigger WASM main
   try {
