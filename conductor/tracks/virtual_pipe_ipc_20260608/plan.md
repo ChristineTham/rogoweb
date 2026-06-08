@@ -7,13 +7,13 @@
     - [x] Sub-task: Write isolated unit tests (using Vitest) to verify ring buffer logic, including read/write boundaries, overflow, and underflow conditions. 0481e53
 - [x] Task: Conductor - User Manual Verification 'Phase 1: JavaScript Ring Buffer Implementation' (Protocol in workflow.md) c2c6660
 
-## Phase 2: C-Level Hooks & WASM Export [~]
+## Phase 2: C-Level Hooks & WASM Export [checkpoint: c10d362]
 
 - [x] Task: Implement WASM pipe hooks in C. 8bcb717
     - [x] Sub-task: Create C source files defining `wasm_pipe_read()` and `wasm_pipe_write()` designed to interface with the JS `SharedArrayBuffer`. 8bcb717
     - [x] Sub-task: Replace standard `read()` and `write()` calls in Rogue and Rogomatic's IPC logic with these new hooks, wrapped in `#ifdef ROGOWEB`. 8bcb717
-    - [x] Sub-task: Update `Makefile.wasm` for both projects to include the new C files and export the functions via `EXPORTED_FUNCTIONS`. 8bcb717
-- [~] Task: Conductor - User Manual Verification 'Phase 2: C-Level Hooks & WASM Export' (Protocol in workflow.md)
+    - [x] Sub-task: Update `Makefile.wasm` for both projects to include the new C files and export the functions via `EXPORTED_FUNCTIONS`. 65b50a9
+- [x] Task: Conductor - User Manual Verification 'Phase 2: C-Level Hooks & WASM Export' (Protocol in workflow.md) c10d362
 
 ## Phase 3: Worker Integration & IPC Testing
 
