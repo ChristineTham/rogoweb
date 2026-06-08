@@ -42,7 +42,30 @@ self.onmessage = (e: MessageEvent) => {
       },
       onRuntimeInitialized: () => {
         console.log('Rogue Worker: WASM Runtime Initialized');
-        Module.callMain(['-n', userName]);
+        
+        const FS = (self as any).Module.FS;
+        try {
+          // Ensure directory structure exists
+          FS.mkdir('/var');
+          FS.mkdir('/var/games');
+          FS.mkdir('/var/games/rogomatic');
+        } catch (e) {
+          // ignore if directory already exists
+        }
+
+        // Mount IDBFS to the rogomatic data directory
+        FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+
+        // Sync from IndexedDB to the virtual filesystem
+        FS.syncfs(true, (err: any) => {
+          if (err) {
+            console.error('Rogue Worker: IDBFS syncfs(true) failed:', err);
+          } else {
+            console.log('Rogue Worker: IDBFS synced');
+          }
+          // Start Rogue after FS is ready
+          (self as any).Module.callMain(['-n', userName]);
+        });
       },
       locateFile: (path: string) => {
         if (path.endsWith('.wasm')) {

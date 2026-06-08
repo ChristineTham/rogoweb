@@ -42,7 +42,49 @@ self.onmessage = (e: MessageEvent) => {
       },
       onRuntimeInitialized: () => {
         console.log('Rogomatic Worker: WASM Runtime Initialized');
-        Module.callMain(['aa', '0', '0', userName]);
+
+        const FS = (self as any).Module.FS;
+        try {
+          // Ensure directory structure exists
+          FS.mkdir('/var');
+          FS.mkdir('/var/games');
+          FS.mkdir('/var/games/rogomatic');
+        } catch (e) {
+          // ignore if directory already exists
+        }
+
+        // Mount IDBFS to the rogomatic data directory
+        FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
+
+        // Sync from IndexedDB to the virtual filesystem
+        FS.syncfs(true, (err: any) => {
+          if (err) {
+            console.error('Rogomatic Worker: IDBFS syncfs(true) failed:', err);
+          } else {
+            console.log('Rogomatic Worker: IDBFS synced');
+          }
+
+          // Create critical files if they don't exist to prevent C crashes
+          const criticalFiles = [
+            '/var/games/rogomatic/GeneLog544',
+            '/var/games/rogomatic/GenePool544',
+            '/var/games/rogomatic/ltm544',
+            '/var/games/rogomatic/rgmdelta5.4.4'
+          ];
+          criticalFiles.forEach(file => {
+            try {
+              if (!FS.analyzePath(file).exists) {
+                console.log(`Rogomatic Worker: Creating empty file ${file}`);
+                FS.writeFile(file, '');
+              }
+            } catch (e) {
+              console.error(`Rogomatic Worker: Error checking/creating ${file}:`, e);
+            }
+          });
+
+          // Start Rogomatic after FS is ready
+          (self as any).Module.callMain(['aa', '0', '0', userName]);
+        });
       },
       locateFile: (path: string) => {
         if (path.endsWith('.wasm')) {
