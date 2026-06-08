@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [~] **Track: Copy all relevant files from @rogue/ and @rogomatic/ into @rogoweb/ so that that it is a standalone repo that does not depend on files from the other repos.**
+- [x] **Track: Copy all relevant files from @rogue/ and @rogomatic/ into @rogoweb/ so that that it is a standalone repo that does not depend on files from the other repos.**
   _Link: [./tracks/standalone_rogoweb_20260607/](./tracks/standalone_rogoweb_20260607/)_
 
 ---
