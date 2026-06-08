@@ -1,0 +1,8 @@
+{
+  "track_id": "frontend_ui_harnesses_20260608",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-08T00:00:00Z",
+  "updated_at": "2026-06-08T00:00:00Z",
+  "description": "Build a React/Vanilla UI with controls to start standalone Rogue and Rogomatic auto-play, display live game statistics, and add testing harnesses to simulate deterministic seeds."
+}
