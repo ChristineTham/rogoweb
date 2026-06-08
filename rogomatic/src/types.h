@@ -27,6 +27,10 @@
  * Miscellaneous Macros and Constants
  */
 
+#ifdef ROGOWEB
+#include <emscripten.h>
+#endif
+
 /* Global Preprocessor constants */
 
 # define ill         ";'"

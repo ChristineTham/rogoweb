@@ -159,6 +159,11 @@ save_file(FILE *savef)
   rs_save_file(savef);
   fflush(savef);
   fclose(savef);
+
+#ifdef ROGOWEB
+  EM_ASM(Module.syncFS());
+#endif
+
   my_exit(0);
 }
 
@@ -395,4 +400,8 @@ wr_score(SCORE *top_ten)
   }
 
   rewind(scoreboard);
+
+#ifdef ROGOWEB
+  EM_ASM(Module.syncFS());
+#endif
 }

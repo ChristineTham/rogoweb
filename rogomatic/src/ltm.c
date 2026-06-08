@@ -156,6 +156,10 @@ saveltm (int score)
 
   /* Re-enable interrupts */
   uncritical ();
+
+#ifdef ROGOWEB
+  EM_ASM(Module.syncFS());
+#endif
 }
 
 /*

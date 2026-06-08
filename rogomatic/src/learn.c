@@ -405,6 +405,10 @@ writegenes (char *genepool)
     writegene (gfil, genes[g]);
 
   fclose (gfil);
+
+#ifdef ROGOWEB
+  EM_ASM(Module.syncFS());
+#endif
 }
 
 /*
