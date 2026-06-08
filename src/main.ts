@@ -271,10 +271,19 @@ const runLoginSequence = async (userName: string) => {
   if (isAuto) {
     // DUAL WORKER MODE (Phase 4)
     console.log('Starting Dual Worker IPC Mode...');
+    
+    if (!window.crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') {
+      console.error('CRITICAL: Cross-Origin Isolation is not active. SharedArrayBuffer is required for Dual Worker mode.');
+      console.log('Isolation Status:', window.crossOriginIsolated);
+      xterm.writeln('\x1b[31mERROR: CROSS-ORIGIN ISOLATION REQUIRED\x1b[0m');
+      xterm.writeln('Please ensure the server is sending COOP/COEP headers.');
+      return;
+    }
+
     const sab = SharedIPC.createSAB();
     
-    const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url), { type: 'module' });
-    const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url), { type: 'module' });
+    const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
+    const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
 
     rogueWorker.postMessage({ type: 'init', sab, userName });
     rogomaticWorker.postMessage({ type: 'init', sab, userName });
