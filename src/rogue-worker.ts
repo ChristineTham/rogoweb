@@ -75,6 +75,14 @@ self.onmessage = (e: MessageEvent) => {
       },
       print: (text: string) => console.log('Rogue stdout:', text),
       printErr: (text: string) => console.error('Rogue stderr:', text),
+      syncFS: () => {
+        console.log('Rogue Worker: Syncing FS to IDBFS...');
+        const FS = (self as any).Module.FS;
+        FS.syncfs(false, (err: any) => {
+          if (err) console.error('Rogue Worker: syncfs(false) failed:', err);
+          else console.log('Rogue Worker: syncfs(false) complete');
+        });
+      }
     };
 
     importScripts('/rogoweb/wasm/rogue.js');

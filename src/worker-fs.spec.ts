@@ -99,4 +99,26 @@ describe('Worker FS Initialization', () => {
     expect(mockFS.writeFile).toHaveBeenCalledWith('/var/games/rogomatic/GenePool544', '');
     expect(mockModule.callMain).toHaveBeenCalledWith(['aa', '0', '0', 'Player']);
   });
+
+  it('provides a syncFS hook for event-driven persistence', () => {
+    let syncFS: any;
+    const ModuleProxy = new Proxy(mockModule, {
+      set(target, prop, value) {
+        if (prop === 'syncFS') syncFS = value;
+        target[prop] = value;
+        return true;
+      }
+    });
+    (global as any).Module = ModuleProxy;
+
+    // Logic to be injected in workers
+    (global as any).Module.syncFS = () => {
+      const FS = (global as any).Module.FS;
+      FS.syncfs(false, (err: any) => {});
+    };
+
+    expect(typeof (global as any).Module.syncFS).toBe('function');
+    (global as any).Module.syncFS();
+    expect(mockFS.syncfs).toHaveBeenCalledWith(false, expect.any(Function));
+  });
 });
