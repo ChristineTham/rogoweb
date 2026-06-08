@@ -17,11 +17,11 @@
 ## Phase 2: Synchronization Triggers and JS Hooks
 - [x] Task: Define JS Hook for Synchronization [f427d43]
     - [x] Implement a function in the worker scope (or exposed via `Module`) that calls `FS.syncfs(false, callback)`. [f427d43]
-- [~] Task: Instrument C Code for Event-Driven Sync
-    - [ ] Identify the points in the C source code where a game ends (e.g., `score()` or death routines) and where the gene pool is saved.
-    - [ ] Inject `EM_ASM` calls or exported C-to-JS callbacks to trigger the JS sync hook at these specific points.
-    - [ ] Ensure the sync operates asynchronously and doesn't block the WASM execution unnecessarily, or handles the callback properly.
-- [ ] Task: Conductor - User Manual Verification 'Synchronization Triggers and JS Hooks' (Protocol in workflow.md)
+- [x] Task: Instrument C Code for Event-Driven Sync [e79d4fc]
+    - [x] Identify the points in the C source code where a game ends (e.g., `score()` or death routines) and where the gene pool is saved. [e79d4fc]
+    - [x] Inject `EM_ASM` calls or exported C-to-JS callbacks to trigger the JS sync hook at these specific points. [e79d4fc]
+    - [x] Ensure the sync operates asynchronously and doesn't block the WASM execution unnecessarily, or handles the callback properly. [e79d4fc]
+- [~] Task: Conductor - User Manual Verification 'Synchronization Triggers and JS Hooks' (Protocol in workflow.md)
 
 ## Phase 3: Error Handling and Notifications
 - [ ] Task: Implement IDBFS Error Catching
