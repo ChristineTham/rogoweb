@@ -1,0 +1,8 @@
+{
+  "track_id": "standalone_rogoweb_20260607",
+  "type": "chore",
+  "status": "new",
+  "created_at": "2026-06-07T00:00:00Z",
+  "updated_at": "2026-06-07T00:00:00Z",
+  "description": "Copy all relevant files from @rogue/ and @rogomatic/ into @rogoweb/ so that that it is a standalone repo that does not depend on files from the other repos."
+}
