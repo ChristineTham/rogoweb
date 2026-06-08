@@ -407,7 +407,8 @@ writegenes (char *genepool)
   fclose (gfil);
 
 #ifdef ROGOWEB
-  EM_ASM(Module.syncFS());
+  printf("Rogomatic: Genes written, triggering sync...\n");
+  EM_ASM(if (self.syncFS) self.syncFS());
 #endif
 }
 

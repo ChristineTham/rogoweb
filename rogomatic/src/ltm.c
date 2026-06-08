@@ -158,7 +158,8 @@ saveltm (int score)
   uncritical ();
 
 #ifdef ROGOWEB
-  EM_ASM(Module.syncFS());
+  printf("Rogomatic: LTM saved, triggering sync...\n");
+  EM_ASM(if (self.syncFS) self.syncFS());
 #endif
 }
 
