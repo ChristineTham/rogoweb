@@ -1,0 +1,8 @@
+{
+  "track_id": "file_system_persistence_20260608",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-08T00:00:00Z",
+  "updated_at": "2026-06-08T00:00:00Z",
+  "description": "Phase 5: File System Persistence. Configure Emscripten's FS.mkdir('/var/games/rogomatic') and FS.mount(IDBFS, ...). Implement a JS hook to call FS.syncfs(false) whenever a game ends or a gene pool is updated."
+}
