@@ -1,6 +1,6 @@
 # Implementation Plan: Phase 5 - File System Persistence
 
-## Phase 1: Setup IDBFS and Mount Points
+## Phase 1: Setup IDBFS and Mount Points [checkpoint: 950267c]
 - [x] Task: Configure Emscripten Module for IDBFS [5d7daa2]
     - [x] Add `IDBFS` to the exported settings in the Emscripten build configuration (Makefiles or vite config, if applicable). [5d7daa2]
     - [x] Ensure `FS` object is accessible from the worker scripts (`rogue-worker.ts`, `rogomatic-worker.ts`). [5d7daa2]
