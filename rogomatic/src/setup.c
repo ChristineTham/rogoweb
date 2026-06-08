@@ -90,10 +90,12 @@ main (int argc, char *argv[])
     }
   }
 
+# ifndef ROGOWEB
   if (argc > 1) {
     printf ("Usage: rogomatic [-cefhprstuwE] or rogomatic <file>\n");
     exit (1);
   }
+# endif
 
 # ifndef ROGOWEB
   /* Find which rogue to use */

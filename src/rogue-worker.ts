@@ -6,17 +6,35 @@ self.onmessage = (e: MessageEvent) => {
   const { type, userName } = e.data;
 
   if (type === 'init') {
+    importScripts('/rogoweb/wasm/ipc-core.js');
+
+    // Worker Polyfills for emcurses/termlib.js
+    (self as any).window = self;
+    (self as any).document = {
+      createElement: () => ({ style: {}, appendChild: () => {} }),
+      getElementById: () => null,
+      all: null,
+    };
+    (self as any).navigator = { userAgent: 'WebWorker' };
+
+    const SharedIPC = (self as any).SharedIPC;
+    ipc = new SharedIPC(sab);
+
     (self as any).Module = {
       noInitialRun: true,
-      wasm_pipe_read: (_fd: number, _ptr: number, _count: number) => {
-        return 0; 
+      wasm_pipe_read: (_fd: number, ptr: number, count: number) => {
+        if (!ipc) return 0;
+        const dest = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
+        return ipc.rogomaticToRogue.read(dest);
       },
-      wasm_pipe_write: (_fd: number, _ptr: number, _count: number) => {
-        return 0;
+      wasm_pipe_write: (_fd: number, ptr: number, count: number) => {
+        if (!ipc) return 0;
+        const src = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
+        return ipc.rogueToRogomatic.write(src);
       },
       onRuntimeInitialized: () => {
         console.log('Rogue Worker: WASM Runtime Initialized');
-        Module.callMain(['-n', userName]);
+        (self as any).Module.callMain(['-n', userName]);
       },
       locateFile: (path: string) => {
         if (path.endsWith('.wasm')) {
