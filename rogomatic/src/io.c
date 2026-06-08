@@ -693,7 +693,11 @@ sendcnow (char c)
 
   rogue_log_write_command (c);
 
+#ifdef ROGOWEB
+  wasm_pipe_write(trogue, &c, 1);
+#else
   fprintf (trogue, "%c", c);
+#endif
 }
 
 /*

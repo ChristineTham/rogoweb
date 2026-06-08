@@ -10,7 +10,7 @@ OBJS1    = vers.$(O) extern.$(O) armor.$(O) chase.$(O) command.$(O) \
            move.$(O) new_level.$(O)
 OBJS2    = options.$(O) pack.$(O) passages.$(O) potions.$(O) rings.$(O) \
            rip.$(O) rooms.$(O) save.$(O) scrolls.$(O) state.$(O) sticks.$(O) \
-           things.$(O) weapons.$(O) wizard.$(O) xcrypt.$(O)
+           things.$(O) weapons.$(O) wizard.$(O) xcrypt.$(O) wasm_pipe.$(O)
 OBJS     = $(OBJS1) $(OBJS2)
 
 CC       = emcc
@@ -21,7 +21,7 @@ CFLAGS   = -g3 -O0 -std=gnu89 -Wno-deprecated-non-prototype -I../emcurses
 LIBS     = ../emcurses/emscripten/libpdcurses.a
 LDFLAGS  = --pre-js ../emcurses/emscripten/termlib.js \
            -s EXIT_RUNTIME=1 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
-           -s EXPORTED_FUNCTIONS="['_main', '_my_exit', '_malloc', '_free', '_setenv']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'run', 'addFunction', 'stackAlloc', 'stackSave', 'stackRestore', 'getValue', 'setValue']" \
+           -s EXPORTED_FUNCTIONS="['_main', '_my_exit', '_malloc', '_free', '_setenv', '_wasm_pipe_read', '_wasm_pipe_write']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'run', 'addFunction', 'stackAlloc', 'stackSave', 'stackRestore', 'getValue', 'setValue']" \
            -s EMULATE_FUNCTION_POINTER_CASTS=1
 OUTFLAG  = -o
 EXE      = .js
@@ -29,6 +29,8 @@ EXE      = .js
 .c.o:
 	$(CC) $(CFLAGS) $(FEATURES) -c $*.c
 
+wasm_pipe.o: ../src/ipc/wasm_pipe.c
+	$(CC) $(CFLAGS) $(FEATURES) -c ../src/ipc/wasm_pipe.c -o wasm_pipe.o
 $(PROGRAM).js: $(HDRS) $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) $(OUTFLAG)$@
 

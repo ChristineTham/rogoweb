@@ -175,14 +175,25 @@ open_frogue (const char *file)
   frogue = fopen (file, "r");
 }
 
+#ifndef ROGOWEB
 void
 open_frogue_fd (int frogue_fd)
 {
   frogue = fdopen (frogue_fd, "r");
 }
+#endif
 
+#ifdef ROGOWEB
+extern int wasm_pipe_read(int fd, char *buf, int count);
+static int wasm_unget_char = -1;
+#define GETROGUECHAR (wasm_unget_char != -1 ? (int)(unsigned char)({ int tmp = wasm_unget_char; wasm_unget_char = -1; tmp; }) : ({ char c; wasm_pipe_read(frogue_fd, &c, 1) == 1 ? (int)(unsigned char)c : EOF; }))
+#define UNGETROGUECHAR(c) (wasm_unget_char = (c))
+static int frogue_fd;
+void open_frogue_fd (int fd) { frogue_fd = fd; }
+#else
 #define GETROGUECHAR fgetc(frogue);
 #define UNGETROGUECHAR(c) ungetc(c, frogue);
+#endif
 
 static void
 close_frogue (void)

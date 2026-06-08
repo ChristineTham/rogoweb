@@ -2,29 +2,34 @@
 
 PROGRAM  = ../../public/wasm/rogomatic
 O        = o
-HDRS     = globals.h install.h termtokens.h types.h getroguetoken.h
 OBJS     = arms.$(O) command.$(O) config.$(O) database.$(O) debug.$(O) \
            explore.$(O) io.$(O) learn.$(O) ltm.$(O) main.$(O) mess.$(O) \
            monsters.$(O) pack.$(O) rand.$(O) replay.$(O) rooms.$(O) \
            scorefile.$(O) search.$(O) stats.$(O) strategy.$(O) survival.$(O) \
            tactics.$(O) things.$(O) titlepage.$(O) utility.$(O) worth.$(O) \
-           getroguetoken.$(O) debuglog.$(O)
+           getroguetoken.$(O) debuglog.$(O) setup.$(O) wasm_pipe.$(O)
 
 CC       = emcc
 # Asyncify is required for blocking terminal reads (getch)
 FEATURES = -D__EMSCRIPTEN__ -DRGM_PLAYER -DROGOWEB
 CFLAGS   = -g3 -O0 -I../../emcurses -std=gnu89 -Wno-deprecated-non-prototype \
-           -Wno-error=incompatible-pointer-types -Wno-format -Wno-implicit-function-declaration -Wno-int-conversion
+           -Wno-error=incompatible-pointer-types -Wno-format \
+           -Wno-implicit-function-declaration -Wno-int-conversion
 LIBS     = ../../emcurses/emscripten/libpdcurses.a
 LDFLAGS  = --pre-js ../../emcurses/emscripten/termlib.js \
-           -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
+           -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 \
+           -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
            -s EMULATE_FUNCTION_POINTER_CASTS=1 \
-           -s EXPORTED_FUNCTIONS="['_main']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
+           -s EXPORTED_FUNCTIONS="['_main']" \
+           -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
 OUTFLAG  = -o
 EXE      = .js
 
 .c.o:
 	$(CC) $(CFLAGS) $(FEATURES) -c $*.c
+
+wasm_pipe.o: ../../src/ipc/wasm_pipe.c
+	$(CC) $(CFLAGS) $(FEATURES) -c ../../src/ipc/wasm_pipe.c -o wasm_pipe.o
 
 $(PROGRAM).js: $(HDRS) $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) $(OUTFLAG)$@

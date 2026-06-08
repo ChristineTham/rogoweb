@@ -117,7 +117,9 @@ FILE *rogo_openlog (char *genelog);
 FILE  *logfile=NULL;		/* File for score log */
 FILE  *realstdout=NULL;		/* Real stdout for Emacs, terse mode */
 FILE  *snapshot=NULL;		/* File for snapshot command */
-FILE  *trogue=NULL;		/* Pipe to Rogue process */
+#ifndef ROGOWEB
+FILE  *trogue=NULL;             /* Pipe to Rogue process */
+#endif
 
 /* Characters */
 char  logfilename[100];		/* Name of log file */
@@ -348,8 +350,12 @@ static void endlesson (void);
  * Main program
  */
 
-int
-main (int argc, char *argv[])
+#ifdef ROGOWEB
+extern int trogue;
+int player_main (int argc, char *argv[])
+#else
+int main (int argc, char *argv[])
+#endif
 {
   char  ch, *s, msg[128];
   int startingup = 1;
@@ -416,8 +422,12 @@ main (int argc, char *argv[])
     int trogue_fd = argv[1][1] - 'a';
     open_frogue_fd (frogue_fd);
     open_frogue_debuglog ("debuglog.frogue");
+#ifdef ROGOWEB
+    trogue = trogue_fd;
+#else
     trogue = fdopen (trogue_fd, "w");
     setbuf (trogue, NULL);
+#endif
   }
 
   /* The second argument to player is the process id of Rogue */

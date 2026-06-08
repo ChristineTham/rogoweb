@@ -7571,6 +7571,45 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
   var __abort_js = () =>
       abort('native code called abort()');
 
+  var __emscripten_system = (command) => {
+      if (ENVIRONMENT_IS_NODE) {
+        if (!command) return 1; // shell is available
+  
+        var cmdstr = UTF8ToString(command);
+        if (!cmdstr.length) return 0; // this is what glibc seems to do (shell works test?)
+  
+        var cp = require('node:child_process');
+        var ret = cp.spawnSync(cmdstr, [], {shell:true, stdio:'inherit'});
+  
+        var _W_EXITCODE = (ret, sig) => ((ret) << 8 | (sig));
+  
+        // this really only can happen if process is killed by signal
+        if (ret.status === null) {
+          // sadly node doesn't expose such function
+          var signalToNumber = (sig) => {
+            // implement only the most common ones, and fallback to SIGINT
+            switch (sig) {
+              case 'SIGHUP': return 1;
+              case 'SIGQUIT': return 3;
+              case 'SIGFPE': return 8;
+              case 'SIGKILL': return 9;
+              case 'SIGALRM': return 14;
+              case 'SIGTERM': return 15;
+              default: return 2;
+            }
+          }
+          return _W_EXITCODE(0, signalToNumber(ret.signal));
+        }
+  
+        return _W_EXITCODE(ret.status, 0);
+      }
+      // int system(const char *command);
+      // http://pubs.opengroup.org/onlinepubs/000095399/functions/system.html
+      // Can't call external programs.
+      if (!command) return 0; // no shell available
+      return -52;
+    };
+
   var __emscripten_throw_longjmp = () => {
       throw new EmscriptenSjLj;
     };
@@ -9036,24 +9075,26 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onSbrkGrow');
 }
 var ASM_CONSTS = {
-  92956: ($0, $1) => { term.cursorSet($0, $1); },  
- 92984: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
- 93018: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
- 93082: () => { return term.conf.rows; },  
- 93109: () => { return term.conf.cols; },  
- 93136: () => { return term.hasInput(); },  
- 93164: () => { return term.getKey(); },  
- 93190: () => { term.inputChar = 0 },  
- 93209: () => { term.close() },  
- 93222: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
- 93431: ($0, $1) => { term.resizeTo($0, $1); },  
- 93458: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
- 93858: () => { throw 'SimulateInfiniteLoop' },  
- 93887: ($0, $1) => { term.resizeTo($0, $1); },  
- 93914: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
- 93982: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
- 94030: () => { term.cursorOn() },  
- 94046: () => { term.cursorOff() }
+  93532: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
+ 93581: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
+ 93631: ($0, $1) => { term.cursorSet($0, $1); },  
+ 93659: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
+ 93693: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
+ 93757: () => { return term.conf.rows; },  
+ 93784: () => { return term.conf.cols; },  
+ 93811: () => { return term.hasInput(); },  
+ 93839: () => { return term.getKey(); },  
+ 93865: () => { term.inputChar = 0 },  
+ 93884: () => { term.close() },  
+ 93897: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
+ 94106: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94133: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
+ 94533: () => { throw 'SimulateInfiniteLoop' },  
+ 94562: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94589: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
+ 94657: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
+ 94705: () => { term.cursorOn() },  
+ 94721: () => { term.cursorOff() }
 };
 
 // Imports from the Wasm binary.
@@ -9186,6 +9227,8 @@ var wasmImports = {
   __syscall_unlinkat: ___syscall_unlinkat,
   /** @export */
   _abort_js: __abort_js,
+  /** @export */
+  _emscripten_system: __emscripten_system,
   /** @export */
   _emscripten_throw_longjmp: __emscripten_throw_longjmp,
   /** @export */

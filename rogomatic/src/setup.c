@@ -44,7 +44,11 @@
 
 /* static declarations */
 
+#ifdef ROGOWEB
+int   frogue, trogue;
+#else
 static int   frogue, trogue;
+#endif
 
 static void replaylog (char *fname, char *options);
 static int author (void);
