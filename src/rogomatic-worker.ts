@@ -21,6 +21,7 @@ self.onmessage = (e: MessageEvent) => {
 
     const SharedIPC = (self as any).SharedIPC;
     ipc = new SharedIPC(sab);
+    (self as any).ipc = ipc;
 
     const term = new ((self as any).Terminal)();
     term.ipc = ipc;

@@ -132,12 +132,16 @@ class HeadlessTerminal {
   }
   open() { if (this.initHandler) this.initHandler(); }
   close() { this.closed = true; }
-  hasInput() { return this.ipc && this.ipc.rogomaticToRogue.getAvailableRead() > 0; }
+  hasInput() { 
+    const ipc = (self as any).ipc;
+    return ipc && ipc.rogomaticToRogue.getAvailableRead() > 0; 
+  }
   getKey() {
-    if (!this.ipc) return 0;
+    const ipc = (self as any).ipc;
+    if (!ipc) return 0;
     const buf = new Uint8Array(1);
-    // Non-blocking for poll
-    if (this.ipc.rogomaticToRogue.read(buf) === 1) {
+    if (ipc.rogomaticToRogue.read(buf) === 1) {
+      console.log(`HeadlessTerminal: Rogue READ key: ${buf[0]} ('${String.fromCharCode(buf[0])}')`);
       return buf[0];
     }
     return 0;
@@ -147,36 +151,36 @@ class HeadlessTerminal {
       this.charBuf[row][col] = ch;
       this.styleBuf[row][col] = style;
       
-      // Emit VT100 codes to Rogue->Rogomatic pipe
-      if (this.ipc) {
-        // Move to position
-        this.writeToPipe(`\x1b[${row + 1};${col + 1}H`);
-        // Set style (simplified)
-        if (style !== 0) this.writeToPipe('\x1b[7m'); // Assume inverse for now
-        this.writeToPipe(String.fromCharCode(ch || 32));
-        if (style !== 0) this.writeToPipe('\x1b[0m');
+      const ipc = (self as any).ipc;
+      if (ipc) {
+        // Emit VT100 codes to Rogue->Rogomatic pipe
+        this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
+        if (style !== 0) this.writeToPipe(ipc, '\x1b[7m'); 
+        this.writeToPipe(ipc, String.fromCharCode(ch || 32));
+        if (style !== 0) this.writeToPipe(ipc, '\x1b[0m');
       }
     }
   }
   cursorSet(row, col) {
     this.cursorRow = row;
     this.cursorCol = col;
-    if (this.ipc) {
-       this.writeToPipe(`\x1b[${row + 1};${col + 1}H`);
+    const ipc = (self as any).ipc;
+    if (ipc) {
+       this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
     }
   }
   cursorOn() { }
   cursorOff() { }
   clear() {
     this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
-    if (this.ipc) {
-       this.writeToPipe('\x1b[2J\x1b[H');
+    const ipc = (self as any).ipc;
+    if (ipc) {
+       this.writeToPipe(ipc, '\x1b[2J\x1b[H');
     }
   }
-  writeToPipe(str) {
-    if (!this.ipc) return;
+  writeToPipe(ipc, str) {
     const data = new TextEncoder().encode(str);
-    this.ipc.rogueToRogomatic.write(data);
+    ipc.rogueToRogomatic.write(data);
   }
 }
 
