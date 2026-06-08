@@ -15,10 +15,10 @@
     - [x] Sub-task: Update `Makefile.wasm` for both projects to include the new C files and export the functions via `EXPORTED_FUNCTIONS`. 65b50a9
 - [x] Task: Conductor - User Manual Verification 'Phase 2: C-Level Hooks & WASM Export' (Protocol in workflow.md) c10d362
 
-## Phase 3: Worker Integration & IPC Testing
+## Phase 3: Worker Integration & IPC Testing [~]
 
-- [ ] Task: Connect Workers and perform End-to-End Handshake.
-    - [ ] Sub-task: Create a minimal WASM IPC test harness to verify bidirectional communication between two simulated workers.
-    - [ ] Sub-task: Update `main.ts` and the worker instantiation scripts to create the shared SAB and pass it to both the Rogue and Rogomatic workers upon startup.
-    - [ ] Sub-task: Verify that Rogomatic successfully completes its initial handshake with Rogue via the virtual pipes.
+- [x] Task: Connect Workers and perform End-to-End Handshake. [~]
+    - [x] Sub-task: Create a minimal WASM IPC test harness to verify bidirectional communication between two simulated workers. 58aa85c
+    - [x] Sub-task: Update `main.ts` and the worker instantiation scripts to create the shared SAB and pass it to both the Rogue and Rogomatic workers upon startup. 65455c8
+    - [~] Sub-task: Verify that Rogomatic successfully completes its initial handshake with Rogue via the virtual pipes.
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Worker Integration & IPC Testing' (Protocol in workflow.md)
