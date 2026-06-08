@@ -1,0 +1,8 @@
+{
+  "track_id": "wasm_port_20260608",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-06-08T12:05:00Z",
+  "updated_at": "2026-06-08T12:05:00Z",
+  "description": "Phase 3: Rogomatic WASM Port. Modify rogomatic build to target WASM. Refactor setup.c to remove fork/exec. Audit ltm.c and gene.c for 32-bit dependencies."
+}

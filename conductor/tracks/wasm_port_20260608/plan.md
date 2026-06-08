@@ -1,0 +1,20 @@
+# Implementation Plan: Phase 3 - Rogomatic WASM Port
+
+## Phase 1: Serialization Audit & Testing [~]
+
+- [~] Task: Create a C test harness to verify file serialization for `ltm.c` and `gene.c`.
+    - [~] Sub-task: Write tests that simulate writing and reading dummy `ltm` and `gene` data structures, verifying byte boundaries and 32-bit alignment in the WASM environment.
+    - [ ] Sub-task: Execute tests via Emscripten/Node.js to confirm file I/O works as expected on the `wasm32` target.
+    - [ ] Sub-task: Make any necessary adjustments (via `#ifdef ROGOWEB`) to struct packing or I/O functions if tests reveal alignment issues.
+- [ ] Task: Conductor - User Manual Verification 'Phase 1: Serialization Audit & Testing' (Protocol in workflow.md)
+
+## Phase 2: Refactoring `setup.c` for WASM
+
+- [ ] Task: Refactor `setup.c` to bypass OS-level process management.
+    - [ ] Sub-task: Identify all instances of `fork()`, `execl()`, and related UNIX pipe creation in `setup.c`.
+    - [ ] Sub-task: Wrap identified code blocks with `#ifndef ROGOWEB` to exclude them from the WASM build.
+    - [ ] Sub-task: Add `#ifdef ROGOWEB` blocks to define the new WASM entry point behavior (initializing player state and preparing for virtual pipe connections).
+- [ ] Task: Verify compilation for both target environments.
+    - [ ] Sub-task: Compile `rogomatic` using `make -f Makefile.wasm` (which should define `ROGOWEB`) and ensure it builds successfully without undefined references to `fork`/`execl`.
+    - [ ] Sub-task: Verify standard desktop compilation is unaffected.
+- [ ] Task: Conductor - User Manual Verification 'Phase 2: Refactoring setup.c for WASM' (Protocol in workflow.md)

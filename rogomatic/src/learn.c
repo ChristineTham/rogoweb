@@ -307,10 +307,20 @@ readgenes (char *genepool)
   /* Read the header line */
   b = buf;
   fgets (b, BUFSIZ, gfil);
+#ifdef ROGOWEB
+  {
+    long long it;
+    sscanf (b, "%lld %d %d %d %d %d",
+            &it, &trialno, &lastid, &crosses, &shifts, &mutations);
+    inittime = (time_t)it;
+  }
+#else
   sscanf (b, "%ld %d %d %d %d %d",
           &inittime, &trialno, &lastid, &crosses, &shifts, &mutations);
+#endif
   SKIPTO ('|', b);
   parsestat (b, &g_score);
+
   SKIPTO ('|', b);
   parsestat (b, &g_level);
 
@@ -376,10 +386,16 @@ writegenes (char *genepool)
     quit (1, "Cannot open file '%s'\n", genepool);
 
   /* Write the header line */
+#ifdef ROGOWEB
+  fprintf (gfil, "%lld %d %d %d %d %d",
+           (long long)inittime, trialno, lastid, crosses, shifts, mutations);
+#else
   fprintf (gfil, "%ld %d %d %d %d %d",
            inittime, trialno, lastid, crosses, shifts, mutations);
+#endif
   fprintf (gfil, "|");
   writestat (gfil, &g_score);
+
   fprintf (gfil, "|");
   writestat (gfil, &g_level);
   fprintf (gfil, "|\n");
