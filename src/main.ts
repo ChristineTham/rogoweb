@@ -425,7 +425,7 @@ const handleExit = (_status: number) => {
   TerminalShim: TerminalShim,
   onRuntimeInitialized: () => {
     console.log('WASM Runtime Initialized');
-    xterm.writeln('*** SYSTEM READY (Press START to begin) ***');
+    xterm.writeln('(PRESS START TO BEGIN)\r\n>>>');
     if (startBtn) {
       startBtn.disabled = false;
       startBtn.onclick = () => {
@@ -459,7 +459,7 @@ const handleExit = (_status: number) => {
 const terminalElement = document.getElementById('terminal');
 if (terminalElement) {
   xterm.open(terminalElement);
-  xterm.writeln('*** POWERING ON... ***');
+  xterm.writeln('CPU HALTED, SOMM CLEAR, STEP=NONE, CLOCK=NORM.\r\nRAD=HEX, ADD=PHYS, DAT LONG, FILL=00, REL=000000.\r\nINIT SEQ DONE.\r\nHALTED AT 00000000.');
 
   // ACTIVATE CANVAS RENDERER
   try {
