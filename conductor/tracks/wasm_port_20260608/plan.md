@@ -17,4 +17,4 @@
 - [x] Task: Verify compilation for both target environments. 76f13ca
     - [x] Sub-task: Compile `rogomatic` using `make -f Makefile.wasm` (which should define `ROGOWEB`) and ensure it builds successfully without undefined references to `fork`/`execl`. 76f13ca
     - [x] Sub-task: Verify standard desktop compilation is unaffected. 76f13ca
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Refactoring setup.c for WASM' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Phase 2: Refactoring setup.c for WASM' (Protocol in workflow.md)
