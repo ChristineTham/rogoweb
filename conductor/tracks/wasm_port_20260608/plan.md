@@ -8,13 +8,13 @@
     - [x] Sub-task: Make any necessary adjustments (via `#ifdef ROGOWEB`) to struct packing or I/O functions if tests reveal alignment issues. 3462b94
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Serialization Audit & Testing' (Protocol in workflow.md) bd9e99e
 
-## Phase 2: Refactoring `setup.c` for WASM
+## Phase 2: Refactoring `setup.c` for WASM [~]
 
-- [ ] Task: Refactor `setup.c` to bypass OS-level process management.
-    - [ ] Sub-task: Identify all instances of `fork()`, `execl()`, and related UNIX pipe creation in `setup.c`.
-    - [ ] Sub-task: Wrap identified code blocks with `#ifndef ROGOWEB` to exclude them from the WASM build.
-    - [ ] Sub-task: Add `#ifdef ROGOWEB` blocks to define the new WASM entry point behavior (initializing player state and preparing for virtual pipe connections).
-- [ ] Task: Verify compilation for both target environments.
-    - [ ] Sub-task: Compile `rogomatic` using `make -f Makefile.wasm` (which should define `ROGOWEB`) and ensure it builds successfully without undefined references to `fork`/`execl`.
-    - [ ] Sub-task: Verify standard desktop compilation is unaffected.
+- [x] Task: Refactor `setup.c` to bypass OS-level process management. 76f13ca
+    - [x] Sub-task: Identify all instances of `fork()`, `execl()`, and related UNIX pipe creation in `setup.c`. 76f13ca
+    - [x] Sub-task: Wrap identified code blocks with `#ifndef ROGOWEB` to exclude them from the WASM build. 76f13ca
+    - [x] Sub-task: Add `#ifdef ROGOWEB` blocks to define the new WASM entry point behavior (initializing player state and preparing for virtual pipe connections). 76f13ca
+- [x] Task: Verify compilation for both target environments. 76f13ca
+    - [x] Sub-task: Compile `rogomatic` using `make -f Makefile.wasm` (which should define `ROGOWEB`) and ensure it builds successfully without undefined references to `fork`/`execl`. 76f13ca
+    - [x] Sub-task: Verify standard desktop compilation is unaffected. 76f13ca
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Refactoring setup.c for WASM' (Protocol in workflow.md)
