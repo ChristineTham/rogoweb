@@ -18,5 +18,5 @@
 
 - [x] Task: Compile `rogoweb/rogue` successfully
 - [x] Task: Compile `rogoweb/rogomatic` successfully e648a6b
-- [ ] Task: Build the `rogoweb` frontend and verify it correctly serves the compiled WASM binaries
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Compilation and Verification' (Protocol in workflow.md)
+- [x] Task: Build the `rogoweb` frontend and verify it correctly serves the compiled WASM binaries e648a6b
+- [~] Task: Conductor - User Manual Verification 'Phase 3: Compilation and Verification' (Protocol in workflow.md)
