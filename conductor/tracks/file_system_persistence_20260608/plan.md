@@ -12,12 +12,12 @@
 - [x] Task: Create Empty Files for Fresh Loads [5d7daa2]
     - [x] After initial `syncfs(true)`, check if critical files (like `GenePool544`, `ltm544`) exist. [5d7daa2]
     - [x] If they don't exist, create them as empty files or with default seed data to prevent crashes. [5d7daa2]
-- [~] Task: Conductor - User Manual Verification 'Setup IDBFS and Mount Points' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Setup IDBFS and Mount Points' (Protocol in workflow.md) [0135b47]
 
 ## Phase 2: Synchronization Triggers and JS Hooks
-- [ ] Task: Define JS Hook for Synchronization
-    - [ ] Implement a function in the worker scope (or exposed via `Module`) that calls `FS.syncfs(false, callback)`.
-- [ ] Task: Instrument C Code for Event-Driven Sync
+- [x] Task: Define JS Hook for Synchronization [f427d43]
+    - [x] Implement a function in the worker scope (or exposed via `Module`) that calls `FS.syncfs(false, callback)`. [f427d43]
+- [~] Task: Instrument C Code for Event-Driven Sync
     - [ ] Identify the points in the C source code where a game ends (e.g., `score()` or death routines) and where the gene pool is saved.
     - [ ] Inject `EM_ASM` calls or exported C-to-JS callbacks to trigger the JS sync hook at these specific points.
     - [ ] Ensure the sync operates asynchronously and doesn't block the WASM execution unnecessarily, or handles the callback properly.
