@@ -12,13 +12,14 @@ OBJS     = arms.$(O) command.$(O) config.$(O) database.$(O) debug.$(O) \
 
 CC       = emcc
 # Asyncify is required for blocking terminal reads (getch)
-FEATURES = -D__EMSCRIPTEN__ -DRGM_PLAYER
-CFLAGS   = -g3 -O0 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -I../../rogue/emcurses -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
-           -s EMULATE_FUNCTION_POINTER_CASTS=1 -std=gnu89 -Wno-deprecated-non-prototype \
-           -Wno-error=incompatible-pointer-types -Wno-format -Wno-implicit-function-declaration -Wno-int-conversion \
+FEATURES = -D__EMSCRIPTEN__ -DRGM_PLAYER -DROGOWEB
+CFLAGS   = -g3 -O0 -I../../emcurses -std=gnu89 -Wno-deprecated-non-prototype \
+           -Wno-error=incompatible-pointer-types -Wno-format -Wno-implicit-function-declaration -Wno-int-conversion
+LIBS     = ../../emcurses/emscripten/libpdcurses.a
+LDFLAGS  = --pre-js ../../emcurses/emscripten/termlib.js \
+           -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
+           -s EMULATE_FUNCTION_POINTER_CASTS=1 \
            -s EXPORTED_FUNCTIONS="['_main']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction']"
-LIBS     = ../../rogue/emcurses/emscripten/libpdcurses.a
-LDFLAGS  = --pre-js ../../rogue/emcurses/emscripten/termlib.js
 OUTFLAG  = -o
 EXE      = .js
 

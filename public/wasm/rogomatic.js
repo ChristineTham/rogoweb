@@ -71,7 +71,7 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: ../../rogue/emcurses/emscripten/termlib.js
+// include: ../../emcurses/emscripten/termlib.js
 /*
   termlib.js - JS-WebTerminal Object v1.63
 
@@ -3651,7 +3651,7 @@ Terminal.prototype._defaultServerCallback = function () {
 };
 
 // eof
-// end include: ../../rogue/emcurses/emscripten/termlib.js
+// end include: ../../emcurses/emscripten/termlib.js
 
 
 var programArgs = [];
