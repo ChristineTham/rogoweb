@@ -18,6 +18,12 @@ self.onmessage = (e: MessageEvent) => {
         console.log('Rogue Worker: WASM Runtime Initialized');
         Module.callMain(['-n', userName]);
       },
+      locateFile: (path: string) => {
+        if (path.endsWith('.wasm')) {
+          return '/rogoweb/wasm/' + path;
+        }
+        return path;
+      },
       print: (text: string) => console.log('Rogue stdout:', text),
       printErr: (text: string) => console.error('Rogue stderr:', text),
     };

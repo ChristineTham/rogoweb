@@ -18,6 +18,12 @@ self.onmessage = (e: MessageEvent) => {
         console.log('Rogomatic Worker: WASM Runtime Initialized');
         Module.callMain(['ZZ', '0', '0', userName]);
       },
+      locateFile: (path: string) => {
+        if (path.endsWith('.wasm')) {
+          return '/rogoweb/wasm/' + path;
+        }
+        return path;
+      },
       print: (text: string) => console.log('Rogomatic stdout:', text),
       printErr: (text: string) => console.error('Rogomatic stderr:', text),
     };
