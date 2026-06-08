@@ -2,10 +2,10 @@
 
 ## Phase 1: Serialization Audit & Testing [~]
 
-- [~] Task: Create a C test harness to verify file serialization for `ltm.c` and `gene.c`.
-    - [~] Sub-task: Write tests that simulate writing and reading dummy `ltm` and `gene` data structures, verifying byte boundaries and 32-bit alignment in the WASM environment.
-    - [ ] Sub-task: Execute tests via Emscripten/Node.js to confirm file I/O works as expected on the `wasm32` target.
-    - [ ] Sub-task: Make any necessary adjustments (via `#ifdef ROGOWEB`) to struct packing or I/O functions if tests reveal alignment issues.
+- [x] Task: Create a C test harness to verify file serialization for `ltm.c` and `gene.c`. 3462b94
+    - [x] Sub-task: Write tests that simulate writing and reading dummy `ltm` and `gene` data structures, verifying byte boundaries and 32-bit alignment in the WASM environment. 3462b94
+    - [x] Sub-task: Execute tests via Emscripten/Node.js to confirm file I/O works as expected on the `wasm32` target. 3462b94
+    - [x] Sub-task: Make any necessary adjustments (via `#ifdef ROGOWEB`) to struct packing or I/O functions if tests reveal alignment issues. 3462b94
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Serialization Audit & Testing' (Protocol in workflow.md)
 
 ## Phase 2: Refactoring `setup.c` for WASM
