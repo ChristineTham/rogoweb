@@ -136,7 +136,12 @@ char  screen[24][80];		/* Map of current Rogue screen */
 char  sumline[128];		/* Termination message for Rogomatic */
 char  ourkiller[NAMSIZ];	/* How we died */
 char  versionstr[32];		/* Version of Rogue being used */
+#ifdef ROGOWEB
+char  rgm_parmstr[512];
+char  *parmstr = rgm_parmstr;
+#else
 char  *parmstr;			/* Pointer to process arguments */
+#endif
 char  pending_call_letter = ' ';	/* If non-blank we have a call it to do */
 char  pending_call_name[NAMSIZ];	/*   and this is the name to use */
 
@@ -361,6 +366,7 @@ int main (int argc, char *argv[])
   int startingup = 1;
   int  i;
 
+  fprintf(stderr, "main.c: player_main entered\n"); fflush(stderr);
   debuglog_open ("debuglog.player");
 
   /*
@@ -373,7 +379,7 @@ int main (int argc, char *argv[])
   sprintf (sumline, "");
   sprintf (versionstr, "");
 
-  for (i = 80 * 24; i--; ) screen[0][i] = ' ';
+  memset(screen, ' ', sizeof(screen));
 
   /*
    * Get the process id of this player program if the
@@ -442,6 +448,7 @@ int main (int argc, char *argv[])
   if (argc > 4)	strcpy (roguename, argv[4]);
   else		sprintf (roguename, "Rog-O-Matic %s", RGMVER);
 
+#ifndef ROGOWEB
   /* Now count argument space and assign a global pointer to it */
   arglen = 0;
 
@@ -455,6 +462,7 @@ int main (int argc, char *argv[])
   parmstr = argv[0];	arglen--;
   parmstr[arglen] = '\0';/* I don't like this business with muck with ps, but
                             I think the lack of a null is a problem - NYM */
+#endif
 
   /* If we are in one-line mode, then squirrel away stdout */
   if (emacs || terse) {
@@ -463,16 +471,16 @@ int main (int argc, char *argv[])
   }
 
   initscr (); crmode (); noecho ();	/* Initialize the Curses package */
-
-  if (startecho) toggleecho ();		/* Start logging? */
-
-  clear ();				/* Clear the screen */
-  getrogver ();				/* Figure out Rogue version */
-
-  if (!replaying) {
-    restoreltm ();			/* Get long term memory of version */
-    startlesson ();			/* Start genetic learning */
-  }
+ 
+   if (startecho) toggleecho ();		/* Start logging? */
+ 
+   clear ();				/* Clear the screen */
+   getrogver ();				/* Figure out Rogue version */
+ 
+   if (!replaying) {
+     restoreltm ();			/* Get long term memory of version */
+     startlesson ();			/* Start genetic learning */
+   }
 
   /*
    * Give a hello message

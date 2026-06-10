@@ -221,6 +221,41 @@ const settleBestTerminalFit = async (containerW: number, containerH: number, run
 };
 
 /**
+ * TELEMETRY POLLING
+ */
+const pollTelemetry = () => {
+  const term = (window as any).term as TerminalShim;
+  if (!term || !term.charBuf || !term.charBuf[23]) return;
+
+  // The last line usually contains Rogue's status
+  const statLine = String.fromCharCode(...term.charBuf[23].map(c => c || 32));
+  
+  const lvlMatch = statLine.match(/Level:\s*(\d+)/);
+  if (lvlMatch) {
+    const el = document.getElementById('stat-level');
+    if (el) el.textContent = lvlMatch[1];
+  }
+  
+  const goldMatch = statLine.match(/Gold:\s*(\d+)/);
+  if (goldMatch) {
+    const el = document.getElementById('stat-gold');
+    if (el) el.textContent = goldMatch[1];
+  }
+
+  const hpMatch = statLine.match(/Hp:\s*([\d]+\([\d]+\))/);
+  if (hpMatch) {
+    const el = document.getElementById('stat-hp');
+    if (el) el.textContent = hpMatch[1].replace('(', '/').replace(')', '');
+  }
+
+  const strMatch = statLine.match(/Str:\s*(\d+)/);
+  if (strMatch) {
+    const el = document.getElementById('stat-str');
+    if (el) el.textContent = strMatch[1];
+  }
+};
+
+/**
  * ASYNCHRONOUS LOGIN SIMULATION
  */
 const simulateTyping = async (text: string, speed = 100) => {
@@ -275,6 +310,9 @@ const runLoginSequence = async (userName: string) => {
 
   if (isAuto && l2) l2.classList.add('active');
 
+  // Start telemetry polling
+  setInterval(pollTelemetry, 250);
+
   // FOCUS: Bring focus to terminal for immediate play
   xterm.focus();
 
@@ -295,13 +333,36 @@ const runLoginSequence = async (userName: string) => {
     const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
     const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
 
-    const handleWorkerError = (e: MessageEvent) => {
+    const handleWorkerMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'fs_error') {
         showPersistenceError();
+      } else if (e.data && e.data.type === 'log') {
+        const logPane = document.getElementById('observer-log');
+        if (logPane) {
+          const entry = document.createElement('div');
+          entry.textContent = `[${e.data.source}] ${e.data.message}`;
+          if (e.data.error) {
+            entry.classList.add('text-red-400');
+          } else {
+            entry.classList.add('text-green-400');
+          }
+          logPane.appendChild(entry);
+          requestAnimationFrame(() => {
+            logPane.scrollTop = logPane.scrollHeight;
+          });
+        }
+      } else if (e.data && e.data.type === 'stdout') {
+        if (e.data.raw) {
+          xterm.write(e.data.message);
+        } else {
+          xterm.writeln(e.data.message);
+        }
+      } else if (e.data && e.data.type === 'stats') {
+        TermGlobals.setStats(e.data.stats);
       }
     };
-    rogueWorker.onmessage = handleWorkerError;
-    rogomaticWorker.onmessage = handleWorkerError;
+    rogueWorker.onmessage = handleWorkerMessage;
+    rogomaticWorker.onmessage = handleWorkerMessage;
 
     rogueWorker.postMessage({ type: 'init', sab, userName });
     rogomaticWorker.postMessage({ type: 'init', sab, userName });
@@ -675,6 +736,7 @@ if (modeToggle) {
     window.location.reload();
   };
 }
+
 const script = document.createElement('script');
-script.src = modeToggle?.checked ? '/rogoweb/wasm/rogomatic.js' : '/rogoweb/wasm/rogue.js';
+script.src = '/rogoweb/wasm/rogue.js';
 document.body.appendChild(script);

@@ -23,5 +23,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Build a React/Vanilla UI with controls to start standalone Rogue and Rogomatic auto-play, display live game statistics, and add testing harnesses to simulate deterministic seeds.**
+- [~] **Track: Build a React/Vanilla UI with controls to start standalone Rogue and Rogomatic auto-play, display live game statistics, and add testing harnesses to simulate deterministic seeds.**
 *Link: [./tracks/frontend_ui_harnesses_20260608/](./tracks/frontend_ui_harnesses_20260608/)*

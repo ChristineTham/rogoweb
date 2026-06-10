@@ -209,6 +209,9 @@ getrogue (char *waitstr, int onat)
   while ((*s) ||
          ((!hasted || version != RV36A) && onat && screen[row][col] != '@')) {
     ch = getroguetoken ();
+#ifdef ROGOWEB
+    fprintf(stderr, "getrogue: read ch=%d (%s) FSM s='%s' cursor=[%d,%d]\n", ch, unctrl(ch), s, row, col); fflush(stderr);
+#endif
 
     if debug(D_MESSAGE) {
       at (28,col);

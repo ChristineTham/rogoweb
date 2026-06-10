@@ -143,6 +143,14 @@ int doupdate(void)
     else
         clearall = curscr->_clear;
 
+#ifdef ROGOWEB
+    if (clearall) {
+        extern int wasm_pipe_write(int fd, const char *buf, int count);
+        char cl = 12; /* Form Feed (CL_TOK) */
+        wasm_pipe_write(1, &cl, 1);
+    }
+#endif
+
     for (y = 0; y < SP->lines; y++)
     {
         PDC_LOG(("doupdate() - Transforming line %d of %d: %s\n",

@@ -10,7 +10,7 @@
     "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build:emcurses": "emmake make -C emcurses/emscripten",
+    "build:emcurses": "emmake make -C emcurses/emscripten libs",
     "build:rogue": "make -C rogue -f Makefile.wasm",
     "build:rogomatic": "make -C rogomatic/src -f Makefile.wasm",
     "build:wasm": "npm run build:emcurses && npm run build:rogue && npm run build:rogomatic",

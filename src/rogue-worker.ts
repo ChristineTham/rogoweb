@@ -28,9 +28,29 @@ self.onmessage = (e: MessageEvent) => {
       const term = new ((self as any).Terminal)();
       term.ipc = ipc;
 
+      // IPC Polling loop for Rogomatic keystrokes
+      const pollIPC = () => {
+        const activeTerm = (self as any).term;
+        if (activeTerm && ipc && ipc.rogomaticToRogue.getAvailableRead() > 0) {
+          const buf = new Uint8Array(1);
+          if (ipc.rogomaticToRogue.read(buf, false) === 1) {
+            activeTerm.pushInput(buf[0]);
+            if (activeTerm.handler) activeTerm.handler();
+          }
+        }
+        setTimeout(pollIPC, 10);
+      };
+      pollIPC();
+
+      const roguename = `Rog-O-Matic XIV for ${userName}`;
+      const rogueopts = `name=${roguename},fruit=apricot,terse,noflush,noask,jump,step,nopassgo,inven=slow,seefloor`;
       (self as any).Module = {
         noInitialRun: true,
-        ENV: { USER: userName, LOGNAME: userName },
+        ENV: {
+          USER: userName,
+          LOGNAME: userName,
+          ROGUEOPTS: rogueopts
+        },
         TerminalShim: (self as any).Terminal,
         wasm_pipe_read: (_fd: number, ptr: number, count: number) => {
           if (!ipc) return 0;
@@ -40,7 +60,7 @@ self.onmessage = (e: MessageEvent) => {
         wasm_pipe_write: (_fd: number, ptr: number, count: number) => {
           if (!ipc) return 0;
           const src = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-          return ipc.rogueToRogomatic.write(src);
+          return ipc.rogueToRogomatic.write(src, true); // BLOCKING WRITE
         },
         onRuntimeInitialized: () => {
           console.log('Rogue Worker: WASM Runtime Initialized');
@@ -78,6 +98,20 @@ self.onmessage = (e: MessageEvent) => {
               console.log('Rogue Worker: IDBFS synced');
             }
 
+            // Clean up any stale lock files before starting
+            try {
+              const files = FS.readdir('/var/games/rogomatic');
+              files.forEach((file: string) => {
+                if (file.includes('Lock') || file.endsWith('.lck')) {
+                  const fullPath = `/var/games/rogomatic/${file}`;
+                  console.log(`Rogue Worker: Cleaning up stale lock file ${fullPath}`);
+                  FS.unlink(fullPath);
+                }
+              });
+            } catch (e) {
+              console.warn('Rogue Worker: Error cleaning up lock files:', e);
+            }
+
             const scoreFile = '/var/games/rogomatic/rogue.scr';
             try {
               if (!FS.analyzePath(scoreFile).exists) {
@@ -88,8 +122,29 @@ self.onmessage = (e: MessageEvent) => {
               console.error(`Rogue Worker: Error checking/creating ${scoreFile}:`, e);
             }
 
+            const Module = (self as any).Module;
+            if (typeof Module._setenv === 'function') {
+              console.log('Rogue Worker: Setting environment variables via _setenv...');
+              const setenvHelper = (key: string, value: string) => {
+                const keyPtr = Module.stackAlloc(key.length * 4 + 1);
+                Module.stringToUTF8(key, keyPtr, key.length * 4 + 1);
+                const valPtr = Module.stackAlloc(value.length * 4 + 1);
+                Module.stringToUTF8(value, valPtr, value.length * 4 + 1);
+                Module._setenv(keyPtr, valPtr, 1);
+              };
+              setenvHelper('USER', userName);
+              setenvHelper('LOGNAME', userName);
+              setenvHelper('ROGUEOPTS', rogueopts);
+            }
+
             console.log('Rogue Worker: Calling callMain...');
-            (self as any).Module.callMain(['-n', userName]);
+            try {
+              (self as any).Module.callMain(['-n', userName]);
+            } catch (e: any) {
+              if (e && e.name !== 'ExitStatus' && e !== 'unwind') {
+                console.error('Rogue Worker: Startup Error caught:', e);
+              }
+            }
           });
         },
         locateFile: (path: string) => {
@@ -98,8 +153,14 @@ self.onmessage = (e: MessageEvent) => {
           }
           return path;
         },
-        print: (text: string) => console.log('Rogue stdout:', text),
-        printErr: (text: string) => console.error('Rogue stderr:', text),
+        print: (text: string) => {
+          console.log('Rogue stdout:', text);
+          self.postMessage({ type: 'log', source: 'rogue', message: text });
+        },
+        printErr: (text: string) => {
+          console.error('Rogue stderr:', text);
+          self.postMessage({ type: 'log', source: 'rogue', message: text, error: true });
+        },
         syncFS: () => {
           console.log('Rogue Worker: Syncing FS to IDBFS...');
           return new Promise<void>((resolve) => {

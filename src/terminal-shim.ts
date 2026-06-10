@@ -14,6 +14,8 @@ export class TerminalShim {
   styleBuf: any[][] = [];
   maxLines: number = 24;
   maxCols: number = 80;
+  lastRow: number = -1;
+  lastCol: number = -1;
 
   constructor(conf: any) {
     console.log('TerminalShim constructor', conf);
@@ -71,8 +73,20 @@ export class TerminalShim {
   close() {
     console.log('TerminalShim.close');
     this.inputQueue = [];
-    this.xterm.reset();
-    this.xterm.write('\x1b[H\x1b[2J'); // Home and clear
+    const clearAnsi = '\x1b[H\x1b[2J';
+
+    if ((this as any).ipc) {
+      const encoder = new TextEncoder();
+      const isWorker = typeof self !== 'undefined' && typeof (self as any).importScripts !== 'undefined';
+      (this as any).ipc.rogueToRogomatic.write(encoder.encode(clearAnsi), isWorker);
+    }
+
+    if (this.xterm) {
+      this.xterm.reset();
+      this.xterm.write(clearAnsi); // Home and clear
+    } else if (typeof postMessage !== 'undefined') {
+      postMessage({ type: 'stdout', message: clearAnsi, raw: true });
+    }
   }
 
   setChar(ch: number, row: number, col: number, style: number) {
@@ -87,7 +101,11 @@ export class TerminalShim {
     this.charBuf[row][col] = ch;
     this.styleBuf[row][col] = style;
 
-    let ansi = '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
+    let ansi = '';
+    // Only emit cursor move if not contiguous
+    if (row !== this.lastRow || col !== this.lastCol + 1) {
+      ansi += '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
+    }
 
     if (style & 4) ansi += '\x1b[1m'; // Bold
     if (style & 2) ansi += '\x1b[4m'; // Underline
@@ -96,7 +114,21 @@ export class TerminalShim {
     ansi += String.fromCharCode(ch || 32);
     if (style !== 0) ansi += '\x1b[0m';
 
-    this.xterm.write(ansi);
+    this.lastRow = row;
+    this.lastCol = col;
+
+    // Route to IPC if this is the Rogue worker talking to Rogomatic
+    if ((this as any).ipc) {
+      const encoder = new TextEncoder();
+      const isWorker = typeof self !== 'undefined' && typeof (self as any).importScripts !== 'undefined';
+      (this as any).ipc.rogueToRogomatic.write(encoder.encode(ansi), isWorker);
+    }
+
+    if (this.xterm) {
+      this.xterm.write(ansi);
+    } else if (typeof postMessage !== 'undefined') {
+      postMessage({ type: 'stdout', message: ansi, raw: true });
+    }
 
     // STATUS LINE PARSING (Row 23 is the typical Rogue status line)
     if (row === 23) {
@@ -110,10 +142,14 @@ export class TerminalShim {
     // Debounce parsing to avoid overhead
     if (this.parseTimeout) clearTimeout(this.parseTimeout);
     this.parseTimeout = setTimeout(() => {
-      // Extract line from xterm buffer if possible, or maintain internal buffer
-      // For now, let's just assume we can get it from xterm
-      const line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || '';
-      console.log('Parsing status line:', line);
+      let line = '';
+      if (this.xterm) {
+        line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || '';
+      } else {
+        line = String.fromCharCode(...this.charBuf[23].map(c => c || 32));
+      }
+      
+      // console.log('Parsing status line:', line);
 
       // Regex patterns for Rogue stats
       const hpMatch = line.match(/Hp:\s*(\d+\(\d+\))/i);
@@ -131,23 +167,36 @@ export class TerminalShim {
   }
 
   cursorSet(row: number, col: number) {
-    // console.log(`cursorSet: ${row},${col}`);
-    this.xterm.write('\x1b[' + (row + 1) + ';' + (col + 1) + 'H');
+    const ansi = '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
+    
+    if ((this as any).ipc) {
+      const encoder = new TextEncoder();
+      const isWorker = typeof self !== 'undefined' && typeof (self as any).importScripts !== 'undefined';
+      (this as any).ipc.rogueToRogomatic.write(encoder.encode(ansi), isWorker);
+    }
+
+    if (this.xterm) {
+      this.xterm.write(ansi);
+    } else if (typeof postMessage !== 'undefined') {
+      postMessage({ type: 'stdout', message: ansi, raw: true });
+    }
   }
 
   resizeTo(cols: number, rows: number) {
     console.log('TerminalShim.resizeTo', cols, rows);
     this.conf.cols = cols;
     this.conf.rows = rows;
-    this.xterm.resize(cols, rows);
+    if (this.xterm) {
+      this.xterm.resize(cols, rows);
+    }
   }
 
   cursorOn() {
-    this.xterm.options.cursorBlink = true;
+    if (this.xterm) this.xterm.options.cursorBlink = true;
   }
 
   cursorOff() {
-    this.xterm.options.cursorBlink = false;
+    if (this.xterm) this.xterm.options.cursorBlink = false;
   }
 }
 
@@ -160,30 +209,35 @@ export const TermGlobals = {
     console.log('TermGlobals.setColor', color, str);
   },
   setStats: (stats: any) => {
-    console.log('TermGlobals.setStats', stats);
-    if (stats.hp !== undefined) {
-      const el = document.getElementById('stat-hp');
-      if (el) el.innerText = stats.hp;
-    }
-    if (stats.str !== undefined) {
-      const el = document.getElementById('stat-str');
-      if (el) el.innerText = stats.str;
-    }
-    if (stats.gold !== undefined) {
-      const el = document.getElementById('stat-gold');
-      if (el) el.innerText = stats.gold;
-    }
-    if (stats.level !== undefined) {
-      const el = document.getElementById('stat-level');
-      if (el) el.innerText = stats.level;
-    }
-    if (stats.botState !== undefined) {
-      const el = document.getElementById('bot-state');
-      if (el) el.innerText = stats.botState;
-    }
-    if (stats.botGen !== undefined) {
-      const el = document.getElementById('bot-gen');
-      if (el) el.innerText = stats.botGen;
+    // console.log('TermGlobals.setStats', stats);
+    if (typeof document !== 'undefined' && document.getElementById && (window as any).document === document) {
+        // We are in the main thread
+        if (stats.hp !== undefined) {
+          const el = document.getElementById('stat-hp');
+          if (el) el.innerText = stats.hp;
+        }
+        if (stats.str !== undefined) {
+          const el = document.getElementById('stat-str');
+          if (el) el.innerText = stats.str;
+        }
+        if (stats.gold !== undefined) {
+          const el = document.getElementById('stat-gold');
+          if (el) el.innerText = stats.gold;
+        }
+        if (stats.level !== undefined) {
+          const el = document.getElementById('stat-level');
+          if (el) el.innerText = stats.level;
+        }
+        if (stats.botState !== undefined) {
+          const el = document.getElementById('bot-state');
+          if (el) el.innerText = stats.botState;
+        }
+        if (stats.botGen !== undefined) {
+          const el = document.getElementById('bot-gen');
+          if (el) el.innerText = stats.botGen;
+        }
+    } else if (typeof postMessage !== 'undefined') {
+        postMessage({ type: 'stats', stats });
     }
   },
 };

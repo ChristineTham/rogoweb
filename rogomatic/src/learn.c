@@ -707,7 +707,13 @@ selectgene (int e1, int e2)
   }
 
   /* Total worth zero, pick any gene at random */
-  while ((g = rogo_randint (length))==e1 || g==e2) ;
+  if (length <= 0) return 0;
+  while ((g = rogo_randint (length))==e1 || g==e2) {
+      if (length <= 2) {
+          /* If there aren't enough genes to find one that isn't e1 or e2, avoid infinite loop */
+          return (g == e1 ? e2 : e1); 
+      }
+  }
 
   return (g);
 }
@@ -748,6 +754,8 @@ untested (void)
 {
   int g, y= -1, trials=1e9, newtrials, count=length;
 
+  if (length <= 0) return -1;
+
   for (g = rogo_randint (length); count-- > 0; g = (g+1) % length) {
     if (TRIALS (genes[g]) >= trials) continue;
 
@@ -768,6 +776,8 @@ static int
 youngest (void)
 {
   int g, y=0, trials=1e9, newtrials, count=length;
+
+  if (length <= 0) return 0;
 
   for (g = rogo_randint (length); count-- > 0; g = (g+1) % length) {
     newtrials = TRIALS (genes[g]);

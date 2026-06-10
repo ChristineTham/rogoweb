@@ -9428,26 +9428,26 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onSbrkGrow');
 }
 var ASM_CONSTS = {
-  96002: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
- 96051: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
- 96101: ($0, $1) => { term.cursorSet($0, $1); },  
- 96129: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
- 96163: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
- 96227: () => { return term.conf.rows; },  
- 96254: () => { return term.conf.cols; },  
- 96281: () => { return term.hasInput(); },  
- 96309: () => { return term.getKey(); },  
- 96335: () => { term.inputChar = 0 },  
- 96354: () => { term.close() },  
- 96367: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
- 96576: ($0, $1) => { term.resizeTo($0, $1); },  
- 96603: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
- 97003: () => { throw 'SimulateInfiniteLoop' },  
- 97032: ($0, $1) => { term.resizeTo($0, $1); },  
- 97059: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
- 97127: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
- 97175: () => { term.cursorOn() },  
- 97191: () => { term.cursorOff() }
+  96146: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
+ 96195: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
+ 96245: ($0, $1) => { term.cursorSet($0, $1); },  
+ 96273: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
+ 96307: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
+ 96371: () => { return term.conf.rows; },  
+ 96398: () => { return term.conf.cols; },  
+ 96425: () => { return term.hasInput(); },  
+ 96453: () => { return term.getKey(); },  
+ 96479: () => { term.inputChar = 0 },  
+ 96498: () => { term.close() },  
+ 96511: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
+ 96720: ($0, $1) => { term.resizeTo($0, $1); },  
+ 96747: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
+ 97147: () => { throw 'SimulateInfiniteLoop' },  
+ 97176: ($0, $1) => { term.resizeTo($0, $1); },  
+ 97203: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
+ 97271: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
+ 97319: () => { term.cursorOn() },  
+ 97335: () => { term.cursorOff() }
 };
 function __asyncjs__trigger_syncfs() { return Asyncify.handleAsync(async () => { return new Promise(function(resolve) { var syncFn = null; if (typeof self !== 'undefined' && self.syncFS) syncFn = self.syncFS; else if (typeof window !== 'undefined' && window.syncFS) syncFn = window.syncFS; else if (typeof Module !== 'undefined' && Module.syncFS) syncFn = Module.syncFS; if (syncFn) { var p = syncFn(); if (p && p.then) { p.then(resolve); } else { resolve(); } } else { resolve(); } }); }); }
 
@@ -9493,7 +9493,7 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['malloc'] != 'undefined', 'missing Wasm export: malloc');
   assert(typeof wasmExports['strerror'] != 'undefined', 'missing Wasm export: strerror');
   assert(typeof wasmExports['fflush'] != 'undefined', 'missing Wasm export: fflush');
-  assert(typeof wasmExports['main'] != 'undefined', 'missing Wasm export: main');
+  assert(typeof wasmExports['__main_argc_argv'] != 'undefined', 'missing Wasm export: __main_argc_argv');
   assert(typeof wasmExports['wasm_pipe_read'] != 'undefined', 'missing Wasm export: wasm_pipe_read');
   assert(typeof wasmExports['wasm_pipe_write'] != 'undefined', 'missing Wasm export: wasm_pipe_write');
   assert(typeof wasmExports['__funcs_on_exit'] != 'undefined', 'missing Wasm export: __funcs_on_exit');
@@ -9525,7 +9525,7 @@ function assignWasmExports(wasmExports) {
   _malloc = Module['_malloc'] = createExportWrapper('malloc', 1);
   _strerror = createExportWrapper('strerror', 1);
   _fflush = createExportWrapper('fflush', 1);
-  _main = Module['_main'] = createExportWrapper('main', 3);
+  _main = Module['_main'] = createExportWrapper('__main_argc_argv', 2);
   _wasm_pipe_read = Module['_wasm_pipe_read'] = createExportWrapper('wasm_pipe_read', 3);
   _wasm_pipe_write = Module['_wasm_pipe_write'] = createExportWrapper('wasm_pipe_write', 3);
   ___funcs_on_exit = createExportWrapper('__funcs_on_exit', 0);

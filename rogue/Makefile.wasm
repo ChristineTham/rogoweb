@@ -27,6 +27,8 @@ LDFLAGS  = --pre-js ../emcurses/emscripten/termlib.js \
 OUTFLAG  = -o
 EXE      = .js
 
+all: $(PROGRAM).js
+
 .c.o:
 	$(CC) $(CFLAGS) $(FEATURES) -c $*.c
 

@@ -20,23 +20,35 @@ class SharedRingBuffer {
    * Writes data to the buffer.
    * @returns The number of bytes written.
    */
-  write(src) {
-    const head = Atomics.load(this.head, 0);
-    const tail = Atomics.load(this.tail, 0);
+  write(src, block = false) {
+    let totalWritten = 0;
+    while (totalWritten < src.length) {
+      const head = Atomics.load(this.head, 0);
+      const tail = Atomics.load(this.tail, 0);
 
-    const available = this.getAvailableWriteInternal(head, tail);
-    const toWrite = Math.min(src.length, available);
+      const available = this.getAvailableWriteInternal(head, tail);
+      
+      if (available === 0 && block) {
+        Atomics.wait(this.head, 0, head, 100);
+        continue;
+      }
 
-    if (toWrite === 0) return 0;
+      const toWrite = Math.min(src.length - totalWritten, available);
 
-    for (let i = 0; i < toWrite; i++) {
-      this.data[(tail + i) % this.capacity] = src[i];
+      if (toWrite === 0) break;
+      // console.log("SharedRingBuffer.write", toWrite, "bytes:", new TextDecoder().decode(src.subarray(totalWritten, totalWritten + toWrite)));
+
+      for (let i = 0; i < toWrite; i++) {
+        this.data[(tail + i) % this.capacity] = src[totalWritten + i];
+      }
+
+      Atomics.store(this.tail, 0, (tail + toWrite) % this.capacity);
+      Atomics.notify(this.tail, 0);
+
+      totalWritten += toWrite;
+      if (!block) break;
     }
-
-    Atomics.store(this.tail, 0, (tail + toWrite) % this.capacity);
-    Atomics.notify(this.tail, 0);
-
-    return toWrite;
+    return totalWritten;
   }
 
   /**
@@ -50,10 +62,11 @@ class SharedRingBuffer {
     let available = this.getAvailableReadInternal(head, tail);
     
     if (available === 0 && block) {
-      // Wait for tail to change (indicating data written)
+      console.log("SharedRingBuffer.read: blocking wait on tail =", tail);
       Atomics.wait(this.tail, 0, tail);
       tail = Atomics.load(this.tail, 0);
       available = this.getAvailableReadInternal(head, tail);
+      console.log("SharedRingBuffer.read: woke up, available =", available);
     }
 
     const toRead = Math.min(dest.length, available);
@@ -127,58 +140,87 @@ class HeadlessTerminal {
     this.closed = false;
     this.cursorRow = 0;
     this.cursorCol = 0;
+    this.lastRow = -1;
+    this.lastCol = -1;
+    this.inputQueue = [];
+    if (conf) {
+      if (conf.initHandler) this.initHandler = conf.initHandler;
+      if (conf.handler) this.handler = conf.handler;
+    }
     self.term = this; // Global for emcurses
   }
-  open() { if (this.initHandler) this.initHandler(); }
-  close() { this.closed = true; }
+  open() { 
+    if (this.initHandler) this.initHandler(); 
+  }
+  close() { this.closed = true; this.inputQueue = []; }
+  pushInput(ch) {
+    this.inputQueue.push(ch);
+  }
   hasInput() { 
-    const ipc = self.ipc;
-    return ipc && ipc.rogomaticToRogue.getAvailableRead() > 0; 
+    return this.inputQueue.length > 0;
   }
   getKey() {
-    const ipc = self.ipc;
-    if (!ipc) return 0;
-    const buf = new Uint8Array(1);
-    if (ipc.rogomaticToRogue.read(buf) === 1) {
-      return buf[0];
-    }
-    return 0;
+    return this.inputQueue.shift() || 0;
   }
   setChar(ch, row, col, style) {
     if (row >= 0 && row < this.maxLines && col >= 0 && col < this.maxCols) {
       this.charBuf[row][col] = ch;
       this.styleBuf[row][col] = style;
       
-      const ipc = self.ipc;
-      if (ipc) {
-        // Emit VT100 codes to Rogue->Rogomatic pipe
-        this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
-        if (style !== 0) this.writeToPipe(ipc, '\x1b[7m'); 
-        this.writeToPipe(ipc, String.fromCharCode(ch || 32));
-        if (style !== 0) this.writeToPipe(ipc, '\x1b[0m');
+      let ansi = '';
+      if (row !== this.lastRow || col !== this.lastCol + 1) {
+        ansi += `\x1b[${row + 1};${col + 1}H`;
+      }
+      
+      if (style & 4) ansi += '\x1b[1m';
+      if (style & 2) ansi += '\x1b[4m';
+      if (style & 1) ansi += '\x1b[7m';
+      ansi += String.fromCharCode(ch || 32);
+      if (style !== 0) ansi += '\x1b[0m';
+      
+      this.lastRow = row;
+      this.lastCol = col;
+      
+      if (self.isRogomatic) {
+        self.postMessage({ type: 'stdout', message: ansi, raw: true });
+      } else {
+        const ipc = self.ipc;
+        if (ipc) {
+          this.writeToPipe(ipc, ansi);
+        }
       }
     }
   }
   cursorSet(row, col) {
     this.cursorRow = row;
     this.cursorCol = col;
-    const ipc = self.ipc;
-    if (ipc) {
-       this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
+    if (self.isRogomatic) {
+      const ansi = `\x1b[${row + 1};${col + 1}H`;
+      self.postMessage({ type: 'stdout', message: ansi, raw: true });
+    } else {
+      const ipc = self.ipc;
+      if (ipc) {
+         this.writeToPipe(ipc, `\x1b[${row + 1};${col + 1}H`);
+      }
     }
   }
   cursorOn() { }
   cursorOff() { }
   clear() {
     this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
-    const ipc = self.ipc;
-    if (ipc) {
-       this.writeToPipe(ipc, '\x1b[2J\x1b[H');
+    if (self.isRogomatic) {
+      self.postMessage({ type: 'stdout', message: '\x1b[2J\x1b[H', raw: true });
+    } else {
+      const ipc = self.ipc;
+      if (ipc) {
+         this.writeToPipe(ipc, '\x1b[2J\x1b[H');
+      }
     }
   }
   writeToPipe(ipc, str) {
+    console.log("Rogue -> Rogomatic pipe write:", JSON.stringify(str));
     const data = new TextEncoder().encode(str);
-    ipc.rogueToRogomatic.write(data);
+    ipc.rogueToRogomatic.write(data, true);
   }
 }
 

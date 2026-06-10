@@ -124,9 +124,9 @@
           <!-- ADAPTIVE STATS PANEL -->
           <aside
             id="stats-panel"
-            class="hidden panel-block bg-vt-beige-dark border border-black/20 rounded-md p-1 shrink-0 min-w-[130px] [box-shadow:inset_1px_1px_3px_rgba(0,0,0,0.2),_1px_1px_0_rgba(255,255,255,0.5)]"
+            class="hidden panel-block bg-vt-beige-dark border border-black/20 rounded-md p-1 flex-1 min-w-[130px] max-w-[250px] max-h-full overflow-y-auto overflow-x-hidden [box-shadow:inset_1px_1px_3px_rgba(0,0,0,0.2),_1px_1px_0_rgba(255,255,255,0.5)]"
           >
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 h-full">
               <!-- ROGUE STATS -->
               <section>
                 <span
@@ -148,7 +148,7 @@
                   >
                   <span
                     id="stat-str"
-                    class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
                     >0</span
                   >
 
@@ -157,7 +157,7 @@
                   >
                   <span
                     id="stat-gold"
-                    class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
                     >0</span
                   >
 
@@ -166,7 +166,7 @@
                   >
                   <span
                     id="stat-level"
-                    class="readout-value text-sm text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
+                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
                     >1</span
                   >
                 </div>
@@ -207,7 +207,7 @@
                 >
                 <div
                   id="observer-log"
-                  class="w-full h-32 bg-[#111] text-p4-white font-mono text-[9px] p-1 border border-black/30 rounded-sm overflow-y-auto [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                  class="w-full h-32 bg-[#111] text-p4-white font-mono text-[9px] p-1 border border-black/30 rounded-sm overflow-y-auto overflow-x-hidden break-words whitespace-pre-wrap [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)]"
                 >
                   <div class="text-[#0f0] opacity-50 italic">System ready...</div>
                 </div>

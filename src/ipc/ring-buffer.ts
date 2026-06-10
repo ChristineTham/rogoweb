@@ -23,37 +23,62 @@ export class SharedRingBuffer {
 
   /**
    * Writes data to the buffer.
+   * @param src The data to write.
+   * @param blocking If true, blocks until all data is written.
    * @returns The number of bytes written.
    */
-  write(src: Uint8Array): number {
-    const head = Atomics.load(this.head, 0);
-    const tail = Atomics.load(this.tail, 0);
+  write(src: Uint8Array, blocking: boolean = false): number {
+    let totalWritten = 0;
 
-    const available = this.getAvailableWriteInternal(head, tail);
-    const toWrite = Math.min(src.length, available);
+    while (totalWritten < src.length) {
+      let head = Atomics.load(this.head, 0);
+      let tail = Atomics.load(this.tail, 0);
 
-    if (toWrite === 0) return 0;
+      let available = this.getAvailableWriteInternal(head, tail);
+      
+      if (blocking && available === 0) {
+        Atomics.wait(this.head, 0, head, 100); // 100ms timeout
+        continue;
+      }
 
-    for (let i = 0; i < toWrite; i++) {
-      this.data[(tail + i) % this.capacity] = src[i];
+      const toWrite = Math.min(src.length - totalWritten, available);
+      if (toWrite === 0) break;
+
+      for (let i = 0; i < toWrite; i++) {
+        this.data[(tail + i) % this.capacity] = src[totalWritten + i];
+      }
+
+      Atomics.store(this.tail, 0, (tail + toWrite) % this.capacity);
+      Atomics.notify(this.tail, 0);
+
+      totalWritten += toWrite;
+      if (!blocking) break;
     }
 
-    Atomics.store(this.tail, 0, (tail + toWrite) % this.capacity);
-    // Notify potential waiters (not used in tests yet)
-    Atomics.notify(this.tail, 0);
-
-    return toWrite;
+    return totalWritten;
   }
 
   /**
    * Reads data from the buffer.
+   * @param dest The destination array.
+   * @param blocking If true, blocks until data is available.
    * @returns The number of bytes read.
    */
-  read(dest: Uint8Array): number {
-    const head = Atomics.load(this.head, 0);
-    const tail = Atomics.load(this.tail, 0);
+  read(dest: Uint8Array, blocking: boolean = false): number {
+    let head = Atomics.load(this.head, 0);
+    let tail = Atomics.load(this.tail, 0);
 
-    const available = this.getAvailableReadInternal(head, tail);
+    let available = this.getAvailableReadInternal(head, tail);
+    
+    if (blocking) {
+      while (available === 0) {
+        Atomics.wait(this.tail, 0, tail, 100); // 100ms timeout to avoid deadlocks
+        head = Atomics.load(this.head, 0);
+        tail = Atomics.load(this.tail, 0);
+        available = this.getAvailableReadInternal(head, tail);
+      }
+    }
+
     const toRead = Math.min(dest.length, available);
 
     if (toRead === 0) return 0;

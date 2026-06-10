@@ -8984,6 +8984,11 @@ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
 
 
 
+
+
+
+
+
   var FS_createPath = (...args) => FS.createPath(...args);
 
 
@@ -9047,11 +9052,16 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 
 // Begin runtime exports
   Module['callMain'] = callMain;
+  Module['stackSave'] = stackSave;
+  Module['stackRestore'] = stackRestore;
+  Module['stackAlloc'] = stackAlloc;
   Module['addRunDependency'] = addRunDependency;
   Module['removeRunDependency'] = removeRunDependency;
   Module['ccall'] = ccall;
   Module['cwrap'] = cwrap;
   Module['addFunction'] = addFunction;
+  Module['setValue'] = setValue;
+  Module['getValue'] = getValue;
   Module['UTF8ToString'] = UTF8ToString;
   Module['stringToUTF8'] = stringToUTF8;
   Module['FS_preloadFile'] = FS_preloadFile;
@@ -9232,9 +9242,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'HEAPF64',
   'HEAP64',
   'HEAPU64',
-  'stackSave',
-  'stackRestore',
-  'stackAlloc',
   'createNamedFunction',
   'ptrToString',
   'exitJS',
@@ -9274,8 +9281,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'getEmptyTableSlot',
   'updateTableMap',
   'getFunctionAddress',
-  'setValue',
-  'getValue',
   'PATH',
   'PATH_FS',
   'UTF8Decoder',
@@ -9472,26 +9477,26 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onSbrkGrow');
 }
 var ASM_CONSTS = {
-  94042: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
- 94091: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
- 94141: ($0, $1) => { term.cursorSet($0, $1); },  
- 94169: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
- 94203: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
- 94267: () => { return term.conf.rows; },  
- 94294: () => { return term.conf.cols; },  
- 94321: () => { return term.hasInput(); },  
- 94349: () => { return term.getKey(); },  
- 94375: () => { term.inputChar = 0 },  
- 94394: () => { term.close() },  
- 94407: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
- 94616: ($0, $1) => { term.resizeTo($0, $1); },  
- 94643: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
- 95043: () => { throw 'SimulateInfiniteLoop' },  
- 95072: ($0, $1) => { term.resizeTo($0, $1); },  
- 95099: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
- 95167: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
- 95215: () => { term.cursorOn() },  
- 95231: () => { term.cursorOff() }
+  94122: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
+ 94171: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
+ 94221: ($0, $1) => { term.cursorSet($0, $1); },  
+ 94249: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
+ 94283: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
+ 94347: () => { return term.conf.rows; },  
+ 94374: () => { return term.conf.cols; },  
+ 94401: () => { return term.hasInput(); },  
+ 94429: () => { return term.getKey(); },  
+ 94455: () => { term.inputChar = 0 },  
+ 94474: () => { term.close() },  
+ 94487: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
+ 94696: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94723: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
+ 95123: () => { throw 'SimulateInfiniteLoop' },  
+ 95152: ($0, $1) => { term.resizeTo($0, $1); },  
+ 95179: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
+ 95247: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
+ 95295: () => { term.cursorOn() },  
+ 95311: () => { term.cursorOff() }
 };
 function __asyncjs__trigger_syncfs() { return Asyncify.handleAsync(async () => { return new Promise(function(resolve) { var syncFn = null; if (typeof self !== 'undefined' && self.syncFS) syncFn = self.syncFS; else if (typeof window !== 'undefined' && window.syncFS) syncFn = window.syncFS; else if (typeof Module !== 'undefined' && Module.syncFS) syncFn = Module.syncFS; if (syncFn) { var p = syncFn(); if (p && p.then) { p.then(resolve); } else { resolve(); } } else { resolve(); } }); }); }
 
@@ -9504,6 +9509,7 @@ var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
 var _free = makeInvalidEarlyAccess('_free');
 var _emscripten_stack_get_end = makeInvalidEarlyAccess('_emscripten_stack_get_end');
 var _emscripten_stack_get_base = makeInvalidEarlyAccess('_emscripten_stack_get_base');
+var _setenv = Module['_setenv'] = makeInvalidEarlyAccess('_setenv');
 var _strerror = makeInvalidEarlyAccess('_strerror');
 var _setThrew = makeInvalidEarlyAccess('_setThrew');
 var _emscripten_stack_init = makeInvalidEarlyAccess('_emscripten_stack_init');
@@ -9514,9 +9520,9 @@ var _emscripten_stack_get_current = makeInvalidEarlyAccess('_emscripten_stack_ge
 var ___set_stack_limits = Module['___set_stack_limits'] = makeInvalidEarlyAccess('___set_stack_limits');
 var dynCall_i = makeInvalidEarlyAccess('dynCall_i');
 var dynCall_iiiiiii = makeInvalidEarlyAccess('dynCall_iiiiiii');
-var dynCall_vi = makeInvalidEarlyAccess('dynCall_vi');
 var dynCall_iiii = makeInvalidEarlyAccess('dynCall_iiii');
 var dynCall_ii = makeInvalidEarlyAccess('dynCall_ii');
+var dynCall_vi = makeInvalidEarlyAccess('dynCall_vi');
 var dynCall_iii = makeInvalidEarlyAccess('dynCall_iii');
 var dynCall_vii = makeInvalidEarlyAccess('dynCall_vii');
 var dynCall_v = makeInvalidEarlyAccess('dynCall_v');
@@ -9542,6 +9548,7 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['free'] != 'undefined', 'missing Wasm export: free');
   assert(typeof wasmExports['emscripten_stack_get_end'] != 'undefined', 'missing Wasm export: emscripten_stack_get_end');
   assert(typeof wasmExports['emscripten_stack_get_base'] != 'undefined', 'missing Wasm export: emscripten_stack_get_base');
+  assert(typeof wasmExports['setenv'] != 'undefined', 'missing Wasm export: setenv');
   assert(typeof wasmExports['strerror'] != 'undefined', 'missing Wasm export: strerror');
   assert(typeof wasmExports['setThrew'] != 'undefined', 'missing Wasm export: setThrew');
   assert(typeof wasmExports['emscripten_stack_init'] != 'undefined', 'missing Wasm export: emscripten_stack_init');
@@ -9552,9 +9559,9 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['__set_stack_limits'] != 'undefined', 'missing Wasm export: __set_stack_limits');
   assert(typeof wasmExports['dynCall_i'] != 'undefined', 'missing Wasm export: dynCall_i');
   assert(typeof wasmExports['dynCall_iiiiiii'] != 'undefined', 'missing Wasm export: dynCall_iiiiiii');
-  assert(typeof wasmExports['dynCall_vi'] != 'undefined', 'missing Wasm export: dynCall_vi');
   assert(typeof wasmExports['dynCall_iiii'] != 'undefined', 'missing Wasm export: dynCall_iiii');
   assert(typeof wasmExports['dynCall_ii'] != 'undefined', 'missing Wasm export: dynCall_ii');
+  assert(typeof wasmExports['dynCall_vi'] != 'undefined', 'missing Wasm export: dynCall_vi');
   assert(typeof wasmExports['dynCall_iii'] != 'undefined', 'missing Wasm export: dynCall_iii');
   assert(typeof wasmExports['dynCall_vii'] != 'undefined', 'missing Wasm export: dynCall_vii');
   assert(typeof wasmExports['dynCall_v'] != 'undefined', 'missing Wasm export: dynCall_v');
@@ -9576,6 +9583,7 @@ function assignWasmExports(wasmExports) {
   _free = createExportWrapper('free', 1);
   _emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'];
   _emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'];
+  _setenv = Module['_setenv'] = createExportWrapper('setenv', 3);
   _strerror = createExportWrapper('strerror', 1);
   _setThrew = createExportWrapper('setThrew', 2);
   _emscripten_stack_init = wasmExports['emscripten_stack_init'];
@@ -9586,9 +9594,9 @@ function assignWasmExports(wasmExports) {
   ___set_stack_limits = Module['___set_stack_limits'] = createExportWrapper('__set_stack_limits', 2);
   dynCall_i = dynCalls['i'] = createExportWrapper('dynCall_i', 1);
   dynCall_iiiiiii = dynCalls['iiiiiii'] = createExportWrapper('dynCall_iiiiiii', 7);
-  dynCall_vi = dynCalls['vi'] = createExportWrapper('dynCall_vi', 2);
   dynCall_iiii = dynCalls['iiii'] = createExportWrapper('dynCall_iiii', 4);
   dynCall_ii = dynCalls['ii'] = createExportWrapper('dynCall_ii', 2);
+  dynCall_vi = dynCalls['vi'] = createExportWrapper('dynCall_vi', 2);
   dynCall_iii = dynCalls['iii'] = createExportWrapper('dynCall_iii', 3);
   dynCall_vii = dynCalls['vii'] = createExportWrapper('dynCall_vii', 3);
   dynCall_v = dynCalls['v'] = createExportWrapper('dynCall_v', 1);
@@ -9689,17 +9697,6 @@ var wasmImports = {
   invoke_viii
 };
 
-function invoke_vi(index,a1) {
-  var sp = stackSave();
-  try {
-    dynCall_vi(index,a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_iiii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
@@ -9715,6 +9712,17 @@ function invoke_ii(index,a1) {
   var sp = stackSave();
   try {
     return dynCall_ii(index,a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    dynCall_vi(index,a1);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;

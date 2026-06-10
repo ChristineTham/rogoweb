@@ -11,6 +11,7 @@ self.onmessage = (e: MessageEvent) => {
 
     if (type === 'init') {
       importScripts('/rogoweb/wasm/ipc-core.js');
+      (self as any).isRogomatic = true;
 
       // Worker Polyfills for emcurses/termlib.js
       (self as any).window = self;
@@ -40,7 +41,7 @@ self.onmessage = (e: MessageEvent) => {
         wasm_pipe_write: (_fd: number, ptr: number, count: number) => {
           if (!ipc) return 0;
           const src = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
-          return ipc.rogomaticToRogue.write(src);
+          return ipc.rogomaticToRogue.write(src, true); // BLOCKING WRITE
         },
         onRuntimeInitialized: () => {
           console.log('Rogomatic Worker: WASM Runtime Initialized');
@@ -78,6 +79,20 @@ self.onmessage = (e: MessageEvent) => {
               console.log('Rogomatic Worker: IDBFS synced');
             }
 
+            // Clean up any stale lock files before starting
+            try {
+              const files = FS.readdir('/var/games/rogomatic');
+              files.forEach((file: string) => {
+                if (file.includes('Lock') || file.endsWith('.lck')) {
+                  const fullPath = `/var/games/rogomatic/${file}`;
+                  console.log(`Rogomatic Worker: Cleaning up stale lock file ${fullPath}`);
+                  FS.unlink(fullPath);
+                }
+              });
+            } catch (e) {
+              console.warn('Rogomatic Worker: Error cleaning up lock files:', e);
+            }
+
             // Create critical files if they don't exist to prevent C crashes
             const criticalFiles = [
               '/var/games/rogomatic/GeneLog544',
@@ -96,8 +111,28 @@ self.onmessage = (e: MessageEvent) => {
               }
             });
 
+            const Module = (self as any).Module;
+            if (typeof Module._setenv === 'function') {
+              console.log('Rogomatic Worker: Setting environment variables via _setenv...');
+              const setenvHelper = (key: string, value: string) => {
+                const keyPtr = Module.stackAlloc(key.length * 4 + 1);
+                Module.stringToUTF8(key, keyPtr, key.length * 4 + 1);
+                const valPtr = Module.stackAlloc(value.length * 4 + 1);
+                Module.stringToUTF8(value, valPtr, value.length * 4 + 1);
+                Module._setenv(keyPtr, valPtr, 1);
+              };
+              setenvHelper('USER', userName);
+              setenvHelper('LOGNAME', userName);
+            }
+
             console.log('Rogomatic Worker: Calling callMain...');
-            (self as any).Module.callMain(['aa', '0', '0', userName]);
+            try {
+              (self as any).Module.callMain(['aa', '0', '0', userName]);
+            } catch (e: any) {
+              if (e && e.name !== 'ExitStatus' && e !== 'unwind') {
+                console.error('Rogomatic Worker: Startup Error:', e);
+              }
+            }
           });
         },
         locateFile: (path: string) => {
@@ -106,8 +141,14 @@ self.onmessage = (e: MessageEvent) => {
           }
           return path;
         },
-        print: (text: string) => console.log('Rogomatic stdout:', text),
-        printErr: (text: string) => console.error('Rogomatic stderr:', text),
+        print: (text: string) => {
+          // Rogomatic stdout contains the VT100 stream
+          self.postMessage({ type: 'stdout', source: 'rogomatic', message: text });
+        },
+        printErr: (text: string) => {
+          console.error('Rogomatic stderr:', text);
+          self.postMessage({ type: 'log', source: 'rogomatic', message: text, error: true });
+        },
         syncFS: () => {
           console.log('Rogomatic Worker: Syncing FS to IDBFS...');
           return new Promise<void>((resolve) => {

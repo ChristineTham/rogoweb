@@ -21,10 +21,12 @@ LDFLAGS  = --pre-js ../../emcurses/emscripten/termlib.js \
            -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
            -s FORCE_FILESYSTEM=1 -lidbfs.js \
            -s EMULATE_FUNCTION_POINTER_CASTS=1 \
-           -s EXPORTED_FUNCTIONS="['_main', '_wasm_pipe_read', '_wasm_pipe_write']" \
-           -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction', 'HEAPU8', 'FS']"
+           -s EXPORTED_FUNCTIONS="['_main', '_setenv', '_wasm_pipe_read', '_wasm_pipe_write']" \
+           -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8', 'callMain', 'addFunction', 'stackAlloc', 'stackSave', 'stackRestore', 'getValue', 'setValue', 'HEAPU8', 'FS']"
 OUTFLAG  = -o
 EXE      = .js
+
+all: $(PROGRAM).js
 
 .c.o:
 	$(CC) $(CFLAGS) $(FEATURES) -c $*.c
