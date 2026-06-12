@@ -51,3 +51,9 @@ Located in `rogomatic/`.
 - `rogue/rogue.h`: Main header for the Rogue game.
 - `rogomatic/NEWS`: Comprehensive guide on installation, debugging, and project philosophy.
 - `rogomatic/TODO`: Current bugs and feature requests.
+
+## Running emconfigure
+
+CFLAGS="-I../emcurses"
+LDFLAGS="-L../emcurses --pre-js ../emcurses/emscripten/termlib.js"
+emconfigure ./configure --host=wasm32-unknown-emscripten

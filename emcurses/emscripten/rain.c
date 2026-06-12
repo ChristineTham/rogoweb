@@ -100,7 +100,7 @@ static void one_iter()
         case 'Q':
             curs_set(1);
             endwin();
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();
 #endif
             return;
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 
     j = 0;
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(one_iter, 1000/50, FALSE);
 #else
     for (;;)

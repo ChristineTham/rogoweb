@@ -32,7 +32,7 @@ DEMOFLAGS	= -O2
 
 .PHONY: all libs clean demos
 
-all:	libs demos
+all:	libs # demos
 
 libs:	$(LIBCURSES)
 
