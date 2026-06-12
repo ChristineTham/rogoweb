@@ -115,13 +115,63 @@ class SharedRingBuffer {
  */
 class SharedIPC {
   constructor(sab, capacityPerDirection = 4096) {
+    this.sab = sab;
     const headerSize = 8;
     const directionSize = headerSize + capacityPerDirection;
 
     this.rogueToRogomatic = new SharedRingBuffer(sab, 0, capacityPerDirection);
     this.rogomaticToRogue = new SharedRingBuffer(sab, directionSize, capacityPerDirection);
   }
+
+  getStats(isRogomatic) {
+    const offset = isRogomatic ? SharedIPC.ROGOMATIC_STATS_OFFSET : SharedIPC.ROGUE_STATS_OFFSET;
+    const view = new Int32Array(this.sab, offset, 10);
+    const stats = {
+      hp: view[0],
+      maxhp: view[1],
+      str: view[2],
+      gold: view[3],
+      level: view[4],
+      exp: view[5],
+      explev: view[6],
+      turns: view[7],
+      geneid: view[8]
+    };
+
+    const stringView = new Uint8Array(this.sab, offset + 36, 64);
+    let end = 0;
+    while (end < 64 && stringView[end] !== 0) end++;
+    if (end > 0) {
+      stats.botState = new TextDecoder().decode(stringView.slice(0, end));
+    }
+    return stats;
+  }
+
+  writeStats(stats, isRogomatic) {
+    const offset = isRogomatic ? SharedIPC.ROGOMATIC_STATS_OFFSET : SharedIPC.ROGUE_STATS_OFFSET;
+    const view = new Int32Array(this.sab, offset, 10);
+    
+    if (stats.hp !== undefined) view[0] = stats.hp;
+    if (stats.maxhp !== undefined) view[1] = stats.maxhp;
+    if (stats.str !== undefined) view[2] = stats.str;
+    if (stats.gold !== undefined) view[3] = stats.gold;
+    if (stats.level !== undefined) view[4] = stats.level;
+    if (stats.exp !== undefined) view[5] = stats.exp;
+    if (stats.explev !== undefined) view[6] = stats.explev;
+    if (stats.turns !== undefined) view[7] = stats.turns;
+    if (stats.geneid !== undefined) view[8] = stats.geneid;
+
+    if (stats.botState !== undefined) {
+      const stringView = new Uint8Array(this.sab, offset + 36, 64);
+      const encoded = new TextEncoder().encode(stats.botState.substring(0, 63));
+      stringView.set(encoded);
+      stringView[encoded.length] = 0;
+    }
+  }
 }
+
+SharedIPC.ROGUE_STATS_OFFSET = 10000;
+SharedIPC.ROGOMATIC_STATS_OFFSET = 10100;
 
 /**
  * HeadlessTerminal: A dummy terminal implementation for Web Workers.

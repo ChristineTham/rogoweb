@@ -222,6 +222,13 @@ int doupdate(void)
     SP->cursrow = curscr->_cury;
     SP->curscol = curscr->_curx;
 
+#ifdef ROGOWEB
+    {
+        extern void report_stats(void);
+        report_stats();
+    }
+#endif
+
     return OK;
 }
 

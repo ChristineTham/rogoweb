@@ -485,6 +485,7 @@ extern void printsnap (FILE *f);
 extern void dosnapshot (void);
 extern void clearscreen (void);
 extern char *statusline (void);
+extern void report_stats (void);
 
 /* learn.c */
 extern void initpool (int k, int m);

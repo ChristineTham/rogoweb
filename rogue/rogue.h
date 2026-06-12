@@ -752,3 +752,5 @@ extern char     *wood[];
 extern int      cNWOOD;
 extern char     *metal[];
 extern int      cNMETAL;
+
+extern void report_stats(void);

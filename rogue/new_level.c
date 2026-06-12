@@ -32,6 +32,8 @@ new_level()
   if (level > max_level)
     max_level = level;
 
+  report_stats();
+
   /*
    * Clean things off from last level
    */

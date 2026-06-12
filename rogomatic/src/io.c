@@ -500,6 +500,29 @@ getrogue (char *waitstr, int onat)
 
 }
 
+#include <emscripten.h>
+static char last_saynow[256] = "";
+
+void report_stats(void) {
+    extern int geneid;
+    EM_ASM({
+        if (Module['onStatsUpdate']) {
+            Module['onStatsUpdate']({
+                hp: $0,
+                maxhp: $1,
+                str: $2,
+                gold: $3,
+                level: $4,
+                exp: $5,
+                explev: $6,
+                geneid: $7,
+                turns: $8,
+                botState: UTF8ToString($9)
+            });
+        }
+    }, Hp, Hpmax, Str/100, Gold, Level, Exp, Explev, geneid, turns, last_saynow);
+}
+
 /*
  * terpbot: Read the Rogue status line and set the various status
  * variables. This routine depends on the value of version to decide what
@@ -561,6 +584,8 @@ terpbot (void)
    */
 
   setbonuses ();
+
+  report_stats();
 
   /*
    * If in special output modes, generate output line
@@ -961,6 +986,9 @@ saynow (char *f, ...)
   if (!emacs && !terse) {
     memset (buf, '\0', BUFSIZ);
     vsprintf (buf, f, ap);
+    strncpy(last_saynow, buf, 255);
+    last_saynow[255] = '\0';
+    report_stats();
     at (0,0);
 
     for (b=buf; *b; b++) printw ("%s", unctrl (*b));

@@ -9291,26 +9291,27 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('onSbrkGrow');
 }
 var ASM_CONSTS = {
-  93706: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
- 93755: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
- 93805: ($0, $1) => { term.cursorSet($0, $1); },  
- 93833: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
- 93867: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
- 93931: () => { return term.conf.rows; },  
- 93958: () => { return term.conf.cols; },  
- 93985: () => { return term.hasInput(); },  
- 94013: () => { return term.getKey(); },  
- 94039: () => { term.inputChar = 0 },  
- 94058: () => { term.close() },  
- 94071: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
- 94280: ($0, $1) => { term.resizeTo($0, $1); },  
- 94307: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
- 94707: () => { throw 'SimulateInfiniteLoop' },  
- 94736: ($0, $1) => { term.resizeTo($0, $1); },  
- 94763: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
- 94831: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
- 94879: () => { term.cursorOn() },  
- 94895: () => { term.cursorOff() }
+  93244: ($0, $1, $2, $3, $4, $5, $6, $7, $8, $9) => { if (Module['onStatsUpdate']) { Module['onStatsUpdate']({ hp: $0, maxhp: $1, str: $2, gold: $3, level: $4, exp: $5, explev: $6, geneid: $7, turns: $8, botState: UTF8ToString($9) }); } },  
+ 93431: ($0, $1, $2) => { return Module['wasm_pipe_read']($0, $1, $2); },  
+ 93480: ($0, $1, $2) => { return Module['wasm_pipe_write']($0, $1, $2); },  
+ 93530: ($0, $1) => { term.cursorSet($0, $1); },  
+ 93558: ($0, $1, $2, $3) => { term.setChar($0, $1, $2, $3); },  
+ 93592: () => { return term.crsrBlinkMode ? 0 : term.crsrBlockMode ? 1 : 2; },  
+ 93656: () => { return term.conf.rows; },  
+ 93683: () => { return term.conf.cols; },  
+ 93710: () => { return term.hasInput(); },  
+ 93738: () => { return term.getKey(); },  
+ 93764: () => { term.inputChar = 0 },  
+ 93783: () => { term.close() },  
+ 93796: () => { term = new (Module['TerminalShim'] || Terminal)({ termDiv: 'termDiv', handler: function() {}, x: 0, y: 0, initHandler: function() { term.charMode = true; term.lock = false; term.cursorOn(); } }); term.open(); },  
+ 94005: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94032: ($0) => { var funcPtr = $0; term.handler = function() { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); }; term.orig_resizeTo = term.orig_resizeTo || term.resizeTo; term.resizeTo = function(x,y) { var r = this.orig_resizeTo(x,y); if (r) { var f = Module['wasmTable'] ? Module['wasmTable'].get(funcPtr) : Module['dynCall_v'](funcPtr); f(); } return r; }; },  
+ 94432: () => { throw 'SimulateInfiniteLoop' },  
+ 94461: ($0, $1) => { term.resizeTo($0, $1); },  
+ 94488: ($0, $1) => { var s = TermGlobals.getColorString($0); stringToUTF8(s, $1, 8); },  
+ 94556: ($0, $1) => { TermGlobals.setColor($0, UTF8ToString($1)); },  
+ 94604: () => { term.cursorOn() },  
+ 94620: () => { term.cursorOff() }
 };
 function __asyncjs__trigger_syncfs() { return Asyncify.handleAsync(async () => { return new Promise(function(resolve) { var syncFn = null; if (typeof self !== 'undefined' && self.syncFS) syncFn = self.syncFS; else if (typeof window !== 'undefined' && window.syncFS) syncFn = window.syncFS; else if (typeof Module !== 'undefined' && Module.syncFS) syncFn = Module.syncFS; if (syncFn) { var p = syncFn(); if (p && p.then) { p.then(resolve); } else { resolve(); } } else { resolve(); } }); }); }
 

@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifdef ROGOWEB
-
 #include <emscripten.h>
 
 EM_ASYNC_JS(void, trigger_syncfs, (), {
@@ -51,4 +49,26 @@ int wasm_pipe_write(int fd, const char *buf, int count) {
     }, fd, buf, count);
 }
 
+#ifndef RGM_PLAYER
+#include <curses.h>
+#include "../../rogue/rogue.h"
+
+void report_stats(void) {
+    extern int level;
+    EM_ASM({
+        if (Module['onStatsUpdate']) {
+            Module['onStatsUpdate']({
+                hp: $0,
+                maxhp: $1,
+                str: $2,
+                gold: $3,
+                level: $4,
+                exp: $5,
+                explev: $6
+            });
+        }
+    }, player._t._t_stats.s_hpt, player._t._t_stats.s_maxhp, 
+       player._t._t_stats.s_str, purse, level, 
+       player._t._t_stats.s_exp, player._t._t_stats.s_lvl);
+}
 #endif

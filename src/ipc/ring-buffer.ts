@@ -122,27 +122,88 @@ export class SharedRingBuffer {
 }
 
 /**
- * SharedIPC: Manages bidirectional communication using two ring buffers in one SAB.
+ * SharedIPC: Manages bidirectional communication and shared stats using ring buffers in one SAB.
  */
 export class SharedIPC {
   public readonly rogueToRogomatic: SharedRingBuffer;
   public readonly rogomaticToRogue: SharedRingBuffer;
+  public readonly sab: SharedArrayBuffer;
+
+  // Offsets for the stats regions
+  public static readonly ROGUE_STATS_OFFSET = 10000; // Well beyond the buffers
+  public static readonly ROGOMATIC_STATS_OFFSET = 10100;
+  
+  // Field offsets within each stats block (4 bytes each)
+  public static readonly STAT_HP = 0;
+  public static readonly STAT_MAXHP = 4;
+  public static readonly STAT_STR = 8;
+  public static readonly STAT_GOLD = 12;
+  public static readonly STAT_LEVEL = 16;
+  public static readonly STAT_EXP = 20;
+  public static readonly STAT_EXPLEV = 24;
+  public static readonly STAT_TURNS = 28;
+  public static readonly STAT_GENEID = 32;
+  public static readonly STAT_BOT_STATE = 36; // String data starts here (max 64 bytes)
 
   constructor(sab: SharedArrayBuffer, capacityPerDirection: number = 4096) {
+    this.sab = sab;
     const headerSize = 8;
     const directionSize = headerSize + capacityPerDirection;
-
-    if (sab.byteLength < directionSize * 2) {
-      throw new Error(`SharedArrayBuffer too small. Expected at least ${directionSize * 2} bytes.`);
-    }
 
     this.rogueToRogomatic = new SharedRingBuffer(sab, 0, capacityPerDirection);
     this.rogomaticToRogue = new SharedRingBuffer(sab, directionSize, capacityPerDirection);
   }
 
   static createSAB(capacityPerDirection: number = 4096): SharedArrayBuffer {
-    const headerSize = 8;
-    const directionSize = headerSize + capacityPerDirection;
-    return new SharedArrayBuffer(directionSize * 2);
+    // 2 ring buffers + stats area
+    return new SharedArrayBuffer(16384); 
+  }
+
+  getStats(isRogomatic: boolean) {
+    const offset = isRogomatic ? SharedIPC.ROGOMATIC_STATS_OFFSET : SharedIPC.ROGUE_STATS_OFFSET;
+    const view = new Int32Array(this.sab, offset, 10); // Read 10 int32s
+    const stats: any = {
+      hp: view[0],
+      maxhp: view[1],
+      str: view[2],
+      gold: view[3],
+      level: view[4],
+      exp: view[5],
+      explev: view[6],
+      turns: view[7],
+      geneid: view[8]
+    };
+
+    // Parse bot state string
+    const stringView = new Uint8Array(this.sab, offset + 36, 64);
+    let end = 0;
+    while (end < 64 && stringView[end] !== 0) end++;
+    if (end > 0) {
+      stats.botState = new TextDecoder().decode(stringView.slice(0, end));
+    }
+
+    return stats;
+  }
+
+  writeStats(stats: any, isRogomatic: boolean) {
+    const offset = isRogomatic ? SharedIPC.ROGOMATIC_STATS_OFFSET : SharedIPC.ROGUE_STATS_OFFSET;
+    const view = new Int32Array(this.sab, offset, 10);
+    
+    if (stats.hp !== undefined) view[0] = stats.hp;
+    if (stats.maxhp !== undefined) view[1] = stats.maxhp;
+    if (stats.str !== undefined) view[2] = stats.str;
+    if (stats.gold !== undefined) view[3] = stats.gold;
+    if (stats.level !== undefined) view[4] = stats.level;
+    if (stats.exp !== undefined) view[5] = stats.exp;
+    if (stats.explev !== undefined) view[6] = stats.explev;
+    if (stats.turns !== undefined) view[7] = stats.turns;
+    if (stats.geneid !== undefined) view[8] = stats.geneid;
+
+    if (stats.botState !== undefined) {
+      const stringView = new Uint8Array(this.sab, offset + 36, 64);
+      const encoded = new TextEncoder().encode(stats.botState.substring(0, 63));
+      stringView.set(encoded);
+      stringView[encoded.length] = 0; // Null terminate
+    }
   }
 }

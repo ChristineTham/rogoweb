@@ -329,6 +329,7 @@ const runLoginSequence = async (userName: string) => {
     }
 
     const sab = SharedIPC.createSAB();
+    const ipc = new SharedIPC(sab);
     
     const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
     const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
@@ -363,8 +364,6 @@ const runLoginSequence = async (userName: string) => {
         } else {
           xterm.writeln(e.data.message);
         }
-      } else if (e.data && e.data.type === 'stats') {
-        TermGlobals.setStats(e.data.stats);
       }
     };
     rogueWorker.onmessage = handleWorkerMessage;
@@ -373,8 +372,17 @@ const runLoginSequence = async (userName: string) => {
     rogueWorker.postMessage({ type: 'init', sab, userName });
     rogomaticWorker.postMessage({ type: 'init', sab, userName });
 
-    // Note: In Phase 4, Rogue output still needs to be piped to xterm.
-    // This will be handled in Phase 6, but for now we prove the IPC link.
+    // Passive polling of SharedArrayBuffer for high-fidelity stats
+    const statsPoller = setInterval(() => {
+      const rogueStats = ipc.getStats(false);
+      const rgmStats = ipc.getStats(true);
+      
+      renderStats({ ...rogueStats, source: 'rogue' });
+      renderStats({ ...rgmStats, source: 'rogomatic' });
+    }, 250);
+
+    (window as any).statsPoller = statsPoller;
+
     return;
   }
 
@@ -541,6 +549,50 @@ const showPersistenceError = () => {
 
 let mainInputBridge: { dispose: () => void } | null = null;
 
+/**
+ * Central UI State Update (React-style model)
+ * Directly maps incoming structured stats to the DOM.
+ */
+const renderStats = (stats: any) => {
+  if (stats.source === 'rogue') {
+    if (stats.hp !== undefined) {
+      const el = document.getElementById('stat-hp');
+      if (el) el.innerText = stats.maxhp !== undefined ? `${stats.hp}(${stats.maxhp})` : stats.hp;
+    }
+    if (stats.str !== undefined) {
+      const el = document.getElementById('stat-str');
+      if (el) el.innerText = stats.str;
+    }
+    if (stats.gold !== undefined) {
+      const el = document.getElementById('stat-gold');
+      if (el) el.innerText = stats.gold;
+    }
+    if (stats.level !== undefined) {
+      const el = document.getElementById('stat-level');
+      if (el) el.innerText = stats.level;
+    }
+    if (stats.exp !== undefined && stats.explev !== undefined) {
+      const el = document.getElementById('stat-exp');
+      if (el) el.innerText = `${stats.exp}/${stats.explev}`;
+    }
+  }
+
+  if (stats.source === 'rogomatic') {
+    if (stats.botState !== undefined) {
+      const el = document.getElementById('bot-state');
+      if (el) el.innerText = stats.botState || 'IDLE';
+    }
+    if (stats.geneid !== undefined || stats.botGen !== undefined) {
+      const el = document.getElementById('bot-gen');
+      if (el) el.innerText = stats.geneid ?? stats.botGen ?? '0';
+    }
+    if (stats.turns !== undefined) {
+      const el = document.getElementById('bot-turns');
+      if (el) el.innerText = stats.turns;
+    }
+  }
+};
+
 const handleExit = (_status: number) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
   leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
@@ -584,6 +636,10 @@ const handleExit = (_status: number) => {
   wasm_pipe_write: (_fd: number, _ptr: number, _count: number) => {
     // In manual mode, we don't need to pipe the output anywhere else.
     return _count;
+  },
+  onStatsUpdate: (stats: any) => {
+    // In manual mode, we just pass stats to renderStats
+    renderStats({ ...stats, source: 'rogue' });
   },
   onRuntimeInitialized: () => {
     console.log('Main Thread: WASM Runtime Initialized');

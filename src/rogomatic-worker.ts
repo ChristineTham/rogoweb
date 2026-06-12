@@ -33,6 +33,9 @@ self.onmessage = (e: MessageEvent) => {
         noInitialRun: true,
         ENV: { USER: userName, LOGNAME: userName },
         TerminalShim: (self as any).Terminal,
+        onStatsUpdate: (stats: any) => {
+          if (ipc) ipc.writeStats(stats, true);
+        },
         wasm_pipe_read: (_fd: number, ptr: number, count: number) => {
           if (!ipc) return 0;
           const dest = new Uint8Array((self as any).Module.HEAPU8.buffer, ptr, count);
