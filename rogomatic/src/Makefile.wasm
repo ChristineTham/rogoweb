@@ -17,7 +17,7 @@ CFLAGS   = -g3 -O0 -I../../emcurses -std=gnu89 -Wno-deprecated-non-prototype \
            -Wno-implicit-function-declaration -Wno-int-conversion
 LIBS     = ../../emcurses/emscripten/libpdcurses.a
 LDFLAGS  = --pre-js ../../emcurses/emscripten/termlib.js \
-           -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 \
+           -s EXIT_RUNTIME=1 -s ASYNCIFY -s ASYNCIFY_STACK_SIZE=128000 \
            -s ALLOW_TABLE_GROWTH -s ASSERTIONS=2 \
            -s FORCE_FILESYSTEM=1 -lidbfs.js \
            -s EMULATE_FUNCTION_POINTER_CASTS=1 \

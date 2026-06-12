@@ -29,6 +29,7 @@
 
 #ifdef ROGOWEB
 #include <emscripten.h>
+#define exit(code) emscripten_force_exit(code)
 #endif
 
 /* Global Preprocessor constants */

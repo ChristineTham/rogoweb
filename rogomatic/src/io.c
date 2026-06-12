@@ -891,8 +891,10 @@ quitrogue (char *reason, int gld, int terminationtype)
   else
     sendnow ("Syy"); /* Must send two yesses,  R5.2 MLM */
 
+#ifndef ROGOWEB
   /* Wait for Rogue to die */
   wait ((int *) NULL);
+#endif
 }
 
 /*
@@ -1095,6 +1097,9 @@ int
 charsavail (void)
 {
   long n;
+#ifdef ROGOWEB
+  n = 0;
+#else
   int retc;
 
   retc = ioctl (READ, FIONREAD, &n);
@@ -1102,6 +1107,7 @@ charsavail (void)
     saynow ("Ioctl returns %d, n=%ld.\n", retc, n);
     n=0;
   }
+#endif
 
   if (n > 0) noterm = 0;
 

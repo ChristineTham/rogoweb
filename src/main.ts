@@ -333,9 +333,15 @@ const runLoginSequence = async (userName: string) => {
     const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
     const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
 
+    let isExited = false;
     const handleWorkerMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'fs_error') {
         showPersistenceError();
+      } else if (e.data && e.data.type === 'exit') {
+        if (!isExited) {
+          isExited = true;
+          handleExit(e.data.status);
+        }
       } else if (e.data && e.data.type === 'log') {
         const logPane = document.getElementById('observer-log');
         if (logPane) {
@@ -539,12 +545,20 @@ const handleExit = (_status: number) => {
 
   xterm.write('\r\n*** Press RETURN to continue ***\r\n');
 
-  const onDataListener = xterm.onData((data) => {
-    if (data === '\r' || data === '\n') {
-      onDataListener.dispose();
-      window.location.reload();
-    }
-  });
+  console.log('handleExit called, scheduling xterm.onData listener...');
+
+  // Delay registration to prevent immediate reset from queued/accidental key presses
+  setTimeout(() => {
+    console.log('xterm.onData listener registered for exit.');
+    const onDataListener = xterm.onData((data) => {
+      console.log('Exit onData received data:', JSON.stringify(data), 'length:', data.length);
+      if (data === '\r' || data === '\n') {
+        console.log('Reload triggered by:', JSON.stringify(data));
+        onDataListener.dispose();
+        // window.location.reload();
+      }
+    });
+  }, 1000);
 };
 
 // Emscripten Configuration

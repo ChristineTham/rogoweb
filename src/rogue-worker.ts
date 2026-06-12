@@ -153,6 +153,10 @@ self.onmessage = (e: MessageEvent) => {
           }
           return path;
         },
+        onExit: (status: number) => {
+          console.log(`Rogue Worker: Exited with status ${status}`);
+          self.postMessage({ type: 'exit', source: 'rogue', status });
+        },
         print: (text: string) => {
           console.log('Rogue stdout:', text);
           self.postMessage({ type: 'log', source: 'rogue', message: text });

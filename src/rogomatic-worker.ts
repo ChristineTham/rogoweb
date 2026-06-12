@@ -141,6 +141,10 @@ self.onmessage = (e: MessageEvent) => {
           }
           return path;
         },
+        onExit: (status: number) => {
+          console.log(`Rogomatic Worker: Exited with status ${status}`);
+          self.postMessage({ type: 'exit', source: 'rogomatic', status });
+        },
         print: (text: string) => {
           // Rogomatic stdout contains the VT100 stream
           self.postMessage({ type: 'stdout', source: 'rogomatic', message: text });
