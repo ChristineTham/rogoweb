@@ -539,6 +539,8 @@ const showPersistenceError = () => {
   }, 2000);
 };
 
+let mainInputBridge: { dispose: () => void } | null = null;
+
 const handleExit = (_status: number) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
   leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
@@ -546,6 +548,12 @@ const handleExit = (_status: number) => {
   xterm.write('\r\n*** Press RETURN to continue ***\r\n');
 
   console.log('handleExit called, scheduling xterm.onData listener...');
+
+  // Dispose of main input bridge to stop characters going to dead WASM instance
+  if (mainInputBridge) {
+    mainInputBridge.dispose();
+    mainInputBridge = null;
+  }
 
   // Delay registration to prevent immediate reset from queued/accidental key presses
   setTimeout(() => {
@@ -555,7 +563,10 @@ const handleExit = (_status: number) => {
       if (data === '\r' || data === '\n') {
         console.log('Reload triggered by:', JSON.stringify(data));
         onDataListener.dispose();
-        // window.location.reload();
+        // Give the UI a moment to breathe before reloading
+        setTimeout(() => {
+          window.location.reload();
+        }, 10);
       }
     });
   }, 1000);
@@ -566,6 +577,14 @@ const handleExit = (_status: number) => {
   noInitialRun: true,
   ENV: {},
   TerminalShim: TerminalShim,
+  wasm_pipe_read: (_fd: number, _ptr: number, _count: number) => {
+    // In manual mode, there is no virtual pipe to read from.
+    return 0;
+  },
+  wasm_pipe_write: (_fd: number, _ptr: number, _count: number) => {
+    // In manual mode, we don't need to pipe the output anywhere else.
+    return _count;
+  },
   onRuntimeInitialized: () => {
     console.log('Main Thread: WASM Runtime Initialized');
     
@@ -713,7 +732,7 @@ if (terminalElement) {
   }
 
   // INPUT BRIDGE: Hook xterm.onData to the global term instance
-  xterm.onData((data) => {
+  mainInputBridge = xterm.onData((data) => {
     const term = (window as any).term as TerminalShim;
     if (term) {
       for (let i = 0; i < data.length; i++) {
