@@ -131,12 +131,6 @@ export class TerminalShim {
     }
   }
 
-  private parseTimeout: any = null;
-
-  private parseStatusLine() {
-    // Redundant now that we have internal stat reporting.
-  }
-
   // Allow manual trigger of parsing (useful for main thread xterm polling)
   public forceParseStats() {
     // Redundant now that we have internal stat reporting.

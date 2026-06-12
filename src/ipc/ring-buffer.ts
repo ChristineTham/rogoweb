@@ -154,7 +154,7 @@ export class SharedIPC {
     this.rogomaticToRogue = new SharedRingBuffer(sab, directionSize, capacityPerDirection);
   }
 
-  static createSAB(capacityPerDirection: number = 4096): SharedArrayBuffer {
+  static createSAB(): SharedArrayBuffer {
     // 2 ring buffers + stats area
     return new SharedArrayBuffer(16384); 
   }
