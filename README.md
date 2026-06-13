@@ -24,6 +24,49 @@ To bring this architecture to the web, we undertook the following engineering st
 
 ---
 
+## 🎮 UI & Dashboard Guide
+
+Rogoweb features a high-fidelity dashboard inspired by the **DEC VT100** terminal. The interface is split between the live terminal and a telemetry sidepanel.
+
+### 1. Operator Panel (Top Bar)
+
+Located at the top of the workspace, this panel controls the simulation state.
+
+*   **Status Lights (LEDs)**:
+    *   **L1 (Green)**: **GAME ACTIVE** – Lit when the Rogue game process is running in its worker.
+    *   **L2 (Green)**: **AI ACTIVE** – Lit specifically when Rog-O-Matic has control of the input stream.
+    *   **L3 (Green)**: **SYSTEM READY** – Indicates the simulation environment and SharedArrayBuffer are healthy.
+    *   **L4 (Amber)**: **STANDBY/LOAD** – Lights up during initialization or background filesystem synchronization.
+*   **User Input**: Set the Unix-style username for the session (affects high scores and save files).
+*   **Mode Toggle**:
+    *   **MANUAL PLAY**: You have full keyboard control over the terminal.
+    *   **ROGOMATIC**: Hand over control to the AI.
+*   **Control Buttons**:
+    *   **START**: Launches the game processes.
+    *   **PAUSE**: Freezes the simulation (useful for inspecting a difficult dungeon floor).
+    *   **STOP**: Terminates the session and resets the workspace.
+
+### 2. Telemetry Dashboard (Side Panel)
+
+This panel provides a live "heartbeat" of the internal engine state without interrupting the terminal display.
+
+*   **Monitor Stats**:
+    *   **BOT STATE**: Displays the current AI intent (e.g., IDLE, RUNNING, EXPLORING, HEALING).
+    *   **HP (Hit Points)**: A real-time health bar. It turns **Red** when critical (<30%) and **Amber** when wounded (<70%).
+    *   **Dungeon Readouts**: Live values for Strength, Gold, Level, and Experience.
+    *   **Generation**: In Rog-O-Matic mode, shows which "Generation" from the genetic algorithm is currently playing.
+    *   **Turns**: Cumulative count of game turns processed.
+*   **Gene Management**:
+    *   **RESET GENE POOL**: Opens a dialog to re-initialize the genetic population. You can set the population size and an initial seed for evolution.
+    *   **GENE STATS**: Displays detailed fitness data from the `GenePool544` file, showing which "genes" (strategy parameters) are performing best.
+*   **Observer Log**: A diagnostic stream showing low-level system events, filesystem syncs, and worker status messages.
+*   **Configuration**:
+    *   **Random Seed**: Lock the game to a specific seed for reproducible "speedruns" or debugging.
+    *   **Randomise Toggle**: When active, every new game will generate a fresh random seed.
+    *   **Auto Restart**: Perfect for "headless" training; the system will automatically launch a new game 5 seconds after the previous one ends.
+
+---
+
 ## 🏗️ Architecture
 
 *   **`rogue/`**: The Rogue 5.4 C source code. Modified with `#ifdef ROGOWEB` blocks to support WASM IPC and stat reporting.
