@@ -415,7 +415,7 @@ const startWorkerGame = (userName: string) => {
   (window as any).statsPoller = statsPollerInterval;
 };
 
-const runLoginSequence = async (userName: string) => {
+const runLoginSequence = async (userName: string, skipLogin = false) => {
   isExited = false;
   if (activeRogueWorker) {
     activeRogueWorker.terminate();
@@ -466,30 +466,32 @@ const runLoginSequence = async (userName: string) => {
     Module.ENV['SEED'] = activeSeed;
   }
 
-  // xterm.reset();
-  // await sleep(800);
-  xterm.write('4.2 BSD UNIX (ucbvax) (tty01)\r\nlogin: ');
-  await simulateTyping(userName);
-  xterm.writeln('');
+  if (!skipLogin) {
+    xterm.write('4.2 BSD UNIX (ucbvax) (tty01)\r\nlogin: ');
+    await simulateTyping(userName);
+    xterm.writeln('');
 
-  await sleep(400);
-  xterm.write('Password: ');
-  await sleep(1200); // Simulate typing
-  xterm.writeln('');
+    await sleep(400);
+    xterm.write('Password: ');
+    await sleep(1200); // Simulate typing
+    xterm.writeln('');
 
-  await sleep(600);
-  xterm.writeln('');
-  xterm.writeln('4.2 BSD UNIX #1: Sun Aug 14 11:15:32 PDT 1983');
-  xterm.writeln('UC Berkeley VAX-11/780 (ucbvax)');
-  xterm.writeln('');
-  await sleep(400);
-  xterm.write('% ');
-  await sleep(500);
+    await sleep(600);
+    xterm.writeln('');
+    xterm.writeln('4.2 BSD UNIX #1: Sun Aug 14 11:15:32 PDT 1983');
+    xterm.writeln('UC Berkeley VAX-11/780 (ucbvax)');
+    xterm.writeln('');
+    await sleep(400);
+    xterm.write('% ');
+    await sleep(500);
 
-  const cmd = isAuto ? 'rogomatic' : 'rogue';
-  await simulateTyping(cmd, 150);
-  xterm.writeln('');
-  await sleep(300);
+    const cmd = isAuto ? 'rogomatic' : 'rogue';
+    await simulateTyping(cmd, 150);
+    xterm.writeln('');
+    await sleep(300);
+  } else {
+    xterm.reset();
+  }
 
   if (isAuto) {
     startWorkerGame(userName);
@@ -880,13 +882,9 @@ const handleAutoExit = (status: number, userName: string) => {
   }
 };
 
-const handleExit = (_status: number) => {
+const handleExit = (status: number) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
   leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
-
-  xterm.write('\r\n*** Press RETURN to continue ***\r\n');
-
-  console.log('handleExit called, scheduling xterm.onData listener...');
 
   // Dispose of main input bridge to stop characters going to dead WASM instance
   if (mainInputBridge) {
@@ -894,21 +892,38 @@ const handleExit = (_status: number) => {
     mainInputBridge = null;
   }
 
-  // Delay registration to prevent immediate reset from queued/accidental key presses
-  setTimeout(() => {
-    console.log('xterm.onData listener registered for exit.');
-    const onDataListener = xterm.onData((data) => {
-      console.log('Exit onData received data:', JSON.stringify(data), 'length:', data.length);
-      if (data === '\r' || data === '\n') {
-        console.log('Reload triggered by:', JSON.stringify(data));
-        onDataListener.dispose();
-        // Give the UI a moment to breathe before reloading
-        setTimeout(() => {
-          window.location.reload();
-        }, 10);
-      }
-    });
-  }, 1000);
+  const shouldAutoRestart = autoRestartToggle ? autoRestartToggle.checked : true;
+
+  if (shouldAutoRestart) {
+    xterm.write(`\r\n*** Game exited with status ${status}. Restarting in 5 seconds... ***\r\n`);
+
+    // Set auto-restart flag in sessionStorage
+    sessionStorage.setItem('rogoweb-autorestart', 'true');
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 5000);
+  } else {
+    xterm.write('\r\n*** Press RETURN to continue ***\r\n');
+
+    console.log('handleExit called, scheduling xterm.onData listener...');
+
+    // Delay registration to prevent immediate reset from queued/accidental key presses
+    setTimeout(() => {
+      console.log('xterm.onData listener registered for exit.');
+      const onDataListener = xterm.onData((data) => {
+        console.log('Exit onData received data:', JSON.stringify(data), 'length:', data.length);
+        if (data === '\r' || data === '\n') {
+          console.log('Reload triggered by:', JSON.stringify(data));
+          onDataListener.dispose();
+          // Give the UI a moment to breathe before reloading
+          setTimeout(() => {
+            window.location.reload();
+          }, 10);
+        }
+      });
+    }, 1000);
+  }
 };
 
 // Emscripten Configuration
@@ -981,6 +996,7 @@ const handleExit = (_status: number) => {
 
     function setupLoginUI() {
       if (startBtn) {
+        let shouldSkipLogin = false;
         startBtn.disabled = false;
         startBtn.onclick = () => {
           const userName =
@@ -1005,8 +1021,16 @@ const handleExit = (_status: number) => {
           if (stopBtn) stopBtn.disabled = false;
           if (pauseBtn) pauseBtn.disabled = false;
 
-          runLoginSequence(userName);
+          runLoginSequence(userName, shouldSkipLogin);
+          shouldSkipLogin = false;
         };
+
+        const autoRestart = sessionStorage.getItem('rogoweb-autorestart');
+        if (autoRestart === 'true') {
+          sessionStorage.removeItem('rogoweb-autorestart');
+          shouldSkipLogin = true;
+          startBtn.click();
+        }
       }
 
       if (geneStatsBtn) {

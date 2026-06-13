@@ -113,6 +113,8 @@ new_level()
 
   if (on(player, ISHALU))
     visuals();
+
+  status();
 }
 
 /*
