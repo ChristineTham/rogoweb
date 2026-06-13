@@ -85,7 +85,7 @@ describe('TerminalShim and TermGlobals', () => {
     shim.close();
     expect(shim.hasInput()).toBe(false);
     expect(mockXterm.reset).toHaveBeenCalled();
-    expect(mockXterm.write).toHaveBeenCalledWith('\x1b[H\x1b[2J');
+    expect(mockXterm.write).toHaveBeenCalledWith('\x1b[H\x1b[J');
   });
 
   it('updates buffer characters and emits correct ANSI sequences', async () => {

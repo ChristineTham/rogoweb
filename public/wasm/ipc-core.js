@@ -215,15 +215,20 @@ class HeadlessTerminal {
     return this.inputQueue.shift() || 0;
   }
   clear() {
-    // Fill internal buffers with spaces
-    for (let r = 0; r < this.maxLines; r++) {
-      this.charBuf[r].fill(32);
-      this.styleBuf[r].fill(0);
+    // Fill/initialize internal buffers with spaces
+    if (!this.charBuf || this.charBuf.length === 0) {
+      this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(32));
+      this.styleBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
+    } else {
+      for (let r = 0; r < this.maxLines; r++) {
+        if (this.charBuf[r]) this.charBuf[r].fill(32);
+        if (this.styleBuf[r]) this.styleBuf[r].fill(0);
+      }
     }
     this.lastRow = -1;
     this.lastCol = -1;
 
-    const clearAnsi = '\x1b[H\x1b[2J';
+    const clearAnsi = '\x1b[H\x1b[J';
     if (self.isRogomatic) {
       self.postMessage({ type: 'stdout', message: clearAnsi, raw: true });
     } else {
@@ -235,6 +240,9 @@ class HeadlessTerminal {
   }
 
   setChar(ch, row, col, style) {
+    if (typeof row !== 'number' || typeof col !== 'number' || isNaN(row) || isNaN(col) || row < 0 || row >= this.maxLines || col < 0 || col >= this.maxCols) {
+      return;
+    }
     if (row >= 0 && row < this.maxLines && col >= 0 && col < this.maxCols) {
       this.charBuf[row][col] = ch;
       this.styleBuf[row][col] = style;
@@ -264,6 +272,9 @@ class HeadlessTerminal {
     }
   }
   cursorSet(row, col) {
+    if (typeof row !== 'number' || typeof col !== 'number' || isNaN(row) || isNaN(col) || row < 0 || row >= this.maxLines || col < 0 || col >= this.maxCols) {
+      return;
+    }
     this.cursorRow = row;
     this.cursorCol = col;
 
@@ -283,17 +294,6 @@ class HeadlessTerminal {
   }
   cursorOn() { }
   cursorOff() { }
-  clear() {
-    this.charBuf = Array.from({ length: this.maxLines }, () => Array(this.maxCols).fill(0));
-    if (self.isRogomatic) {
-      self.postMessage({ type: 'stdout', message: '\x1b[2J\x1b[H', raw: true });
-    } else {
-      const ipc = self.ipc;
-      if (ipc) {
-         this.writeToPipe(ipc, '\x1b[2J\x1b[H');
-      }
-    }
-  }
   writeToPipe(ipc, str) {
     console.log("Rogue -> Rogomatic pipe write:", JSON.stringify(str));
     const data = new TextEncoder().encode(str);

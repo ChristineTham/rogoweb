@@ -546,6 +546,7 @@ const runLoginSequence = async (userName: string) => {
     Module.setValue(argv + argc * 4, 0, 'i32');
 
     try {
+      xterm.focus();
       Module._main(argc, argv);
     } catch (e: any) {
       if (e && e.name !== 'ExitStatus' && e !== 'unwind') {
