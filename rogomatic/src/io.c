@@ -490,6 +490,13 @@ getrogue (char *waitstr, int onat)
         }
 
   at (row, col);
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
+  EM_ASM_INT({
+    if (typeof term !== 'undefined' && term.cursorSet) {
+      term.cursorSet($0, $1);
+    }
+  }, row, col);
+#endif
 
   if (!emacs && !terse) refresh ();
 
@@ -992,6 +999,13 @@ saynow (char *f, ...)
 
     clrtoeol ();
     at (row, col);
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
+    EM_ASM_INT({
+      if (typeof term !== 'undefined' && term.cursorSet) {
+        term.cursorSet($0, $1);
+      }
+    }, row, col);
+#endif
   }
   refresh ();
   va_end (ap);

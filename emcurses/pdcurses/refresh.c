@@ -55,6 +55,9 @@ RCSID("$Id: refresh.c,v 1.56 2008/07/13 16:08:18 wmcbrine Exp $")
 **man-end****************************************************************/
 
 #include <string.h>
+#ifdef ROGOWEB
+#include <emscripten.h>
+#endif
 
 int wnoutrefresh(WINDOW *win)
 {
@@ -148,6 +151,11 @@ int doupdate(void)
         extern int wasm_pipe_write(int fd, const char *buf, int count);
         char cl = 12; /* Form Feed (CL_TOK) */
         wasm_pipe_write(1, &cl, 1);
+        EM_ASM({
+            if (typeof term !== 'undefined' && term.clear) {
+                term.clear();
+            }
+        });
     }
 #endif
 

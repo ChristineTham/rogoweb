@@ -98,20 +98,10 @@ static void animate (char *movie[]);
 static void
 animate (char *movie[])
 {
-  int baud;
-  int r, c, count = 0, delaychars;
+  int r, c;
   char *cbf = "";
 
   if (emacs || terse) return;		/* No screen ==> no movie */
-
-  baud = rogo_baudrate ();
-
-  if (baud == 0) baud = 4800;
-
-  if (baud > 9600) baud = 9600;
-
-  delaychars = baud / 200;
-
 
   clear ();				/* Clear the screen */
 
@@ -125,19 +115,15 @@ animate (char *movie[])
     else if (r == '~') {
       refresh ();				/* Write out screen */
 
-      for (; count < delaychars; count++)	/* Pad with nulls */
-        putchar (0);
-
-      count = 0;				/* Reset char count */
+      /* Use a time-based delay instead of null padding for modern environments */
+      usleep(25000); /* 25ms delay per frame */
     }
 
-    /* Write out a single character and bump the character count */
+    /* Write out a single character */
     else {
       r -= 32;					/* Get screen row */
       c = NEXTCHAR - 32;			/* Get screen col */
       mvaddch (r, c, NEXTCHAR);			/* Write out character */
-
-      if (count++ < 4) count += 4;		/* Assume one cursor move */
     }
   }
 }

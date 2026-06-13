@@ -52,7 +52,7 @@ class SharedRingBuffer {
   }
 
   /**
-   * Reads data from the buffer. Blocks if empty.
+   * Reads data from the buffer. Blocks if empty and block=true.
    * @returns The number of bytes read.
    */
   read(dest, block = false) {
@@ -62,11 +62,13 @@ class SharedRingBuffer {
     let available = this.getAvailableReadInternal(head, tail);
     
     if (available === 0 && block) {
-      console.log("SharedRingBuffer.read: blocking wait on tail =", tail);
-      Atomics.wait(this.tail, 0, tail);
-      tail = Atomics.load(this.tail, 0);
-      available = this.getAvailableReadInternal(head, tail);
-      console.log("SharedRingBuffer.read: woke up, available =", available);
+      // Loop until data is available to handle spurious wakeups
+      while (available === 0) {
+        Atomics.wait(this.tail, 0, tail, 100);
+        head = Atomics.load(this.head, 0);
+        tail = Atomics.load(this.tail, 0);
+        available = this.getAvailableReadInternal(head, tail);
+      }
     }
 
     const toRead = Math.min(dest.length, available);
@@ -212,6 +214,26 @@ class HeadlessTerminal {
   getKey() {
     return this.inputQueue.shift() || 0;
   }
+  clear() {
+    // Fill internal buffers with spaces
+    for (let r = 0; r < this.maxLines; r++) {
+      this.charBuf[r].fill(32);
+      this.styleBuf[r].fill(0);
+    }
+    this.lastRow = -1;
+    this.lastCol = -1;
+
+    const clearAnsi = '\x1b[H\x1b[2J';
+    if (self.isRogomatic) {
+      self.postMessage({ type: 'stdout', message: clearAnsi, raw: true });
+    } else {
+      const ipc = self.ipc;
+      if (ipc) {
+        this.writeToPipe(ipc, clearAnsi);
+      }
+    }
+  }
+
   setChar(ch, row, col, style) {
     if (row >= 0 && row < this.maxLines && col >= 0 && col < this.maxCols) {
       this.charBuf[row][col] = ch;
@@ -244,6 +266,11 @@ class HeadlessTerminal {
   cursorSet(row, col) {
     this.cursorRow = row;
     this.cursorCol = col;
+
+    // Sync internal state so next setChar knows where we are
+    this.lastRow = row;
+    this.lastCol = col - 1;
+
     if (self.isRogomatic) {
       const ansi = `\x1b[${row + 1};${col + 1}H`;
       self.postMessage({ type: 'stdout', message: ansi, raw: true });

@@ -61,6 +61,13 @@ command()
     status();
     lastscore = purse;
     move(hero.y, hero.x);
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
+    EM_ASM_INT({
+        if (typeof term !== 'undefined' && term.cursorSet) {
+            term.cursorSet($0, $1);
+        }
+    }, hero.y, hero.x);
+#endif
 
     if (!((running || count) && jump))
       refresh();			/* Draw screen */

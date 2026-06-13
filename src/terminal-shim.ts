@@ -89,6 +89,28 @@ export class TerminalShim {
     }
   }
 
+  clear() {
+    for (let r = 0; r < this.maxLines; r++) {
+      if (this.charBuf[r]) this.charBuf[r].fill(32);
+      if (this.styleBuf[r]) this.styleBuf[r].fill(0);
+    }
+    this.lastRow = -1;
+    this.lastCol = -1;
+
+    const clearAnsi = '\x1b[H\x1b[2J';
+    if ((this as any).ipc) {
+      const encoder = new TextEncoder();
+      const isWorker = typeof self !== 'undefined' && typeof (self as any).importScripts !== 'undefined';
+      (this as any).ipc.rogueToRogomatic.write(encoder.encode(clearAnsi), isWorker);
+    }
+
+    if (this.xterm) {
+      this.xterm.write(clearAnsi);
+    } else if (typeof postMessage !== 'undefined') {
+      postMessage({ type: 'stdout', message: clearAnsi, raw: true });
+    }
+  }
+
   setChar(ch: number, row: number, col: number, style: number) {
     if (row < 0 || row >= this.maxLines || col < 0 || col >= this.maxCols) {
       // console.warn(`setChar out of bounds: ${row},${col}`);
@@ -172,6 +194,10 @@ export class TerminalShim {
   cursorSet(row: number, col: number) {
     const ansi = '\x1b[' + (row + 1) + ';' + (col + 1) + 'H';
     
+    // Sync internal state so next setChar knows where we are
+    this.lastRow = row;
+    this.lastCol = col - 1;
+
     if ((this as any).ipc) {
       const encoder = new TextEncoder();
       const isWorker = typeof self !== 'undefined' && typeof (self as any).importScripts !== 'undefined';

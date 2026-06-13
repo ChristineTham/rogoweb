@@ -707,6 +707,37 @@ const renderStats = (stats: any) => {
     if (stats.str !== undefined) {
       const el = document.getElementById('stat-str');
       if (el) el.innerText = stats.str;
+      const bar = document.getElementById('stat-str-bar');
+      if (bar) {
+        let strVal = 0;
+        let maxStrVal = 0;
+        if (typeof stats.str === 'string') {
+          const match = stats.str.match(/(\d+)\((\d+)\)/);
+          if (match) {
+            strVal = parseInt(match[1], 10);
+            maxStrVal = parseInt(match[2], 10);
+          } else {
+            strVal = parseInt(stats.str, 10);
+            maxStrVal = strVal; // Fallback if no max is provided
+          }
+        } else if (typeof stats.str === 'number') {
+          strVal = stats.str;
+          // In WASM mode, stats.str might just be the current value if max is not passed separately.
+          // Rogue 5.4 typical max strength is usually 16 to start, up to 31.
+          // Since the maxstr isn't passed in the binary IPC struct currently, we'll try to infer it
+          // from the string readout first. If it's a number, it's missing the max context here.
+          // However, the IPC layer doesn't pass maxStr separately.
+          // Let's assume a default max of 16 for the bar if it's just a raw number, or just 100%.
+          maxStrVal = Math.max(16, strVal);
+        }
+        
+        if (maxStrVal > 0) {
+          const pct = (strVal / maxStrVal) * 100;
+          bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+          const colorClass = pct < 30 ? 'bg-red-600' : pct < 70 ? 'bg-amber-500' : 'bg-green-600';
+          bar.className = `h-full rounded-sm transition-all duration-300 ${colorClass}`;
+        }
+      }
     }
     if (stats.gold !== undefined) {
       const el = document.getElementById('stat-gold');

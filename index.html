@@ -130,14 +130,14 @@
             <div class="flex flex-col gap-2.5 h-full">
               <!-- MONITOR STATS -->
               <section class="flex flex-col gap-1.5">
-                <div class="flex justify-between items-center mb-0.5">
+                <div class="flex justify-between items-center mb-0.5 gap-2">
                   <span
-                    class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider leading-none"
+                    class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider leading-none shrink-0"
                     >MONITOR</span
                   >
                   <span
                     id="bot-state"
-                    class="text-sm font-black uppercase bg-[#222] text-p4-white px-1.5 py-0.5 rounded-vt-sharp leading-none"
+                    class="text-sm font-black uppercase bg-[#222] text-p4-white px-1.5 py-0.5 rounded-vt-sharp leading-tight flex-1 h-8 inline-flex items-center justify-center text-center overflow-hidden break-words line-clamp-2"
                     >IDLE</span
                   >
                 </div>
@@ -159,9 +159,25 @@
                   </div>
                 </div>
 
+                <!-- STR Progress Bar -->
+                <div class="flex items-center gap-1.5 w-full" title="Strength">
+                  <span class="readout-label text-sm font-black w-5 shrink-0 text-[#555] uppercase leading-none">STR</span>
+                  <div class="flex-1 h-4 bg-black/30 rounded relative overflow-hidden border border-black/10">
+                    <div
+                      id="stat-str-bar"
+                      class="h-full bg-red-600 rounded-sm transition-all duration-300"
+                      style="width: 0%"
+                    ></div>
+                    <span
+                      id="stat-str"
+                      class="absolute inset-0 flex items-center justify-center text-sm font-black text-white leading-none [text-shadow:1px_1px_1px_rgba(0,0,0,0.8)]"
+                      >0(0)</span
+                    >
+                  </div>
+                </div>
+
                 <!-- Compact Stats Grid -->
                 <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-0.5 border border-black/15 bg-black/5 p-1.5 rounded shadow-vt-bevel-inset select-none leading-none text-sm justify-between">
-                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Strength</span><span id="stat-str" class="font-black text-vt-black">0</span></div>
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Gold</span><span id="stat-gold" class="font-black text-vt-black">0</span></div>
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Level</span><span id="stat-level" class="font-black text-vt-black">1</span></div>
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Experience</span><span id="stat-exp" class="font-black text-vt-black">0/1</span></div>
@@ -169,16 +185,16 @@
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Turns</span><span id="bot-turns" class="font-black text-vt-black">0</span></div>
                 </div>
 
-                <div class="flex flex-col gap-1 mt-1">
+                <div class="flex flex-row gap-1 mt-1">
                   <button
                     id="btn-reset-gene"
-                    class="btn-industrial bg-[#8b0000] hover:bg-[#a90000] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-sm h-7 w-full shadow-none border border-black leading-none"
+                    class="btn-industrial bg-[#8b0000] hover:bg-[#a90000] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-[10px] px-1 h-7 flex-1 shadow-none border border-black leading-none"
                   >
                     RESET GENE POOL
                   </button>
                   <button
                     id="btn-gene-stats"
-                    class="btn-industrial bg-dec-blue hover:bg-blue-700 text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-sm h-7 w-full shadow-none border border-black leading-none"
+                    class="btn-industrial bg-dec-blue hover:bg-blue-700 text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-[10px] px-1 h-7 flex-1 shadow-none border border-black leading-none"
                   >
                     GENE STATS
                   </button>
