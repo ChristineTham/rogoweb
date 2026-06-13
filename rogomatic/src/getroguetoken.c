@@ -185,9 +185,10 @@ open_frogue_fd (int frogue_fd)
 
 #ifdef ROGOWEB
 extern int wasm_pipe_read(int fd, char *buf, int count);
-static int wasm_unget_char = -1;
-#define GETROGUECHAR (wasm_unget_char != -1 ? (int)(unsigned char)({ int tmp = wasm_unget_char; wasm_unget_char = -1; tmp; }) : ({ char c; wasm_pipe_read(frogue_fd, &c, 1) == 1 ? (int)(unsigned char)c : EOF; }))
-#define UNGETROGUECHAR(c) (wasm_unget_char = (c))
+static int wasm_unget_stack[32];
+static int wasm_unget_sp = 0;
+#define GETROGUECHAR (wasm_unget_sp > 0 ? wasm_unget_stack[--wasm_unget_sp] : ({ char c; wasm_pipe_read(frogue_fd, &c, 1) == 1 ? (int)(unsigned char)c : EOF; }))
+#define UNGETROGUECHAR(c) (wasm_unget_stack[wasm_unget_sp++] = (c))
 static int frogue_fd;
 void open_frogue_fd (int fd) { frogue_fd = fd; }
 #else
@@ -479,6 +480,10 @@ getroguetoken (void)
                   if (number1 == 7) {
                     /* Start standout mode */
                     ch = SO_TOK;
+                  }
+                  else if (number1 == 0) {
+                    /* Exit standout mode */
+                    ch = SE_TOK;
                   }
                   else {
                     ch = ER_TOK;

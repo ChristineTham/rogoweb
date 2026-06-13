@@ -126,6 +126,9 @@ animate (char *movie[])
       mvaddch (r, c, NEXTCHAR);			/* Write out character */
     }
   }
+
+  clear ();
+  refresh ();
 }
 
 /*
