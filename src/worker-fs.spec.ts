@@ -77,8 +77,6 @@ describe('Worker FS Initialization', () => {
       FS.syncfs(true, (err: any) => {
         if (!err) {
           const criticalFiles = [
-            '/var/games/rogomatic/GeneLog544',
-            '/var/games/rogomatic/GenePool544',
             '/var/games/rogomatic/ltm544',
             '/var/games/rogomatic/rgmdelta5.4.4'
           ];
@@ -95,8 +93,8 @@ describe('Worker FS Initialization', () => {
     onRuntimeInitialized();
 
     expect(mockFS.mount).toHaveBeenCalledWith(mockFS.filesystems.IDBFS, {}, '/var/games/rogomatic');
-    expect(mockFS.writeFile).toHaveBeenCalledTimes(4);
-    expect(mockFS.writeFile).toHaveBeenCalledWith('/var/games/rogomatic/GenePool544', '');
+    expect(mockFS.writeFile).toHaveBeenCalledTimes(2);
+    expect(mockFS.writeFile).toHaveBeenCalledWith('/var/games/rogomatic/ltm544', '');
     expect(mockModule.callMain).toHaveBeenCalledWith(['aa', '0', '0', 'Player']);
   });
 

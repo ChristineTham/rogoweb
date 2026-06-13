@@ -29,19 +29,19 @@
             <div class="led-strip flex gap-1.5 ml-2 items-center h-full">
               <div
                 id="led-l1"
-                class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+                class="led green w-1.5 h-1.5 rounded-vt-pill bg-[#333] border border-black/50 transition-all duration-300 shadow-vt-sunken [&.active]:bg-vt-led-green [&.active]:shadow-vt-led-active-green"
               ></div>
               <div
                 id="led-l2"
-                class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+                class="led green w-1.5 h-1.5 rounded-vt-pill bg-[#333] border border-black/50 transition-all duration-300 shadow-vt-sunken [&.active]:bg-vt-led-green [&.active]:shadow-vt-led-active-green"
               ></div>
               <div
                 id="led-l3"
-                class="led green w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-green [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-green),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+                class="led green w-1.5 h-1.5 rounded-vt-pill bg-[#333] border border-black/50 transition-all duration-300 shadow-vt-sunken [&.active]:bg-vt-led-green [&.active]:shadow-vt-led-active-green"
               ></div>
               <div
                 id="led-l4"
-                class="led amber w-1.5 h-1.5 rounded-full bg-[#333] border border-black/50 transition-all duration-300 [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)] [&.active]:bg-vt-led-amber [&.active]:[box-shadow:0_0_12px_var(--color-vt-led-amber),inset_0_1px_2px_rgba(255,255,255,0.5)]"
+                class="led amber w-1.5 h-1.5 rounded-vt-pill bg-[#333] border border-black/50 transition-all duration-300 shadow-vt-sunken [&.active]:bg-vt-led-amber [&.active]:shadow-vt-led-active-amber"
               ></div>
             </div>
           </div>
@@ -125,96 +125,63 @@
           <!-- ADAPTIVE STATS PANEL -->
           <aside
             id="stats-panel"
-            class="hidden panel-block bg-vt-beige-dark border border-black/20 rounded-md p-1 flex-1 min-w-[130px] max-w-[250px] max-h-full overflow-y-auto overflow-x-hidden [box-shadow:inset_1px_1px_3px_rgba(0,0,0,0.2),_1px_1px_0_rgba(255,255,255,0.5)]"
+            class="hidden panel-block bg-vt-beige-dark border border-black/20 rounded-vt-panel p-1 flex-1 min-w-[130px] max-w-[250px] max-h-full overflow-y-auto overflow-x-hidden shadow-vt-panel-inner"
           >
-            <div class="flex flex-col gap-2 h-full">
-              <!-- ROGUE STATS -->
-              <section>
-                <span
-                  class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
-                  >ROGUE STATS</span
-                >
-                <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >HP</span
-                  >
+            <div class="flex flex-col gap-2.5 h-full">
+              <!-- MONITOR STATS -->
+              <section class="flex flex-col gap-1.5">
+                <div class="flex justify-between items-center mb-0.5">
                   <span
-                    id="stat-hp"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
-                    >0/0</span
-                  >
-
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >STR</span
-                  >
-                  <span
-                    id="stat-str"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
-                    >0</span
-                  >
-
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >GOLD</span
-                  >
-                  <span
-                    id="stat-gold"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
-                    >0</span
-                  >
-
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >LVL</span
-                  >
-                  <span
-                    id="stat-level"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
-                    >1</span
-                  >
-
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >EXP</span
-                  >
-                  <span
-                    id="stat-exp"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded [text-shadow:1px_1px_2px_#000] py-0 px-1 min-w-[50px] text-right leading-none"
-                    >0/1</span
-                  >
-                </div>
-              </section>
-
-              <!-- BOT STATS -->
-              <section class="border-t border-black/10 pt-1.5">
-                <span
-                  class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
-                  >ROGOMATIC STATS</span
-                >
-                <div class="grid grid-cols-[45px_1fr] gap-x-1 gap-y-0.5 items-center">
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >STATE</span
+                    class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider leading-none"
+                    >MONITOR</span
                   >
                   <span
                     id="bot-state"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none"
+                    class="text-sm font-black uppercase bg-[#222] text-p4-white px-1.5 py-0.5 rounded-vt-sharp leading-none"
                     >IDLE</span
                   >
+                </div>
 
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >GEN</span
-                  >
-                  <span
-                    id="bot-gen"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none"
-                    >0</span
-                  >
+                <!-- HP Progress Bar -->
+                <div class="flex items-center gap-1.5 w-full" title="Hit Points (HP)">
+                  <span class="readout-label text-sm font-black w-5 shrink-0 text-[#555] uppercase leading-none">HP</span>
+                  <div class="flex-1 h-4 bg-black/30 rounded relative overflow-hidden border border-black/10">
+                    <div
+                      id="stat-hp-bar"
+                      class="h-full bg-red-600 rounded-sm transition-all duration-300"
+                      style="width: 0%"
+                    ></div>
+                    <span
+                      id="stat-hp"
+                      class="absolute inset-0 flex items-center justify-center text-sm font-black text-white leading-none [text-shadow:1px_1px_1px_rgba(0,0,0,0.8)]"
+                      >0(0)</span
+                    >
+                  </div>
+                </div>
 
-                  <span class="readout-label text-sm text-[#555] font-semibold leading-none"
-                    >TURNS</span
+                <!-- Compact Stats Grid -->
+                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-0.5 border border-black/15 bg-black/5 p-1.5 rounded shadow-vt-bevel-inset select-none leading-none text-sm justify-between">
+                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Strength</span><span id="stat-str" class="font-black text-vt-black">0</span></div>
+                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Gold</span><span id="stat-gold" class="font-black text-vt-black">0</span></div>
+                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Level</span><span id="stat-level" class="font-black text-vt-black">1</span></div>
+                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Experience</span><span id="stat-exp" class="font-black text-vt-black">0/1</span></div>
+                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Generation</span><span id="bot-gen" class="font-black text-vt-black">0</span></div>
+                  <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Turns</span><span id="bot-turns" class="font-black text-vt-black">0</span></div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-1">
+                  <button
+                    id="btn-reset-gene"
+                    class="btn-industrial bg-[#8b0000] hover:bg-[#a90000] text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-sm h-7 w-full shadow-none border border-black leading-none"
                   >
-                  <span
-                    id="bot-turns"
-                    class="readout-value text-lg text-p4-white font-bold bg-[#222] rounded min-w-[60px] [text-shadow:1px_1px_2px_#000] py-0 px-1 text-right w-full truncate leading-none"
-                    >0</span
+                    RESET GENE POOL
+                  </button>
+                  <button
+                    id="btn-gene-stats"
+                    class="btn-industrial bg-dec-blue hover:bg-blue-700 text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-sm h-7 w-full shadow-none border border-black leading-none"
                   >
+                    GENE STATS
+                  </button>
                 </div>
               </section>
 
@@ -226,38 +193,58 @@
                 >
                 <div
                   id="observer-log"
-                  class="w-full h-32 bg-[#111] text-p4-white font-mono text-[9px] p-1 border border-black/30 rounded-sm overflow-y-auto overflow-x-hidden break-words whitespace-pre-wrap [box-shadow:inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                  class="w-full h-32 bg-[#111] text-p4-white font-mono text-xs p-1.5 border border-black/30 rounded-vt-sharp overflow-y-auto overflow-x-hidden break-words whitespace-pre-wrap shadow-vt-sunken"
                 >
                   <div class="text-[#0f0] opacity-50 italic">System ready...</div>
                 </div>
               </section>
 
-              <!-- TESTING HARNESS -->
+              <!-- CONFIGURATION -->
               <section class="border-t border-black/10 pt-1.5">
                 <span
                   class="panel-label text-base font-extrabold text-[#444] uppercase tracking-wider block mb-1 leading-tight"
-                  >TEST HARNESS</span
+                  >Configuration</span
                 >
                 <div class="flex flex-col gap-1.5">
                   <div class="flex flex-col gap-0.5">
                     <label
                       for="seed-input"
-                      class="readout-label text-[10px] text-[#555] font-black uppercase leading-none"
+                      class="readout-label text-sm text-[#555] font-black uppercase leading-none"
                       >RANDOM SEED</label
                     >
                     <input
                       type="text"
                       id="seed-input"
-                      class="terminal-input w-full h-4 p-1 text-xs rounded-sm text-white border border-black/50 bg-[#222] leading-none"
+                      class="terminal-input w-full h-7 p-1 text-sm rounded-vt-sharp text-white border border-black/50 bg-[#222] leading-none"
                       placeholder="e.g. 12345"
                     />
                   </div>
-                  <button
-                    id="btn-run-test"
-                    class="btn-industrial bg-dec-blue text-white font-black cursor-pointer rounded transition-all active:translate-y-0.5 text-[10px] h-4 w-full shadow-none border border-black leading-none"
-                  >
-                    RUN TEST
-                  </button>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <input
+                      type="checkbox"
+                      id="randomise-toggle"
+                      class="w-3.5 h-3.5 bg-[#222] border border-black/50 rounded-sm text-dec-blue focus:ring-0 cursor-pointer"
+                      checked
+                    />
+                    <label
+                      for="randomise-toggle"
+                      class="readout-label text-sm text-[#555] font-black uppercase leading-none cursor-pointer"
+                      >RANDOMISE</label
+                    >
+                  </div>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <input
+                      type="checkbox"
+                      id="autorestart-toggle"
+                      class="w-3.5 h-3.5 bg-[#222] border border-black/50 rounded-sm text-dec-blue focus:ring-0 cursor-pointer"
+                      checked
+                    />
+                    <label
+                      for="autorestart-toggle"
+                      class="readout-label text-sm text-[#555] font-black uppercase leading-none cursor-pointer"
+                      >AUTO RESTART</label
+                    >
+                  </div>
                 </div>
               </section>
             </div>
@@ -265,6 +252,78 @@
         </main>
       </div>
     </div>
+    <!-- GENE POOL RESET DIALOG -->
+    <dialog id="modal-reset-gene" closedby="any" class="bg-vt-beige border-4 border-vt-black shadow-vt-dialog p-5 text-vt-black max-w-[320px] w-[90%] rounded-vt-sharp focus:outline-none backdrop:bg-black/70 backdrop:backdrop-blur-xs font-term" aria-labelledby="reset-dialog-title">
+      <form method="dialog" id="form-reset-gene" class="flex flex-col gap-3">
+        <h2 id="reset-dialog-title" class="text-lg font-black uppercase tracking-wider mb-3 pb-1 border-b-2 border-vt-black text-[#8b0000]">Gene Pool Init</h2>
+        
+        <div class="flex flex-col gap-0.5 mb-3">
+          <label for="reset-pool-size" class="text-xs font-black uppercase text-vt-black/80">Gene Pool Size</label>
+          <input
+            type="number"
+            id="reset-pool-size"
+            value="20"
+            min="2"
+            max="100"
+            required
+            class="bg-[#222] text-[#ebf0ff] border-2 border-vt-black rounded-vt-sharp py-0.5 px-2 text-base font-medium focus:outline-none focus:ring-1 focus:ring-vt-led-amber/50 font-term shadow-vt-sunken"
+          />
+        </div>
+
+        <div class="flex flex-col gap-0.5 mb-3">
+          <label for="reset-seed" class="text-xs font-black uppercase text-vt-black/80">Random Seed</label>
+          <input
+            type="number"
+            id="reset-seed"
+            value="0"
+            min="0"
+            required
+            class="bg-[#222] text-[#ebf0ff] border-2 border-vt-black rounded-vt-sharp py-0.5 px-2 text-base font-medium focus:outline-none focus:ring-1 focus:ring-vt-led-amber/50 font-term shadow-vt-sunken"
+          />
+          <span class="text-[9px] text-black/60 font-sans leading-tight mt-0.5">
+            Use 0 for time-based seed.
+          </span>
+        </div>
+
+        <div class="flex gap-2.5 mt-4">
+          <button
+            type="button"
+            id="btn-reset-cancel"
+            class="btn-industrial bg-[#555] text-white text-[11px] px-3 py-1.5 h-6 flex-1 border border-black"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="btn-reset-confirm"
+            class="btn-industrial bg-[#8b0000] hover:bg-[#a90000] text-white text-[11px] px-3 py-1.5 h-6 flex-1 border border-black"
+          >
+            Initialize
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- GENE STATS DIALOG -->
+    <dialog id="modal-gene-stats" closedby="any" class="bg-vt-beige border-4 border-vt-black shadow-vt-dialog p-5 text-vt-black max-w-[500px] w-[95%] rounded-vt-sharp focus:outline-none backdrop:bg-black/70 backdrop:backdrop-blur-xs font-term" aria-labelledby="stats-dialog-title">
+      <form method="dialog" class="flex flex-col gap-3">
+        <h2 id="stats-dialog-title" class="text-lg font-black uppercase tracking-wider mb-2 pb-1 border-b-2 border-vt-black text-dec-blue">Detailed Gene Stats</h2>
+        
+        <div id="gene-stats-content" class="text-xs flex flex-col gap-3 overflow-y-auto max-h-[350px] pr-1">
+          <div class="italic text-black/60">Loading stats...</div>
+        </div>
+
+        <div class="flex gap-2.5 mt-2 justify-end">
+          <button
+            type="submit"
+            class="btn-industrial bg-[#555] text-white text-[11px] px-4 py-1.5 h-6 border border-black"
+          >
+            Close
+          </button>
+        </div>
+      </form>
+    </dialog>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

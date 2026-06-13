@@ -129,11 +129,44 @@ export class TerminalShim {
     } else if (typeof postMessage !== 'undefined') {
       postMessage({ type: 'stdout', message: ansi, raw: true });
     }
+
+    // STATUS LINE PARSING (Row 23 is the typical Rogue status line)
+    if (row === 23) {
+      this.parseStatusLine();
+    }
+  }
+
+  private parseTimeout: any = null;
+
+  private parseStatusLine() {
+    // Debounce parsing to avoid overhead
+    if (this.parseTimeout) clearTimeout(this.parseTimeout);
+    this.parseTimeout = setTimeout(() => {
+      let line = '';
+      if (this.xterm) {
+        line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || '';
+      } else {
+        line = String.fromCharCode(...this.charBuf[23].map(c => c || 32));
+      }
+
+      // Regex patterns for Rogue stats
+      const hpMatch = line.match(/Hp:\s*(\d+\(\d+\))/i);
+      const strMatch = line.match(/Str:\s*(\d+\(\d+\))/i);
+      const goldMatch = line.match(/Gold:\s*(\d+)/i);
+      const levelMatch = line.match(/Level:\s*(\d+)/i);
+
+      TermGlobals.setStats({
+        hp: hpMatch ? hpMatch[1] : undefined,
+        str: strMatch ? strMatch[1] : undefined,
+        gold: goldMatch ? goldMatch[1] : undefined,
+        level: levelMatch ? levelMatch[1] : undefined,
+      });
+    }, 100);
   }
 
   // Allow manual trigger of parsing (useful for main thread xterm polling)
   public forceParseStats() {
-    // Redundant now that we have internal stat reporting.
+    this.parseStatusLine();
   }
 
   cursorSet(row: number, col: number) {
@@ -178,8 +211,35 @@ export const TermGlobals = {
   setColor: (color: number, str: string) => {
     console.log('TermGlobals.setColor', color, str);
   },
-  setStats: (_stats: any) => {
-    // Stats are now handled via a direct SharedArrayBuffer poller in main.ts
-    // to avoid race conditions and blocking JS callouts from the workers.
+  setStats: (stats: any) => {
+    if (typeof document !== 'undefined' && document.getElementById && (window as any).document === document) {
+        // We are in the main thread
+        if (stats.hp !== undefined) {
+          const el = document.getElementById('stat-hp');
+          if (el) el.innerText = stats.hp;
+        }
+        if (stats.str !== undefined) {
+          const el = document.getElementById('stat-str');
+          if (el) el.innerText = stats.str;
+        }
+        if (stats.gold !== undefined) {
+          const el = document.getElementById('stat-gold');
+          if (el) el.innerText = stats.gold;
+        }
+        if (stats.level !== undefined) {
+          const el = document.getElementById('stat-level');
+          if (el) el.innerText = stats.level;
+        }
+        if (stats.botState !== undefined) {
+          const el = document.getElementById('bot-state');
+          if (el) el.innerText = stats.botState;
+        }
+        if (stats.botGen !== undefined) {
+          const el = document.getElementById('bot-gen');
+          if (el) el.innerText = stats.botGen;
+        }
+    } else if (typeof postMessage !== 'undefined') {
+        postMessage({ type: 'stats', stats });
+    }
   },
 };

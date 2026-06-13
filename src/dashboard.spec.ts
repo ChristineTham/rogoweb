@@ -59,17 +59,18 @@ describe('VT100 Dashboard and Harness UI', () => {
     });
   });
 
-  describe('Testing Harness', () => {
+  describe('Configuration', () => {
     it('renders a seed input field', () => {
       const seedInput = document.getElementById('seed-input') as HTMLInputElement;
       expect(seedInput).toBeTruthy();
       expect(seedInput?.getAttribute('type')).toBe('text');
     });
 
-    it('renders a RUN TEST button', () => {
-      const runTestBtn = document.getElementById('btn-run-test');
-      expect(runTestBtn).toBeTruthy();
-      expect(runTestBtn?.textContent?.trim()).toBe('RUN TEST');
+    it('renders a RANDOMISE checkbox', () => {
+      const randomiseToggle = document.getElementById('randomise-toggle') as HTMLInputElement;
+      expect(randomiseToggle).toBeTruthy();
+      expect(randomiseToggle?.getAttribute('type')).toBe('checkbox');
+      expect(randomiseToggle?.checked).toBe(true);
     });
   });
 

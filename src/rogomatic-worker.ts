@@ -6,7 +6,7 @@ let ipc: any = null;
 
 self.onmessage = (e: MessageEvent) => {
   try {
-    const { type, sab, userName, seed } = e.data;
+    const { type, sab, userName, seed, isReset, size } = e.data;
     console.log('Rogomatic Worker: received message', type);
 
     if (type === 'init') {
@@ -102,8 +102,6 @@ self.onmessage = (e: MessageEvent) => {
 
             // Create critical files if they don't exist to prevent C crashes
             const criticalFiles = [
-              '/var/games/rogomatic/GeneLog544',
-              '/var/games/rogomatic/GenePool544',
               '/var/games/rogomatic/ltm544',
               '/var/games/rogomatic/rgmdelta5.4.4'
             ];
@@ -117,6 +115,23 @@ self.onmessage = (e: MessageEvent) => {
                 console.error(`Rogomatic Worker: Error checking/creating ${file}:`, e);
               }
             });
+
+            if (isReset) {
+              console.log(`Rogomatic Worker: Resetting gene pool (size: ${size}, seed: ${seed})...`);
+              const Module = (self as any).Module;
+              if (typeof Module._emscripten_reset_gene_pool === 'function') {
+                Module._emscripten_reset_gene_pool(size || 20, seed || 0);
+                console.log('Rogomatic Worker: C gene pool reset complete');
+              } else {
+                console.error('Rogomatic Worker: _emscripten_reset_gene_pool not found!');
+              }
+
+              Module.syncFS().then(() => {
+                console.log('Rogomatic Worker: syncFS complete, posting reset_complete');
+                self.postMessage({ type: 'reset_complete' });
+              });
+              return;
+            }
 
             const Module = (self as any).Module;
             if (typeof Module._setenv === 'function') {
@@ -156,8 +171,14 @@ self.onmessage = (e: MessageEvent) => {
           self.postMessage({ type: 'exit', source: 'rogomatic', status });
         },
         print: (text: string) => {
-          // Rogomatic stdout contains the VT100 stream
-          self.postMessage({ type: 'stdout', source: 'rogomatic', message: text });
+          if (text.startsWith('Gene pool size') ||
+              text.startsWith('Trials') ||
+              text.startsWith('Mean score')) {
+            self.postMessage({ type: 'log', source: 'rogomatic', message: text });
+          } else {
+            // Rogomatic stdout contains the VT100 stream
+            self.postMessage({ type: 'stdout', source: 'rogomatic', message: text });
+          }
         },
         printErr: (text: string) => {
           console.error('Rogomatic stderr:', text);

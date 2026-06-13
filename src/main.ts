@@ -34,8 +34,20 @@ const xterm = new XTerm({
 const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
 const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement;
 const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement;
-const runTestBtn = document.getElementById('btn-run-test') as HTMLButtonElement;
+const randomiseToggle = document.getElementById('randomise-toggle') as HTMLInputElement;
+const autoRestartToggle = document.getElementById('autorestart-toggle') as HTMLInputElement;
+const resetGeneBtn = document.getElementById('btn-reset-gene') as HTMLButtonElement;
 const seedInput = document.getElementById('seed-input') as HTMLInputElement;
+
+const resetModal = document.getElementById('modal-reset-gene') as HTMLDialogElement;
+const resetForm = document.getElementById('form-reset-gene') as HTMLFormElement;
+const resetCancelBtn = document.getElementById('btn-reset-cancel') as HTMLButtonElement;
+const resetPoolSizeInput = document.getElementById('reset-pool-size') as HTMLInputElement;
+const resetSeedInput = document.getElementById('reset-seed') as HTMLInputElement;
+
+const statsModal = document.getElementById('modal-gene-stats') as HTMLDialogElement;
+const statsContent = document.getElementById('gene-stats-content') as HTMLDivElement;
+const geneStatsBtn = document.getElementById('btn-gene-stats') as HTMLButtonElement;
 
 (window as any).xtermInstance = xterm;
 (window as any).Terminal = TerminalShim;
@@ -242,16 +254,33 @@ const pollTelemetry = () => {
     if (el) el.textContent = goldMatch[1];
   }
 
-  const hpMatch = statLine.match(/Hp:\s*([\d]+\([\d]+\))/);
+  const hpMatch = statLine.match(/Hp:\s*(\d+)\((\d+)\)/);
   if (hpMatch) {
+    const hp = parseInt(hpMatch[1], 10);
+    const maxhp = parseInt(hpMatch[2], 10);
     const el = document.getElementById('stat-hp');
-    if (el) el.textContent = hpMatch[1].replace('(', '/').replace(')', '');
+    if (el) el.textContent = `${hp}(${maxhp})`;
+    const bar = document.getElementById('stat-hp-bar');
+    if (bar) {
+      const pct = maxhp > 0 ? (hp / maxhp) * 100 : 0;
+      bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      const colorClass = pct < 30 ? 'bg-red-600' : pct < 70 ? 'bg-amber-500' : 'bg-green-600';
+      bar.className = `h-full rounded-sm transition-all duration-300 ${colorClass}`;
+    }
   }
 
   const strMatch = statLine.match(/Str:\s*(\d+)/);
   if (strMatch) {
     const el = document.getElementById('stat-str');
     if (el) el.textContent = strMatch[1];
+  }
+
+  const expMatch = statLine.match(/Exp:\s*(\d+)\/(\d+)/);
+  if (expMatch) {
+    const exp = parseInt(expMatch[1], 10);
+    const explev = parseInt(expMatch[2], 10);
+    const el = document.getElementById('stat-exp');
+    if (el) el.textContent = `${exp}/${explev}`;
   }
 };
 
@@ -263,6 +292,127 @@ const simulateTyping = async (text: string, speed = 100) => {
     xterm.write(char);
     await sleep(speed + Math.random() * 50);
   }
+};
+
+const startWorkerGame = (userName: string) => {
+  isExited = false;
+  if (activeRogueWorker) {
+    activeRogueWorker.terminate();
+    activeRogueWorker = null;
+  }
+  if (activeRogomaticWorker) {
+    activeRogomaticWorker.terminate();
+    activeRogomaticWorker = null;
+  }
+  if (statsPollerInterval) {
+    clearInterval(statsPollerInterval);
+    statsPollerInterval = null;
+  }
+  if (telemetryInterval) {
+    clearInterval(telemetryInterval);
+    telemetryInterval = null;
+  }
+  if (autoRestartTimeout) {
+    clearTimeout(autoRestartTimeout);
+    autoRestartTimeout = null;
+  }
+
+  const l1 = document.getElementById('led-l1'); // Game Active
+  const l2 = document.getElementById('led-l2'); // Rogomatic Active
+  const l3 = document.getElementById('led-l3'); // Status (Green/Amber/Red)
+
+  if (l1) l1.classList.add('active');
+  if (l2) l2.classList.add('active');
+  if (l3) l3.classList.add('active'); // Start with green health
+
+  // SEED HANDLING
+  const isRandomize = randomiseToggle?.checked;
+  let activeSeed = seedInput?.value || '';
+
+  if (isRandomize || !activeSeed) {
+    activeSeed = (Math.floor(Math.random() * 900000) + 100000).toString();
+    if (seedInput) {
+      seedInput.value = activeSeed;
+    }
+    console.log(`Main Thread: Generated random seed: ${activeSeed}`);
+  } else {
+    console.log(`Main Thread: Reusing seed: ${activeSeed}`);
+  }
+
+  const Module = (window as any).Module;
+  if (Module) {
+    if (!Module.ENV) Module.ENV = {};
+    Module.ENV['SEED'] = activeSeed;
+  }
+
+  // Start telemetry polling
+  telemetryInterval = setInterval(pollTelemetry, 250);
+
+  // FOCUS: Bring focus to terminal for immediate play
+  xterm.focus();
+
+  // DUAL WORKER MODE (Phase 4)
+  console.log('Starting Dual Worker IPC Mode...');
+  
+  if (!window.crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') {
+    console.error('CRITICAL: Cross-Origin Isolation is not active. SharedArrayBuffer is required for Dual Worker mode.');
+    xterm.writeln('\x1b[31mERROR: CROSS-ORIGIN ISOLATION REQUIRED\x1b[0m');
+    return;
+  }
+
+  const sab = SharedIPC.createSAB();
+  const ipc = new SharedIPC(sab);
+  
+  activeRogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
+  activeRogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
+
+  const handleWorkerMessage = (e: MessageEvent) => {
+    if (e.data && e.data.type === 'fs_error') {
+      showPersistenceError();
+    } else if (e.data && e.data.type === 'exit') {
+      if (!isExited) {
+        isExited = true;
+        handleAutoExit(e.data.status, userName);
+      }
+    } else if (e.data && e.data.type === 'log') {
+      const logPane = document.getElementById('observer-log');
+      if (logPane) {
+        const entry = document.createElement('div');
+        entry.textContent = `[${e.data.source}] ${e.data.message}`;
+        if (e.data.error) {
+          entry.classList.add('text-red-400');
+        } else {
+          entry.classList.add('text-green-400');
+        }
+        logPane.appendChild(entry);
+        requestAnimationFrame(() => {
+          logPane.scrollTop = logPane.scrollHeight;
+        });
+      }
+    } else if (e.data && e.data.type === 'stdout') {
+      if (e.data.raw) {
+        xterm.write(e.data.message);
+      } else {
+        xterm.writeln(e.data.message);
+      }
+    }
+  };
+  activeRogueWorker.onmessage = handleWorkerMessage;
+  activeRogomaticWorker.onmessage = handleWorkerMessage;
+
+  activeRogueWorker.postMessage({ type: 'init', sab, userName, seed: activeSeed });
+  activeRogomaticWorker.postMessage({ type: 'init', sab, userName, seed: activeSeed });
+
+  // Passive polling of SharedArrayBuffer for high-fidelity stats
+  statsPollerInterval = setInterval(() => {
+    const rogueStats = ipc.getStats(false);
+    const rgmStats = ipc.getStats(true);
+    
+    renderStats({ ...rogueStats, source: 'rogue' });
+    renderStats({ ...rgmStats, source: 'rogomatic' });
+  }, 250);
+
+  (window as any).statsPoller = statsPollerInterval;
 };
 
 const runLoginSequence = async (userName: string) => {
@@ -289,7 +439,6 @@ const runLoginSequence = async (userName: string) => {
   }
 
   const l1 = document.getElementById('led-l1'); // Game Active
-  const l2 = document.getElementById('led-l2'); // Rogomatic Active
   const l3 = document.getElementById('led-l3'); // Status (Green/Amber/Red)
   const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement;
   const isAuto = modeToggle?.checked;
@@ -298,12 +447,23 @@ const runLoginSequence = async (userName: string) => {
   if (l3) l3.classList.add('active'); // Start with green health
 
   // SEED HANDLING
-  const seedValue = seedInput?.value;
-  if (seedValue) {
-    const Module = (window as any).Module;
-    if (Module && !Module.ENV) Module.ENV = {};
-    if (Module) Module.ENV['SEED'] = seedValue;
-    console.log(`Main Thread: Using custom seed ${seedValue}`);
+  const isRandomize = randomiseToggle?.checked;
+  let activeSeed = seedInput?.value || '';
+
+  if (isRandomize || !activeSeed) {
+    activeSeed = (Math.floor(Math.random() * 900000) + 100000).toString();
+    if (seedInput) {
+      seedInput.value = activeSeed;
+    }
+    console.log(`Main Thread: Generated random seed: ${activeSeed}`);
+  } else {
+    console.log(`Main Thread: Reusing seed: ${activeSeed}`);
+  }
+
+  const Module = (window as any).Module;
+  if (Module) {
+    if (!Module.ENV) Module.ENV = {};
+    Module.ENV['SEED'] = activeSeed;
   }
 
   // xterm.reset();
@@ -331,80 +491,8 @@ const runLoginSequence = async (userName: string) => {
   xterm.writeln('');
   await sleep(300);
 
-  if (isAuto && l2) l2.classList.add('active');
-
-  // Start telemetry polling
-  telemetryInterval = setInterval(pollTelemetry, 250);
-
-  // FOCUS: Bring focus to terminal for immediate play
-  xterm.focus();
-
   if (isAuto) {
-    // DUAL WORKER MODE (Phase 4)
-    console.log('Starting Dual Worker IPC Mode...');
-    
-    if (!window.crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') {
-      console.error('CRITICAL: Cross-Origin Isolation is not active. SharedArrayBuffer is required for Dual Worker mode.');
-      console.log('Isolation Status:', window.crossOriginIsolated);
-      xterm.writeln('\x1b[31mERROR: CROSS-ORIGIN ISOLATION REQUIRED\x1b[0m');
-      xterm.writeln('Please ensure the server is sending COOP/COEP headers.');
-      return;
-    }
-
-    const sab = SharedIPC.createSAB();
-    const ipc = new SharedIPC(sab);
-    
-    activeRogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
-    activeRogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
-
-    const handleWorkerMessage = (e: MessageEvent) => {
-      if (e.data && e.data.type === 'fs_error') {
-        showPersistenceError();
-      } else if (e.data && e.data.type === 'exit') {
-        if (!isExited) {
-          isExited = true;
-          handleAutoExit(e.data.status, userName);
-        }
-      } else if (e.data && e.data.type === 'log') {
-        const logPane = document.getElementById('observer-log');
-        if (logPane) {
-          const entry = document.createElement('div');
-          entry.textContent = `[${e.data.source}] ${e.data.message}`;
-          if (e.data.error) {
-            entry.classList.add('text-red-400');
-          } else {
-            entry.classList.add('text-green-400');
-          }
-          logPane.appendChild(entry);
-          requestAnimationFrame(() => {
-            logPane.scrollTop = logPane.scrollHeight;
-          });
-        }
-      } else if (e.data && e.data.type === 'stdout') {
-        if (e.data.raw) {
-          xterm.write(e.data.message);
-        } else {
-          xterm.writeln(e.data.message);
-        }
-      }
-    };
-    activeRogueWorker.onmessage = handleWorkerMessage;
-    activeRogomaticWorker.onmessage = handleWorkerMessage;
-
-    activeRogueWorker.postMessage({ type: 'init', sab, userName, seed: seedValue });
-    activeRogomaticWorker.postMessage({ type: 'init', sab, userName, seed: seedValue });
-
-    // Passive polling of SharedArrayBuffer for high-fidelity stats
-    statsPollerInterval = setInterval(() => {
-      const rogueStats = ipc.getStats(false);
-      const rgmStats = ipc.getStats(true);
-      
-      renderStats({ ...rogueStats, source: 'rogue' });
-      renderStats({ ...rgmStats, source: 'rogomatic' });
-    }, 250);
-
-    (window as any).statsPoller = statsPollerInterval;
-
+    startWorkerGame(userName);
     return;
   }
 
@@ -431,11 +519,11 @@ const runLoginSequence = async (userName: string) => {
       Module.stringToUTF8(userName, logValPtr, userName.length * 4 + 1);
       Module._setenv(logKeyPtr, logValPtr, 1);
 
-      if (seedValue) {
+      if (activeSeed) {
         const seedKeyPtr = Module.stackAlloc(5);
         Module.stringToUTF8('SEED', seedKeyPtr, 5);
-        const seedValPtr = Module.stackAlloc(seedValue.length * 4 + 1);
-        Module.stringToUTF8(seedValue, seedValPtr, seedValue.length * 4 + 1);
+        const seedValPtr = Module.stackAlloc(activeSeed.length * 4 + 1);
+        Module.stringToUTF8(activeSeed, seedValPtr, activeSeed.length * 4 + 1);
         Module._setenv(seedKeyPtr, seedValPtr, 1);
       }
     }
@@ -594,6 +682,27 @@ const renderStats = (stats: any) => {
     if (stats.hp !== undefined) {
       const el = document.getElementById('stat-hp');
       if (el) el.innerText = stats.maxhp !== undefined ? `${stats.hp}(${stats.maxhp})` : stats.hp;
+      const bar = document.getElementById('stat-hp-bar');
+      if (bar) {
+        let hpVal = 0;
+        let maxhpVal = 0;
+        if (stats.maxhp !== undefined) {
+          hpVal = Number(stats.hp);
+          maxhpVal = Number(stats.maxhp);
+        } else if (typeof stats.hp === 'string') {
+          const match = stats.hp.match(/(\d+)\((\d+)\)/);
+          if (match) {
+            hpVal = parseInt(match[1], 10);
+            maxhpVal = parseInt(match[2], 10);
+          }
+        }
+        if (maxhpVal > 0) {
+          const pct = (hpVal / maxhpVal) * 100;
+          bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+          const colorClass = pct < 30 ? 'bg-red-600' : pct < 70 ? 'bg-amber-500' : 'bg-green-600';
+          bar.className = `h-full rounded-sm transition-all duration-300 ${colorClass}`;
+        }
+      }
     }
     if (stats.str !== undefined) {
       const el = document.getElementById('stat-str');
@@ -631,7 +740,12 @@ const renderStats = (stats: any) => {
 
 const resetStatsUI = () => {
   const hpEl = document.getElementById('stat-hp');
-  if (hpEl) hpEl.innerText = '0/0';
+  if (hpEl) hpEl.innerText = '0(0)';
+  const hpBar = document.getElementById('stat-hp-bar');
+  if (hpBar) {
+    hpBar.style.width = '0%';
+    hpBar.className = 'h-full bg-red-600 rounded-sm transition-all duration-300';
+  }
   const strEl = document.getElementById('stat-str');
   if (strEl) strEl.innerText = '0';
   const goldEl = document.getElementById('stat-gold');
@@ -649,22 +763,6 @@ const resetStatsUI = () => {
 const handleAutoExit = (status: number, userName: string) => {
   const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
   leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
-
-  // Log in observer log
-  const logPane = document.getElementById('observer-log');
-  if (logPane) {
-    const entry = document.createElement('div');
-    entry.textContent = `[system] Game exited with status ${status}. Restarting in 5 seconds...`;
-    entry.classList.add('text-amber-400', 'font-bold', 'mt-2');
-    logPane.appendChild(entry);
-    logPane.scrollTop = logPane.scrollHeight;
-  }
-
-  // Update state in stats panel
-  const botStateEl = document.getElementById('bot-state');
-  if (botStateEl) {
-    botStateEl.innerText = 'RESTARTING...';
-  }
 
   // Clean up workers and stats poller right away so they don't consume resources
   if (activeRogueWorker) {
@@ -684,15 +782,70 @@ const handleAutoExit = (status: number, userName: string) => {
     telemetryInterval = null;
   }
 
-  // Wait 5 seconds to let the user see the final screen, then start the next game
-  autoRestartTimeout = setTimeout(() => {
-    // Clear terminal and reset stats
-    xterm.reset();
-    resetStatsUI();
-    
-    // Start next game
-    runLoginSequence(userName);
-  }, 5000);
+  const logPane = document.getElementById('observer-log');
+  const botStateEl = document.getElementById('bot-state');
+
+  const shouldAutoRestart = autoRestartToggle ? autoRestartToggle.checked : true;
+
+  if (shouldAutoRestart) {
+    // Log in observer log
+    if (logPane) {
+      const entry = document.createElement('div');
+      entry.textContent = `[system] Game exited with status ${status}. Restarting in 5 seconds...`;
+      entry.classList.add('text-amber-400', 'font-bold', 'mt-2');
+      logPane.appendChild(entry);
+      logPane.scrollTop = logPane.scrollHeight;
+    }
+
+    // Update state in stats panel
+    if (botStateEl) {
+      botStateEl.innerText = 'RESTARTING...';
+    }
+
+    // Wait 5 seconds to let the user see the final screen, then start the next game
+    autoRestartTimeout = setTimeout(() => {
+      // Clear terminal and reset stats
+      xterm.reset();
+      resetStatsUI();
+      
+      // Start next game directly
+      startWorkerGame(userName);
+    }, 5000);
+  } else {
+    // Log in observer log
+    if (logPane) {
+      const entry = document.createElement('div');
+      entry.textContent = `[system] Game exited with status ${status}. Auto restart disabled.`;
+      entry.classList.add('text-amber-400', 'font-bold', 'mt-2');
+      logPane.appendChild(entry);
+      logPane.scrollTop = logPane.scrollHeight;
+    }
+
+    // Update state in stats panel
+    if (botStateEl) {
+      botStateEl.innerText = 'IDLE';
+    }
+
+    // Restore buttons and UI to idle state
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.innerText = 'START';
+    }
+    if (resetGeneBtn) {
+      resetGeneBtn.disabled = false;
+    }
+    if (geneStatsBtn) {
+      geneStatsBtn.disabled = false;
+    }
+    if (stopBtn) {
+      stopBtn.disabled = true;
+    }
+    if (pauseBtn) {
+      pauseBtn.disabled = true;
+      pauseBtn.innerText = 'PAUSE';
+      pauseBtn.classList.remove('active');
+    }
+  }
 };
 
 const handleExit = (_status: number) => {
@@ -810,11 +963,173 @@ const handleExit = (_status: number) => {
           startBtn.disabled = true;
           startBtn.innerText = 'ONLINE';
 
+          if (resetGeneBtn) {
+            resetGeneBtn.disabled = true;
+          }
+          if (geneStatsBtn) {
+            geneStatsBtn.disabled = true;
+          }
+
           if (stopBtn) stopBtn.disabled = false;
           if (pauseBtn) pauseBtn.disabled = false;
 
           runLoginSequence(userName);
         };
+      }
+
+      if (geneStatsBtn) {
+        geneStatsBtn.disabled = false;
+      }
+
+      if (resetGeneBtn && resetModal) {
+        resetGeneBtn.disabled = false;
+        resetGeneBtn.onclick = () => {
+          resetModal.showModal();
+        };
+
+        if (resetCancelBtn) {
+          resetCancelBtn.onclick = () => {
+            resetModal.close();
+          };
+        }
+
+        // Fallback for browsers without closedby support (e.g. Safari)
+        if (!('closedBy' in HTMLDialogElement.prototype)) {
+          resetModal.onclick = (event) => {
+            if (event.target !== resetModal) return;
+            const rect = resetModal.getBoundingClientRect();
+            const isDialogContent = (
+              rect.top <= event.clientY &&
+              event.clientY <= rect.top + rect.height &&
+              rect.left <= event.clientX &&
+              event.clientX <= rect.left + rect.width
+            );
+            if (!isDialogContent) {
+              resetModal.close();
+            }
+          };
+        }
+
+        if (resetForm) {
+          resetForm.onsubmit = (e) => {
+            e.preventDefault();
+            resetModal.close();
+
+            const poolSize = parseInt(resetPoolSizeInput?.value || '20', 10);
+            const randomSeed = parseInt(resetSeedInput?.value || '0', 10);
+
+            resetGeneBtn.disabled = true;
+            if (geneStatsBtn) {
+              geneStatsBtn.disabled = true;
+            }
+            if (startBtn) startBtn.disabled = true;
+
+            const logPane = document.getElementById('observer-log');
+            if (logPane) {
+              const entry = document.createElement('div');
+              entry.textContent = `[system] Resetting gene pool (size: ${poolSize}, seed: ${randomSeed})...`;
+              entry.classList.add('text-amber-400', 'font-bold');
+              logPane.appendChild(entry);
+              logPane.scrollTop = logPane.scrollHeight;
+            }
+
+            // Spawn a temporary worker to initialize the pool using Emscripten FS & WASM
+            const userName = (document.getElementById('unix-name') as HTMLInputElement)?.value || 'rogue';
+            const sab = SharedIPC.createSAB();
+            
+            const tempWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
+            tempWorker.onmessage = (event) => {
+              if (event.data && event.data.type === 'reset_complete') {
+                console.log('Main Thread: received reset_complete from temporary worker');
+                tempWorker.terminate();
+
+                resetGeneBtn.disabled = false;
+                if (geneStatsBtn) {
+                  geneStatsBtn.disabled = false;
+                }
+                if (startBtn) startBtn.disabled = false;
+
+                const logPaneInner = document.getElementById('observer-log');
+                if (logPaneInner) {
+                  const entry = document.createElement('div');
+                  entry.textContent = `[system] Gene pool initialized successfully.`;
+                  entry.classList.add('text-green-400', 'font-bold');
+                  logPaneInner.appendChild(entry);
+                  logPaneInner.scrollTop = logPaneInner.scrollHeight;
+                }
+              } else if (event.data && event.data.type === 'fs_error') {
+                tempWorker.terminate();
+                resetGeneBtn.disabled = false;
+                if (geneStatsBtn) {
+                  geneStatsBtn.disabled = false;
+                }
+                if (startBtn) startBtn.disabled = false;
+                showPersistenceError();
+              }
+            };
+
+            tempWorker.postMessage({
+              type: 'init',
+              sab,
+              userName,
+              seed: randomSeed.toString(),
+              isReset: true,
+              size: poolSize
+            });
+          };
+        }
+      }
+
+      if (geneStatsBtn && statsModal && statsContent) {
+        geneStatsBtn.onclick = () => {
+          const FS = (window as any).Module?.FS;
+          if (!FS) {
+            statsContent.innerHTML = '<div class="italic text-red-600 font-bold">WASM filesystem not initialized.</div>';
+            statsModal.showModal();
+            return;
+          }
+
+          statsContent.innerHTML = '<div class="italic text-black/60">Loading stats...</div>';
+          statsModal.showModal();
+
+          FS.syncfs(true, (err: any) => {
+            if (err) {
+              console.error('Main Thread: failed to sync IndexedDB for gene stats:', err);
+              statsContent.innerHTML = '<div class="italic text-red-600 font-bold">Failed to sync file system.</div>';
+              return;
+            }
+
+            const poolFile = '/var/games/rogomatic/GenePool544';
+            try {
+              if (FS.analyzePath(poolFile).exists) {
+                const content = FS.readFile(poolFile, { encoding: 'utf8' });
+                renderGeneStats(content);
+              } else {
+                statsContent.innerHTML = '<div class="italic text-red-600 font-bold">No gene pool file found. Play Rog-O-Matic first.</div>';
+              }
+            } catch (e: any) {
+              console.error('Main Thread: error reading GenePool544:', e);
+              statsContent.innerHTML = `<div class="italic text-red-600 font-bold">Error reading gene pool: ${e.message}</div>`;
+            }
+          });
+        };
+
+        // Fallback for browsers without closedby support (e.g. Safari)
+        if (!('closedBy' in HTMLDialogElement.prototype)) {
+          statsModal.onclick = (event) => {
+            if (event.target !== statsModal) return;
+            const rect = statsModal.getBoundingClientRect();
+            const isDialogContent = (
+              rect.top <= event.clientY &&
+              event.clientY <= rect.top + rect.height &&
+              rect.left <= event.clientX &&
+              event.clientX <= rect.left + rect.width
+            );
+            if (!isDialogContent) {
+              statsModal.close();
+            }
+          };
+        }
       }
 
       if (stopBtn) {
@@ -836,13 +1151,6 @@ const handleExit = (_status: number) => {
         };
       }
 
-      if (runTestBtn) {
-        runTestBtn.onclick = () => {
-          if (startBtn && !startBtn.disabled) {
-            startBtn.click();
-          }
-        };
-      }
     }
   },
   locateFile: (p: string) => (p.endsWith('.wasm') ? '/rogoweb/wasm/' + p : p),
@@ -930,3 +1238,137 @@ if (modeToggle) {
 const script = document.createElement('script');
 script.src = '/rogoweb/wasm/rogue.js';
 document.body.appendChild(script);
+
+interface Genotype {
+  id: number;
+  creation: number;
+  father: number;
+  mother: number;
+  dna: number[];
+  score: { count: number; sum: number; sumsq: number; low: number; high: number };
+  level: { count: number; sum: number; sumsq: number; low: number; high: number };
+}
+
+function parseGenePool(content: string) {
+  const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return null;
+
+  const headerParts = lines[0].split('|');
+  const [inittime, trialno, lastid, crosses, shifts, mutations] = headerParts[0].split(/\s+/).map(Number);
+  
+  const parseStat = (str: string) => {
+    const [count, sum, sumsq, low, high] = str.trim().split(/\s+/).map(Number);
+    return { count, sum, sumsq, low, high };
+  };
+
+  const poolScore = parseStat(headerParts[1]);
+  const poolLevel = parseStat(headerParts[2]);
+
+  const genotypes: Genotype[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split('|');
+    if (parts.length < 4) continue;
+
+    const [id, creation, father, mother] = parts[0].trim().split(/\s+/).map(Number);
+    const dna = parts[1].trim().split(/\s+/).map(Number);
+    const score = parseStat(parts[2]);
+    const level = parseStat(parts[3]);
+
+    genotypes.push({ id, creation, father, mother, dna, score, level });
+  }
+
+  return {
+    inittime, trialno, lastid, crosses, shifts, mutations,
+    poolScore, poolLevel,
+    genotypes
+  };
+}
+
+function renderGeneStats(content: string) {
+  const stats = parseGenePool(content);
+  const contentEl = document.getElementById('gene-stats-content');
+  if (!contentEl) return;
+
+  if (!stats) {
+    contentEl.innerHTML = '<div class="italic text-red-600 font-bold">Failed to parse gene pool or file is empty.</div>';
+    return;
+  }
+
+  const fmt = (num: number) => num.toFixed(2);
+  const mean = (stat: any) => stat.count > 0 ? stat.sum / stat.count : 0;
+  const stdev = (stat: any) => {
+    if (stat.count <= 1) return 0;
+    const variance = (stat.sumsq - (stat.sum * stat.sum) / stat.count) / (stat.count - 1);
+    return Math.sqrt(Math.max(0, variance));
+  };
+
+  let html = `
+    <!-- GENERAL POOL INFO -->
+    <div class="grid grid-cols-2 gap-2 border border-black/20 p-2 rounded bg-black/5">
+      <div>
+        <div class="font-extrabold uppercase text-[10px] text-black/60">Trials / Births</div>
+        <div class="font-bold text-sm text-vt-black">${stats.trialno} / ${stats.lastid}</div>
+      </div>
+      <div>
+        <div class="font-extrabold uppercase text-[10px] text-black/60">Cross / Mut / Shift</div>
+        <div class="font-bold text-sm text-vt-black">${stats.crosses} / ${stats.mutations} / ${stats.shifts}</div>
+      </div>
+      <div>
+        <div class="font-extrabold uppercase text-[10px] text-black/60">Mean Score</div>
+        <div class="font-bold text-sm text-vt-black">${fmt(mean(stats.poolScore))} ± ${fmt(stdev(stats.poolScore))}</div>
+      </div>
+      <div>
+        <div class="font-extrabold uppercase text-[10px] text-black/60">Mean Level</div>
+        <div class="font-bold text-sm text-vt-black">${fmt(mean(stats.poolLevel))} ± ${fmt(stdev(stats.poolLevel))}</div>
+      </div>
+    </div>
+
+    <!-- GENOTYPES LIST -->
+    <div class="mt-2">
+      <h3 class="font-bold uppercase tracking-wider text-[11px] mb-1.5 text-black/70">Genotypes (${stats.genotypes.length})</h3>
+      <div class="flex flex-col gap-1.5">
+  `;
+
+  const knobNames = [
+    "trap search", "door search", "resting", "use arrows",
+    "experiment", "retreat", "wake monst", "hoard food"
+  ];
+
+  stats.genotypes.forEach(g => {
+    const pStr = g.mother ? `${g.father}, ${g.mother}` : g.father ? `${g.father}` : 'None';
+    const sMean = mean(g.score);
+    const lMean = mean(g.level);
+    const sDev = stdev(g.score);
+    const lDev = stdev(g.level);
+
+    html += `
+      <div class="border border-black/20 p-2 rounded bg-white/40 shadow-xs flex flex-col gap-1">
+        <div class="flex justify-between items-center border-b border-black/10 pb-0.5">
+          <span class="font-black text-sm text-dec-blue">ID: ${g.id}</span>
+          <span class="text-[10px] text-black/60">Created: ${g.creation} | Parents: ${pStr}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
+          <div>
+            <span class="font-bold">Score:</span> ${fmt(sMean)} ± ${fmt(sDev)} (High: ${g.score.high})
+          </div>
+          <div>
+            <span class="font-bold">Level:</span> ${fmt(lMean)} ± ${fmt(lDev)} (High: ${g.level.high})
+          </div>
+        </div>
+        <div class="text-[9px] bg-black/5 p-1 rounded font-mono text-black/80 mt-0.5">
+          <span class="font-extrabold uppercase text-[8px] block mb-0.5 text-black/50">DNA / Knobs:</span>
+          <div class="grid grid-cols-4 gap-x-1 gap-y-0.5">
+            ${g.dna.map((val, idx) => `<div>${knobNames[idx]}: <strong>${val}</strong></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  contentEl.innerHTML = html;
+}

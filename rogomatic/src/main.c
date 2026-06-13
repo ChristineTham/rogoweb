@@ -884,6 +884,10 @@ startlesson (void)
 
   uncritical ();			/* Reenable interrupts */
 
+#ifdef ROGOWEB
+  analyzepool (0);
+#endif
+
   /* Cache the parameters for easier use */
   k_srch = knob[K_SRCH];	k_door = knob[K_DOOR];
   k_rest = knob[K_REST];	k_arch = knob[K_ARCH];

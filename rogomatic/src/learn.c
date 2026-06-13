@@ -854,3 +854,21 @@ badgene (int e1, int e2)
   if (worstval < bestval)	return (worst);
   else				return (-1);
 }
+
+#ifdef ROGOWEB
+void emscripten_reset_gene_pool(int size, int seed) {
+    char genelog[100];
+    char genepool[100];
+    int version = RV54A;
+
+    sprintf (genelog, "%s/GeneLog%d", getRgmDir (), version);
+    sprintf (genepool, "%s/GenePool%d", getRgmDir (), version);
+
+    rogo_srand (seed);
+    rogo_openlog (genelog);
+    initpool (MAXKNOB, size);
+    writegenes (genepool);
+    rogo_closelog ();
+}
+#endif
+
