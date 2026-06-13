@@ -235,31 +235,43 @@
                       placeholder="e.g. 12345"
                     />
                   </div>
-                  <div class="flex items-center gap-1.5 mt-0.5">
-                    <input
-                      type="checkbox"
-                      id="randomise-toggle"
-                      class="w-3.5 h-3.5 bg-[#222] border border-black/50 rounded-sm text-dec-blue focus:ring-0 cursor-pointer"
-                      checked
-                    />
-                    <label
-                      for="randomise-toggle"
-                      class="readout-label text-sm text-[#555] font-black uppercase leading-none cursor-pointer"
-                      >RANDOMISE</label
-                    >
-                  </div>
-                  <div class="flex items-center gap-1.5 mt-0.5">
-                    <input
-                      type="checkbox"
-                      id="autorestart-toggle"
-                      class="w-3.5 h-3.5 bg-[#222] border border-black/50 rounded-sm text-dec-blue focus:ring-0 cursor-pointer"
-                      checked
-                    />
-                    <label
-                      for="autorestart-toggle"
-                      class="readout-label text-sm text-[#555] font-black uppercase leading-none cursor-pointer"
-                      >AUTO RESTART</label
-                    >
+                  <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 mt-1 w-full">
+                    <div class="flex items-center gap-1.5">
+                      <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          id="randomise-toggle"
+                          class="sr-only peer"
+                          checked
+                        />
+                        <div
+                          class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"
+                        ></div>
+                      </label>
+                      <label
+                        for="randomise-toggle"
+                        class="readout-label text-sm text-[#555] font-black uppercase leading-none cursor-pointer select-none"
+                        >RANDOMISE</label
+                      >
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          id="autorestart-toggle"
+                          class="sr-only peer"
+                          checked
+                        />
+                        <div
+                          class="w-6 h-3 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-dec-blue"
+                        ></div>
+                      </label>
+                      <label
+                        for="autorestart-toggle"
+                        class="readout-label text-sm text-[#555] font-black uppercase leading-none cursor-pointer select-none"
+                        >AUTO RESTART</label
+                      >
+                    </div>
                   </div>
                 </div>
               </section>
