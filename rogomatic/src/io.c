@@ -206,12 +206,9 @@ getrogue (char *waitstr, int onat)
 
   /* While we have not reached the end of the Rogue input, read */
   /* characters from Rogue and figure out what they mean.       */
-  while ((*s) ||
+  while ((waitstr && *waitstr) ? (*s) :
          ((!hasted || version != RV36A) && onat && screen[row][col] != '@')) {
     ch = getroguetoken ();
-#ifdef ROGOWEB
-    fprintf(stderr, "getrogue: read ch=%d (%s) FSM s='%s' cursor=[%d,%d]\n", ch, unctrl(ch), s, row, col); fflush(stderr);
-#endif
 
     if debug(D_MESSAGE) {
       at (28,col);
@@ -853,7 +850,7 @@ void
 quitrogue (char *reason, int gld, int terminationtype)
 {
   struct tm *ts;
-  long clock;
+  time_t clock;
   char  *k, *r;
 
   /* Save the killer and score */
@@ -1238,7 +1235,7 @@ printsnap (FILE *f)
 {
   int i, j, length;
   struct tm *ts;
-  long clock;
+  time_t clock;
 
   /* Now get the current time, so we can date the snapshot */
   clock = time(&clock);

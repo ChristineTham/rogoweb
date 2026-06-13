@@ -6,7 +6,7 @@ let ipc: any = null;
 
 self.onmessage = (e: MessageEvent) => {
   try {
-    const { type, sab, userName } = e.data;
+    const { type, sab, userName, seed } = e.data;
     console.log('Rogomatic Worker: received message', type);
 
     if (type === 'init') {
@@ -31,7 +31,11 @@ self.onmessage = (e: MessageEvent) => {
 
       (self as any).Module = {
         noInitialRun: true,
-        ENV: { USER: userName, LOGNAME: userName },
+        ENV: { 
+          USER: userName, 
+          LOGNAME: userName,
+          ...(seed ? { SEED: seed } : {})
+        },
         TerminalShim: (self as any).Terminal,
         onStatsUpdate: (stats: any) => {
           if (ipc) ipc.writeStats(stats, true);
@@ -126,6 +130,9 @@ self.onmessage = (e: MessageEvent) => {
               };
               setenvHelper('USER', userName);
               setenvHelper('LOGNAME', userName);
+              if (seed) {
+                setenvHelper('SEED', seed);
+              }
             }
 
             console.log('Rogomatic Worker: Calling callMain...');

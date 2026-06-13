@@ -12,7 +12,10 @@
 
 #include "extern.h"
 
-#ifdef ROGOWEB
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
+#ifndef ROGOWEB
+#define ROGOWEB 1
+#endif
 #include <emscripten.h>
 #endif
 

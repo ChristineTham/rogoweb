@@ -366,7 +366,6 @@ int main (int argc, char *argv[])
   int startingup = 1;
   int  i;
 
-  fprintf(stderr, "main.c: player_main entered\n"); fflush(stderr);
   debuglog_open ("debuglog.player");
 
   /*

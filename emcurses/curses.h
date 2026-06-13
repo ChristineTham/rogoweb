@@ -1336,7 +1336,7 @@ int     sb_refresh(void);
 #endif
 
 /* EMCurses-specific functions */
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 void PDC_emscripten_set_handler(void (*func)(void), int simulateInfiniteLoop);
 #endif
 

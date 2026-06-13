@@ -27,7 +27,10 @@
  * Miscellaneous Macros and Constants
  */
 
-#ifdef ROGOWEB
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
+#ifndef ROGOWEB
+#define ROGOWEB 1
+#endif
 #include <emscripten.h>
 #define exit(code) emscripten_force_exit(code)
 #endif

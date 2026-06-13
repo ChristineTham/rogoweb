@@ -309,15 +309,8 @@ playit()
   if (md_hasclreol())
     inv_type = INV_CLEAR;
 
-#ifdef ROGOWEB
-  fprintf(stderr, "playit: ROGUEOPTS getenv: %s\n", getenv("ROGUEOPTS") ? getenv("ROGUEOPTS") : "NULL");
-  fprintf(stderr, "playit: before parse_opts, inv_type = %d\n", inv_type);
-#endif
   if ((opts = getenv("ROGUEOPTS")) != NULL)
     parse_opts(opts);
-#ifdef ROGOWEB
-  fprintf(stderr, "playit: after parse_opts, inv_type = %d (Slow is %d, Clear is %d)\n", inv_type, INV_SLOW, INV_CLEAR);
-#endif
 
 
   oldpos = hero;

@@ -266,6 +266,28 @@ const simulateTyping = async (text: string, speed = 100) => {
 };
 
 const runLoginSequence = async (userName: string) => {
+  isExited = false;
+  if (activeRogueWorker) {
+    activeRogueWorker.terminate();
+    activeRogueWorker = null;
+  }
+  if (activeRogomaticWorker) {
+    activeRogomaticWorker.terminate();
+    activeRogomaticWorker = null;
+  }
+  if (statsPollerInterval) {
+    clearInterval(statsPollerInterval);
+    statsPollerInterval = null;
+  }
+  if (telemetryInterval) {
+    clearInterval(telemetryInterval);
+    telemetryInterval = null;
+  }
+  if (autoRestartTimeout) {
+    clearTimeout(autoRestartTimeout);
+    autoRestartTimeout = null;
+  }
+
   const l1 = document.getElementById('led-l1'); // Game Active
   const l2 = document.getElementById('led-l2'); // Rogomatic Active
   const l3 = document.getElementById('led-l3'); // Status (Green/Amber/Red)
@@ -286,6 +308,7 @@ const runLoginSequence = async (userName: string) => {
 
   // xterm.reset();
   // await sleep(800);
+  xterm.write('4.2 BSD UNIX (ucbvax) (tty01)\r\nlogin: ');
   await simulateTyping(userName);
   xterm.writeln('');
 
@@ -311,7 +334,7 @@ const runLoginSequence = async (userName: string) => {
   if (isAuto && l2) l2.classList.add('active');
 
   // Start telemetry polling
-  setInterval(pollTelemetry, 250);
+  telemetryInterval = setInterval(pollTelemetry, 250);
 
   // FOCUS: Bring focus to terminal for immediate play
   xterm.focus();
@@ -331,17 +354,16 @@ const runLoginSequence = async (userName: string) => {
     const sab = SharedIPC.createSAB();
     const ipc = new SharedIPC(sab);
     
-    const rogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
-    const rogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
+    activeRogueWorker = new Worker(new URL('./rogue-worker.ts', import.meta.url));
+    activeRogomaticWorker = new Worker(new URL('./rogomatic-worker.ts', import.meta.url));
 
-    let isExited = false;
     const handleWorkerMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'fs_error') {
         showPersistenceError();
       } else if (e.data && e.data.type === 'exit') {
         if (!isExited) {
           isExited = true;
-          handleExit(e.data.status);
+          handleAutoExit(e.data.status, userName);
         }
       } else if (e.data && e.data.type === 'log') {
         const logPane = document.getElementById('observer-log');
@@ -366,14 +388,14 @@ const runLoginSequence = async (userName: string) => {
         }
       }
     };
-    rogueWorker.onmessage = handleWorkerMessage;
-    rogomaticWorker.onmessage = handleWorkerMessage;
+    activeRogueWorker.onmessage = handleWorkerMessage;
+    activeRogomaticWorker.onmessage = handleWorkerMessage;
 
-    rogueWorker.postMessage({ type: 'init', sab, userName });
-    rogomaticWorker.postMessage({ type: 'init', sab, userName });
+    activeRogueWorker.postMessage({ type: 'init', sab, userName, seed: seedValue });
+    activeRogomaticWorker.postMessage({ type: 'init', sab, userName, seed: seedValue });
 
     // Passive polling of SharedArrayBuffer for high-fidelity stats
-    const statsPoller = setInterval(() => {
+    statsPollerInterval = setInterval(() => {
       const rogueStats = ipc.getStats(false);
       const rgmStats = ipc.getStats(true);
       
@@ -381,7 +403,7 @@ const runLoginSequence = async (userName: string) => {
       renderStats({ ...rgmStats, source: 'rogomatic' });
     }, 250);
 
-    (window as any).statsPoller = statsPoller;
+    (window as any).statsPoller = statsPollerInterval;
 
     return;
   }
@@ -408,6 +430,14 @@ const runLoginSequence = async (userName: string) => {
       const logValPtr = Module.stackAlloc(userName.length * 4 + 1);
       Module.stringToUTF8(userName, logValPtr, userName.length * 4 + 1);
       Module._setenv(logKeyPtr, logValPtr, 1);
+
+      if (seedValue) {
+        const seedKeyPtr = Module.stackAlloc(5);
+        Module.stringToUTF8('SEED', seedKeyPtr, 5);
+        const seedValPtr = Module.stackAlloc(seedValue.length * 4 + 1);
+        Module.stringToUTF8(seedValue, seedValPtr, seedValue.length * 4 + 1);
+        Module._setenv(seedKeyPtr, seedValPtr, 1);
+      }
     }
 
     console.log(`Starting engine for user: ${userName} (Auto: ${isAuto})`);
@@ -548,6 +578,12 @@ const showPersistenceError = () => {
 };
 
 let mainInputBridge: { dispose: () => void } | null = null;
+let activeRogueWorker: Worker | null = null;
+let activeRogomaticWorker: Worker | null = null;
+let statsPollerInterval: any = null;
+let telemetryInterval: any = null;
+let autoRestartTimeout: any = null;
+let isExited = false;
 
 /**
  * Central UI State Update (React-style model)
@@ -591,6 +627,72 @@ const renderStats = (stats: any) => {
       if (el) el.innerText = stats.turns;
     }
   }
+};
+
+const resetStatsUI = () => {
+  const hpEl = document.getElementById('stat-hp');
+  if (hpEl) hpEl.innerText = '0/0';
+  const strEl = document.getElementById('stat-str');
+  if (strEl) strEl.innerText = '0';
+  const goldEl = document.getElementById('stat-gold');
+  if (goldEl) goldEl.innerText = '0';
+  const levelEl = document.getElementById('stat-level');
+  if (levelEl) levelEl.innerText = '1';
+  const expEl = document.getElementById('stat-exp');
+  if (expEl) expEl.innerText = '0/1';
+  const stateEl = document.getElementById('bot-state');
+  if (stateEl) stateEl.innerText = 'IDLE';
+  const turnsEl = document.getElementById('bot-turns');
+  if (turnsEl) turnsEl.innerText = '0';
+};
+
+const handleAutoExit = (status: number, userName: string) => {
+  const leds = ['led-l1', 'led-l2', 'led-l3', 'led-l4'];
+  leds.forEach((id) => document.getElementById(id)?.classList.remove('active'));
+
+  // Log in observer log
+  const logPane = document.getElementById('observer-log');
+  if (logPane) {
+    const entry = document.createElement('div');
+    entry.textContent = `[system] Game exited with status ${status}. Restarting in 5 seconds...`;
+    entry.classList.add('text-amber-400', 'font-bold', 'mt-2');
+    logPane.appendChild(entry);
+    logPane.scrollTop = logPane.scrollHeight;
+  }
+
+  // Update state in stats panel
+  const botStateEl = document.getElementById('bot-state');
+  if (botStateEl) {
+    botStateEl.innerText = 'RESTARTING...';
+  }
+
+  // Clean up workers and stats poller right away so they don't consume resources
+  if (activeRogueWorker) {
+    activeRogueWorker.terminate();
+    activeRogueWorker = null;
+  }
+  if (activeRogomaticWorker) {
+    activeRogomaticWorker.terminate();
+    activeRogomaticWorker = null;
+  }
+  if (statsPollerInterval) {
+    clearInterval(statsPollerInterval);
+    statsPollerInterval = null;
+  }
+  if (telemetryInterval) {
+    clearInterval(telemetryInterval);
+    telemetryInterval = null;
+  }
+
+  // Wait 5 seconds to let the user see the final screen, then start the next game
+  autoRestartTimeout = setTimeout(() => {
+    // Clear terminal and reset stats
+    xterm.reset();
+    resetStatsUI();
+    
+    // Start next game
+    runLoginSequence(userName);
+  }, 5000);
 };
 
 const handleExit = (_status: number) => {
@@ -693,7 +795,6 @@ const handleExit = (_status: number) => {
     }
 
     function setupLoginUI() {
-      xterm.write('4.2 BSD UNIX (ucbvax) (tty01)\r\nlogin: ');
       if (startBtn) {
         startBtn.disabled = false;
         startBtn.onclick = () => {

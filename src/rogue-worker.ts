@@ -6,7 +6,7 @@ let ipc: any = null;
 
 self.onmessage = (e: MessageEvent) => {
   try {
-    const { type, sab, userName } = e.data;
+    const { type, sab, userName, seed } = e.data;
     console.log('Rogue Worker: received message', type);
 
     if (type === 'init') {
@@ -31,11 +31,17 @@ self.onmessage = (e: MessageEvent) => {
       // IPC Polling loop for Rogomatic keystrokes
       const pollIPC = () => {
         const activeTerm = (self as any).term;
-        if (activeTerm && ipc && ipc.rogomaticToRogue.getAvailableRead() > 0) {
-          const buf = new Uint8Array(1);
-          if (ipc.rogomaticToRogue.read(buf, false) === 1) {
-            activeTerm.pushInput(buf[0]);
-            if (activeTerm.handler) activeTerm.handler();
+        if (activeTerm && ipc) {
+          const available = ipc.rogomaticToRogue.getAvailableRead();
+          if (available > 0) {
+            const buf = new Uint8Array(available);
+            const readBytes = ipc.rogomaticToRogue.read(buf, false);
+            for (let i = 0; i < readBytes; i++) {
+              activeTerm.pushInput(buf[i]);
+            }
+            if (readBytes > 0 && activeTerm.handler) {
+              activeTerm.handler();
+            }
           }
         }
         setTimeout(pollIPC, 10);
@@ -49,7 +55,8 @@ self.onmessage = (e: MessageEvent) => {
         ENV: {
           USER: userName,
           LOGNAME: userName,
-          ROGUEOPTS: rogueopts
+          ROGUEOPTS: rogueopts,
+          ...(seed ? { SEED: seed } : {})
         },
         TerminalShim: (self as any).Terminal,
         onStatsUpdate: (stats: any) => {
@@ -138,6 +145,9 @@ self.onmessage = (e: MessageEvent) => {
               setenvHelper('USER', userName);
               setenvHelper('LOGNAME', userName);
               setenvHelper('ROGUEOPTS', rogueopts);
+              if (seed) {
+                setenvHelper('SEED', seed);
+              }
             }
 
             console.log('Rogue Worker: Calling callMain...');
