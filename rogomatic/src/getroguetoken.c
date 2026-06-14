@@ -454,9 +454,16 @@ getroguetoken (void)
             else if (match4 ('1', 'l', ESC, '>')) {
               ch = ER_TOK;
             }
+            else if (match3 ('2', '5', 'h')) { /* Cursor on */
+              ch = ER_TOK;
+            }
+            else if (match3 ('2', '5', 'l')) { /* Cursor off */
+              ch = ER_TOK;
+            }
             else {
               ch = GETROGUECHAR; PUTDEBUGCHAR (ch);
               debuglog ("UNRECOGNIZED 1 : ^[[?%c\n",ch);
+              ch = ER_TOK;
             }
           }
           break;

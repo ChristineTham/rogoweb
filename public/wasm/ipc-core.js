@@ -292,8 +292,26 @@ class HeadlessTerminal {
       }
     }
   }
-  cursorOn() { }
-  cursorOff() { }
+  cursorOn() {
+    if (self.isRogomatic) {
+      self.postMessage({ type: 'stdout', message: '\x1b[?25h', raw: true });
+    } else {
+      const ipc = self.ipc;
+      if (ipc) {
+        this.writeToPipe(ipc, '\x1b[?25h');
+      }
+    }
+  }
+  cursorOff() {
+    if (self.isRogomatic) {
+      self.postMessage({ type: 'stdout', message: '\x1b[?25l', raw: true });
+    } else {
+      const ipc = self.ipc;
+      if (ipc) {
+        this.writeToPipe(ipc, '\x1b[?25l');
+      }
+    }
+  }
   writeToPipe(ipc, str) {
     console.log("Rogue -> Rogomatic pipe write:", JSON.stringify(str));
     const data = new TextEncoder().encode(str);

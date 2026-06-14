@@ -129,6 +129,7 @@ animate (char *movie[])
 
   clear ();
   refresh ();
+  redrawscreen ();
 }
 
 /*

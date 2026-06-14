@@ -489,16 +489,17 @@ getrogue (char *waitstr, int onat)
           setnewgoal ();		         /* invalidate the map.    */
         }
 
-  at (row, col);
+  at (atrow, atcol);
+
+  if (!emacs && !terse) refresh ();
+
 #if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
   EM_ASM_INT({
     if (typeof term !== 'undefined' && term.cursorSet) {
       term.cursorSet($0, $1);
     }
-  }, row, col);
+  }, atrow, atcol);
 #endif
-
-  if (!emacs && !terse) refresh ();
 
   printscreen ();
 
@@ -998,16 +999,18 @@ saynow (char *f, ...)
     for (b=buf; *b; b++) printw ("%s", unctrl (*b));
 
     clrtoeol ();
-    at (row, col);
+    at (atrow, atcol);
+  }
+  refresh ();
 #if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
+  if (!emacs && !terse) {
     EM_ASM_INT({
       if (typeof term !== 'undefined' && term.cursorSet) {
         term.cursorSet($0, $1);
       }
-    }, row, col);
-#endif
+    }, atrow, atcol);
   }
-  refresh ();
+#endif
   va_end (ap);
 }
 

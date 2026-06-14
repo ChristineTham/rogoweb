@@ -216,11 +216,19 @@ export class TerminalShim {
   }
 
   cursorOn() {
-    if (this.xterm) this.xterm.options.cursorBlink = true;
+    if (this.xterm) {
+      this.xterm.options.cursorBlink = true;
+    } else if (typeof postMessage !== 'undefined') {
+      postMessage({ type: 'stdout', message: '\x1b[?25h', raw: true });
+    }
   }
 
   cursorOff() {
-    if (this.xterm) this.xterm.options.cursorBlink = false;
+    if (this.xterm) {
+      this.xterm.options.cursorBlink = false;
+    } else if (typeof postMessage !== 'undefined') {
+      postMessage({ type: 'stdout', message: '\x1b[?25l', raw: true });
+    }
   }
 }
 
