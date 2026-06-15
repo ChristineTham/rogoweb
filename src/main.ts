@@ -1241,31 +1241,33 @@ const handleExit = (status: number) => {
 
 const terminalElement = document.getElementById('terminal');
 if (terminalElement) {
-  xterm.open(terminalElement);
-  xterm.writeln('Press START to play');
-
-  // ACTIVATE CANVAS RENDERER
-  try {
-    const canvasAddon = new CanvasAddon();
-    xterm.loadAddon(canvasAddon);
-  } catch (e) {
-    console.error('Canvas addon fail', e);
-  }
-
-  // INPUT BRIDGE: Hook xterm.onData to the global term instance
-  mainInputBridge = xterm.onData((data) => {
-    const term = (window as any).term as TerminalShim;
-    if (term) {
-      for (let i = 0; i < data.length; i++) {
-        term.pushInput(data.charCodeAt(i));
-      }
-      if (term.handler) term.handler();
-    }
-  });
-
   document.fonts.ready.then(() => {
+    xterm.open(terminalElement);
+    xterm.writeln('Press START to play');
+
+    // ACTIVATE CANVAS RENDERER
+    try {
+      // Disable CanvasAddon to allow DOM renderer to draw the custom font correctly
+      // const canvasAddon = new CanvasAddon();
+      // xterm.loadAddon(canvasAddon);
+    } catch (e) {
+      console.error('Canvas addon fail', e);
+    }
+
+    // INPUT BRIDGE: Hook xterm.onData to the global term instance
+    mainInputBridge = xterm.onData((data) => {
+      const term = (window as any).term as TerminalShim;
+      if (term) {
+        for (let i = 0; i < data.length; i++) {
+          term.pushInput(data.charCodeAt(i));
+        }
+        if (term.handler) term.handler();
+      }
+    });
+
     scheduleScaleTerminal(200);
   });
+
   window.addEventListener('resize', () => {
     scheduleScaleTerminal();
   });
