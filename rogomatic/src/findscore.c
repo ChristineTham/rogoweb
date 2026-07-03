@@ -57,9 +57,16 @@ findscore (char *rogue, char *roguename)
   if ((tmpfil = fopen (tmpbuffer, "r")) == NULL)
     return (best);
 
-  /* Skip to the line starting with 'Rank...'. */
-  while (fgets (buffer, BUFSIZ, tmpfil) != NULL)
-    if (stlmatch (buffer, "Rank")) break;
+  /* Skip to the column-header line, then parse the entries below it.
+     Older Rogue heads the table with "Rank ..."; Rogue 5.x prints
+     "   Score Name" (leading spaces).  Skip indentation and accept
+     either "Rank" or "Score" as the header keyword.  (The title line
+     "Top Ten Scores:" does not match, since it starts with "Top".) */
+  while (fgets (buffer, BUFSIZ, tmpfil) != NULL) {
+    char *h = buffer;
+    while (*h == ' ' || *h == '\t') h++;
+    if (stlmatch (h, "Rank") || stlmatch (h, "Score")) break;
+  }
 
   if (! feof (tmpfil)) {
     while (fgets (buffer, BUFSIZ, tmpfil) != NULL) {

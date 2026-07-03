@@ -676,11 +676,11 @@ setbonuses(void)
   /* Set global Damage Bonus */
   gplusdam = damagebonus (Str);
 
-  if (leftring != NONE && stlmatch (inven[leftring].str, "add damage") &&
+  if (leftring != NONE && stlmatch (inven[leftring].str, "increase damage") &&
       inven[leftring].pdam != UNKNOWN)
     gplusdam += inven[leftring].pdam;
 
-  if (rightring != NONE && stlmatch (inven[rightring].str, "add damage") &&
+  if (rightring != NONE && stlmatch (inven[rightring].str, "increase damage") &&
       inven[rightring].pdam != UNKNOWN)
     gplusdam += inven[rightring].pdam;
 

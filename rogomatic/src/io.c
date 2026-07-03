@@ -505,10 +505,13 @@ getrogue (char *waitstr, int onat)
 
 }
 
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
 #include <emscripten.h>
+#endif
 static char last_saynow[256] = "";
 
 void report_stats(void) {
+#if defined(ROGOWEB) || defined(__EMSCRIPTEN__)
     extern int geneid;
     EM_ASM({
         if (Module['onStatsUpdate']) {
@@ -526,6 +529,7 @@ void report_stats(void) {
             });
         }
     }, Hp, Hpmax, Str/100, Gold, Level, Exp, Explev, geneid, turns, last_saynow);
+#endif
 }
 
 /*

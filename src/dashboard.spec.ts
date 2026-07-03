@@ -39,8 +39,6 @@ describe('VT100 Dashboard and Harness UI', () => {
     it('enables STOP and PAUSE when START is clicked', () => {
       // This test requires mocking runLoginSequence or checking DOM side-effects
       const startBtn = document.getElementById('btn-start') as HTMLButtonElement;
-      const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement;
-      const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement;
 
       // Simulate the click behavior implemented in setupLoginUI
       startBtn.disabled = false; // Usually enabled by WASM runtime init

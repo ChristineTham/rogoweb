@@ -1,6 +1,5 @@
 /* Rogue Worker Entry Point (Classic Script) */
-declare var Module: any;
-declare var importScripts: (...args: string[]) => void;
+declare function importScripts(...args: string[]): void;
 
 let ipc: any = null;
 

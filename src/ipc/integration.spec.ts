@@ -13,7 +13,7 @@ describe('WASM IPC Integration Simulation', () => {
 
     // Mock the Emscripten Module hooks for Worker A (Sender)
     const moduleA: any = {
-      wasm_pipe_write: (_fd: number, ptr: number, count: number) => {
+      wasm_pipe_write: (_fd: number, _ptr: number, _count: number) => {
         // Simulate reading from WASM memory (ptr)
         // In real WASM this would be Module.HEAPU8.subarray(ptr, ptr+count)
         // For simulation we'll just treat ptr as a local index into a dummy data array

@@ -221,7 +221,7 @@ nametrap (int traptype, int standingonit)
   if (traptype == TRAPDOR) foundnew ();
 
   /* Set the trap type */
-  unsetrc (TELTRAP|TRAPDOR|BEARTRP|GASTRAP|ARROW|DARTRAP, r, c);
+  unsetrc (TELTRAP|TRAPDOR|BEARTRP|GASTRAP|ARROW|DARTRAP|WATERAP, r, c);
   setrc (TRAP | traptype, r, c);
 }
 
@@ -552,7 +552,7 @@ updatepos (char ch, int row, int col)
 
       setrc (SEEN | CANGO | SAFE | HALL | EVERCLR, row, col);
       unsetrc (DOOR | ROOM | TRAP | ARROW | TRAPDOR | TELTRAP | GASTRAP |
-               BEARTRP | DARTRAP | MONSTER | SCAREM | WALL | SLEEPER | STAIRS,
+               BEARTRP | DARTRAP | WATERAP | MONSTER | SCAREM | WALL | SLEEPER | STAIRS,
                row, col);
       break;
 
@@ -569,7 +569,7 @@ updatepos (char ch, int row, int col)
 
       setrc (SEEN | CANGO | SAFE | DOOR | WALL | EVERCLR, row, col);
       unsetrc (ROOM | TRAP | ARROW | TRAPDOR | TELTRAP | GASTRAP | BEARTRP |
-               DARTRAP | MONSTER | SCAREM | SLEEPER, row, col);
+               DARTRAP | WATERAP | MONSTER | SCAREM | SLEEPER, row, col);
       clearcurrect();  /* LGCH: redo currentrectangle */
       break;
 
@@ -583,7 +583,7 @@ updatepos (char ch, int row, int col)
     case '.':
       /* The square cant be any of these */
       unsetrc (HALL | DOOR | MONSTER | SCAREM | WALL | TRAP | ARROW |
-               TRAPDOR | TELTRAP | GASTRAP | BEARTRP | DARTRAP, row, col);
+               TRAPDOR | TELTRAP | GASTRAP | BEARTRP | DARTRAP | WATERAP, row, col);
 
       if (!onrc (ROOM, row, col))		/* New room? */
         unmarkexplored (row, col);
@@ -630,7 +630,7 @@ updatepos (char ch, int row, int col)
     case '*':
       setrc (SEEN | CANGO | SAFE | EVERCLR, row, col);
       unsetrc (DOOR | TRAP | ARROW | TRAPDOR | TELTRAP | GASTRAP | BEARTRP |
-               DARTRAP | MONSTER | WALL | SLEEPER, row, col);
+               DARTRAP | WATERAP | MONSTER | WALL | SLEEPER, row, col);
 
       if (ch != '?') unsetrc (SCAREM, row, col);
 
@@ -649,7 +649,7 @@ updatepos (char ch, int row, int col)
 
       setrc (SEEN | CANGO | SAFE | ROOM | STAIRS | EVERCLR, row, col);
       unsetrc (DOOR | HALL | TRAP | ARROW | TRAPDOR | TELTRAP | GASTRAP |
-               BEARTRP | DARTRAP | MONSTER | SCAREM | SLEEPER,
+               BEARTRP | DARTRAP | WATERAP | MONSTER | SCAREM | SLEEPER,
                row, col);
       stairrow = row;
       staircol = col;
@@ -741,7 +741,7 @@ teleport (void)
       if (onrc (WALL | DOOR | HALL, r, c)) break;
 
       if (onrc (TRAP, r, c)) {
-        if (!onrc (ARROW|DARTRAP|GASTRAP|BEARTRP|TRAPDOR|TELTRAP, r, c))
+        if (!onrc (ARROW|DARTRAP|GASTRAP|BEARTRP|TRAPDOR|TELTRAP|WATERAP, r, c))
           saynow ("Assuming teleport trap at %d, %d", r, c);
 
         break;

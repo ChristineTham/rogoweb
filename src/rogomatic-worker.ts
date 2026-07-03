@@ -1,8 +1,42 @@
 /* Rogomatic Worker Entry Point (Classic Script) */
-declare var Module: any;
-declare var importScripts: (...args: string[]) => void;
+declare function importScripts(...args: string[]): void;
 
 let ipc: any = null;
+
+/**
+ * Validate a persisted gene pool file. Returns false if the file is empty,
+ * truncated, or otherwise malformed, so the caller can reset it instead of
+ * letting the C learner index garbage genotypes (which hangs the game).
+ *
+ * Format written by writegenes()/writegene():
+ *   header:   "<inittime> <trial> <lastid> <cross> <shift> <mut>|<score-stat>|<level-stat>|"
+ *   genotype: "<id> <creation> <father> <mother>|<8 dna ints>|<score-stat>|<level-stat>|"
+ */
+function isValidGenePool(content: string): boolean {
+  const MAXKNOB = 8; // number of DNA "knobs" (main.c)
+  const lines = content.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return false; // need a header and at least one genotype
+
+  const allNums = (s: string) => {
+    const parts = s.trim().split(/\s+/);
+    return parts.length > 0 && parts.every((p) => p !== '' && Number.isFinite(Number(p)));
+  };
+
+  // Header: 6 numbers, then two stat sections (split on '|')
+  const header = lines[0].split('|');
+  if (header.length < 3) return false;
+  if (header[0].trim().split(/\s+/).length < 6 || !allNums(header[0])) return false;
+
+  // Each genotype: id-info(4) | dna(>=MAXKNOB) | score | level
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split('|');
+    if (parts.length < 4) return false;
+    const idinfo = parts[0].trim().split(/\s+/);
+    if (idinfo.length < 4 || !allNums(parts[0]) || Number(idinfo[0]) <= 0) return false;
+    if (parts[1].trim().split(/\s+/).length < MAXKNOB || !allNums(parts[1])) return false;
+  }
+  return true;
+}
 
 self.onmessage = (e: MessageEvent) => {
   try {
@@ -115,6 +149,29 @@ self.onmessage = (e: MessageEvent) => {
                 console.error(`Rogomatic Worker: Error checking/creating ${file}:`, e);
               }
             });
+
+            // Validate the persisted gene pool before the C learner reads it.
+            // A truncated/corrupt pool (e.g. from an interrupted sync) makes the
+            // C code index garbage genotypes and hang at startup. If it fails
+            // validation, delete it so a fresh pool is created instead.
+            try {
+              const poolPath = '/var/games/rogomatic/GenePool544';
+              if (FS.analyzePath(poolPath).exists) {
+                const poolData = FS.readFile(poolPath, { encoding: 'utf8' });
+                if (!isValidGenePool(poolData)) {
+                  console.warn('Rogomatic Worker: GenePool544 is corrupt/stale — resetting to a fresh pool');
+                  FS.unlink(poolPath);
+                  self.postMessage({
+                    type: 'log',
+                    source: 'rogomatic',
+                    message: 'Corrupt gene pool detected — reset to a fresh pool.',
+                    error: true,
+                  });
+                }
+              }
+            } catch (err) {
+              console.warn('Rogomatic Worker: gene pool validation error:', err);
+            }
 
             if (isReset) {
               console.log(`Rogomatic Worker: Resetting gene pool (size: ${size}, seed: ${seed})...`);

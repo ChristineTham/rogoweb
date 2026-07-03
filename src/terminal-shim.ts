@@ -156,12 +156,9 @@ export class TerminalShim {
     // Debounce parsing to avoid overhead
     if (this.parseTimeout) clearTimeout(this.parseTimeout);
     this.parseTimeout = setTimeout(() => {
-      let line = '';
-      if (this.xterm) {
-        line = this.xterm.buffer.active.getLine(23)?.translateToString(true) || '';
-      } else {
-        line = String.fromCharCode(...this.charBuf[23].map(c => c || 32));
-      }
+      const line = this.xterm
+        ? this.xterm.buffer.active.getLine(23)?.translateToString(true) || ''
+        : String.fromCharCode(...this.charBuf[23].map(c => c || 32));
 
       // Regex patterns for Rogue stats
       const hpMatch = line.match(/Hp:\s*(\d+\(\d+\))/i);

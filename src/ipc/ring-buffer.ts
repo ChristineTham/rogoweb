@@ -31,10 +31,10 @@ export class SharedRingBuffer {
     let totalWritten = 0;
 
     while (totalWritten < src.length) {
-      let head = Atomics.load(this.head, 0);
-      let tail = Atomics.load(this.tail, 0);
+      const head = Atomics.load(this.head, 0);
+      const tail = Atomics.load(this.tail, 0);
 
-      let available = this.getAvailableWriteInternal(head, tail);
+      const available = this.getAvailableWriteInternal(head, tail);
       
       if (blocking && available === 0) {
         Atomics.wait(this.head, 0, head, 100); // 100ms timeout

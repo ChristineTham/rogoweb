@@ -12,6 +12,7 @@ export default tseslint.config(
       'node_modules/**',
       'rogue/**',
       'rogomatic/**',
+      'emcurses/**',
       'public/**',
       'pnpm-lock.yaml',
       'package-lock.json',

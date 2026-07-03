@@ -1,6 +1,5 @@
 import './style.css';
 import { Terminal as XTerm } from '@xterm/xterm';
-import { CanvasAddon } from '@xterm/addon-canvas';
 import '@xterm/xterm/css/xterm.css';
 import { TerminalShim, TermGlobals } from './terminal-shim';
 import { SharedIPC } from './ipc/ring-buffer';

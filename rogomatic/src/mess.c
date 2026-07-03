@@ -327,7 +327,8 @@ parsemsg (char *mess, char *mend)
         if (MATCH("it hit*")) { washit ("it"); echoit=0; }
         else if (MATCH("it misses*"))  { wasmissed ("it"); echoit=0; }
         else if (MATCH("it appears confused*")) ;
-        else if (MATCH("ice *")) ;
+        else if (MATCH("its gaze has confused you*")) confused = 1;
+        else if (MATCH("ice *")) infer ("cold", wand);
         else if (MATCH("identify what*")) echoit=0;
         else if (MATCH("illegal command*")) echoit=0;
         else if (MATCH("i see no way*"))
@@ -440,12 +441,17 @@ parsemsg (char *mess, char *mend)
       case 't':
 
         if (MATCH("throw what*")) echoit=0;
+        /* Bolt/flame/ice messages come only from a wand we just zapped
+           (lastname points at it), so we can identify the wand.  Keep the
+           specific "the ice ..." patterns so we don't match "the ice monster
+           hits" from a real ice monster. */
+        else if (MATCH("the bolt *")) infer ("lightning", wand);
+        else if (MATCH("the flame *")) infer ("fire", wand);
+        else if (MATCH("the ice hits*")) infer ("cold", wand);
+        else if (MATCH("the ice misses*")) infer ("cold", wand);
+        else if (MATCH("the ice whizzes by you*"))
+          { wasmissed ("ice monster"); infer ("cold", wand); }
         else if (MATCH("the * bounces*")) ;
-        else if (MATCH("the bolt *")) ;
-        else if (MATCH("the flame *")) ;
-        else if (MATCH("the ice hits*")) ;
-        else if (MATCH("the ice misses*")) ;
-        else if (MATCH("the ice whizzes by you*")) wasmissed ("ice monster");
         else if (MATCH("the * hits it*")) {echoit=0; mshit ("it");}
         else if (MATCH("the * misses it*")) {echoit=0; msmiss ("it");}
         else if (MATCH("the * hits the *")) {echoit=0; mshit (res2);}
@@ -539,7 +545,7 @@ parsemsg (char *mess, char *mend)
 
         if (MATCH("you hit*")) { echoit=0; didhit (); }
         else if (MATCH("you miss*")) { echoit=0; didmiss (); }
-        else if (MATCH("you are starting to feel weak*")) echoit=0;
+        else if (MATCH("you are starting to feel weak*")) { echoit=0; eat (); }
         else if (MATCH("you are weak from hunger*")) {echoit=0; eat();}
         else if (MATCH("you are being held*")) beingheld=30;
         else if (MATCH("you can move again*")) echoit=0;

@@ -9,7 +9,7 @@ describe('Worker FS Initialization', () => {
       mkdir: vi.fn(),
       mount: vi.fn(),
       syncfs: vi.fn((_populate, cb) => cb(null)),
-      analyzePath: vi.fn((path) => ({ exists: false })),
+      analyzePath: vi.fn((_path) => ({ exists: false })),
       writeFile: vi.fn(),
       filesystems: {
         IDBFS: { name: 'IDBFS' }
@@ -42,7 +42,7 @@ describe('Worker FS Initialization', () => {
         FS.mkdir('/var');
         FS.mkdir('/var/games');
         FS.mkdir('/var/games/rogomatic');
-      } catch (e) {}
+      } catch { /* dirs may already exist */ }
 
       FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
 
@@ -70,7 +70,7 @@ describe('Worker FS Initialization', () => {
         FS.mkdir('/var');
         FS.mkdir('/var/games');
         FS.mkdir('/var/games/rogomatic');
-      } catch (e) {}
+      } catch { /* dirs may already exist */ }
 
       FS.mount(FS.filesystems.IDBFS, {}, '/var/games/rogomatic');
 
@@ -99,10 +99,10 @@ describe('Worker FS Initialization', () => {
   });
 
   it('provides a syncFS hook for event-driven persistence', () => {
-    let syncFS: any;
+    let _syncFS: any;
     const ModuleProxy = new Proxy(mockModule, {
       set(target, prop, value) {
-        if (prop === 'syncFS') syncFS = value;
+        if (prop === 'syncFS') _syncFS = value;
         target[prop] = value;
         return true;
       }
@@ -112,7 +112,7 @@ describe('Worker FS Initialization', () => {
     // Logic to be injected in workers
     (global as any).Module.syncFS = () => {
       const FS = (global as any).Module.FS;
-      FS.syncfs(false, (err: any) => {});
+      FS.syncfs(false, (_err: any) => {});
     };
 
     expect(typeof (global as any).Module.syncFS).toBe('function');
