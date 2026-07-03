@@ -191,7 +191,13 @@ strategize (void)
     return (1);
   }
 
-  if (Level>1 && larder>0 && doorexplore ())	/* Grub around */
+  /* Grub around for secret doors/loot only when we have food to spare.
+     When food is tight, fall straight through to the stairs below - diving
+     to a fresh level is a better food strategy than exhaustively searching
+     this one (and the fallback searches further down still find the stairs
+     if none are yet reachable).  This avoids the "over-explore -> starve"
+     spiral. */
+  if (Level>1 && havefood (2) && doorexplore ())	/* Grub around */
     return (1);
 
   if (godownstairs (NOTRUNNING))		/* Down we go! */
