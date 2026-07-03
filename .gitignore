@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Pretraining run logs (the evolved pool public/wasm/GenePool544.pretrained IS committed)
+pretrain-log.txt
+pretrain-debug.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

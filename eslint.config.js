@@ -19,6 +19,23 @@ export default tseslint.config(
     ],
   },
   {
+    // Node tooling scripts (e.g. the pretrain driver) that also embed browser
+    // code inside Playwright page.evaluate() callbacks — provide both global sets.
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        URLSearchParams: 'readonly',
+        window: 'readonly',
+        indexedDB: 'readonly',
+      },
+    },
+  },
+  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': [

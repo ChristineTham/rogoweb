@@ -84,7 +84,7 @@ This panel provides a live "heartbeat" of the internal engine state without inte
 
 To build this project, you need both modern web tools and C compilation tools:
 1.  **Node.js** (v18 or higher) and `npm`.
-2.  **Emscripten** (`emsdk`): The WASM compiler toolchain. Make sure `emcc` is in your `$PATH`.
+2.  **Emscripten** (`emsdk`): The WASM compiler toolchain. **Fully activate it** with `source /path/to/emsdk/emsdk_env.sh` before building — just putting `emcc` on `$PATH` is *not* enough (see the ⚠️ note under *Setup & Compilation*).
 3.  **Standard Build Tools**: `make`, `autoconf`, `automake` (required to compile the legacy C codebases).
 
 ### Setup & Compilation
@@ -97,8 +97,17 @@ To build this project, you need both modern web tools and C compilation tools:
 2.  **Compile the C code to WebAssembly:**
     This step runs `emmake` and compiles `emcurses`, `rogue`, and `rogomatic` into `.js` and `.wasm` files located in `public/wasm/`.
     ```bash
+    source /path/to/emsdk/emsdk_env.sh   # activate emsdk in THIS shell first
     npm run build:wasm
     ```
+
+    > ⚠️ **WASM build gotcha.** The wasm **must** be built with the emsdk fully
+    > activated (`emsdk_env.sh` sets `EMSDK_NODE`, `EM_CONFIG`, and the compiler
+    > cache), not merely with `emcc` on `$PATH`. An incomplete activation
+    > produces a binary that *links fine* but has broken **ASYNCIFY**, which
+    > then hangs at the very first async IDBFS sync — the game prints
+    > `Rogomatic: Genes written, triggering sync...` and never starts. If a
+    > freshly-rebuilt wasm hangs there, this is almost always the cause.
 
 3.  **Run the Development Server:**
     ```bash
@@ -127,6 +136,177 @@ When you load the app, you will see the VT100 terminal interface and the telemet
 
 *   **MANUAL PLAY**: You take control. Type commands directly into the terminal to play Rogue.
 *   **ROGOMATIC (AUTO)**: Click "START" and watch as the legendary AI takes over, playing the game at blazing speeds while broadcasting its internal thoughts and statistics to the dashboard.
+
+---
+
+## 🧬 Pretraining the Gene Pool (headless)
+
+Rog-O-Matic *learns* across games: a genetic pool of "knob" settings (search / rest / attack
+tendencies) plus a long-term monster-danger memory, persisted in the browser's IndexedDB. A
+brand-new browser starts from a **random** pool and plays poorly until it has evolved one.
+
+To give new users a head start, the pool can be **pretrained offline** and bundled with the app.
+`npm run pretrain` plays games back-to-back in a headless browser (real WASM, no UI) and writes
+the evolved pool to `public/wasm/GenePool544.pretrained`. On a fresh browser the rogomatic worker
+seeds IndexedDB from that file (see *Robustness* below), so the very first game already runs on a
+trained pool.
+
+Each run **resumes from and evolves the bundled pool** (the default `--out` *is* that file), so
+running `npm run pretrain` repeatedly keeps strengthening the shipped pool. Use `--reset` to throw
+it away and start from a fresh random pool.
+
+```bash
+npm run pretrain                                # 100 games, building on the bundled pool
+npm run pretrain -- --reset --runs=100          # start over from a fresh random pool
+npm run pretrain -- --until=meanLevel>=4        # …or train until a goal metric is reached
+npm run pretrain -- --runs=50 --timeout=60000   # give deeper games more time to finish
+```
+
+| Flag | Default | Meaning |
+|------|---------|---------|
+| `--runs=N` | 100 | number of games to play (≈5× the 20-genotype pool — see below) |
+| `--until=<metric><op><value>` | — | stop early when the pool hits a goal, e.g. `meanLevel>=4`, `highScore>1000`, `trialno>=200` |
+| `--timeout=<ms>` | 45000 | per-game wall-clock cap; a stuck genotype is killed and skipped |
+| `--seed=random\|<n>`, `--base=<n>` | random | deterministic seeds for reproducible batches |
+| `--out=<file>` | `public/wasm/GenePool544.pretrained` | where to write the evolved pool (defaults to the bundled pool, so runs accumulate) |
+| `--reset` | off | wipe the pool and start from a fresh random one instead of resuming |
+
+**How it works.** `scripts/pretrain.mjs` starts the project's Vite dev server (for the COOP/COEP
+headers `SharedArrayBuffer` needs), launches headless Chromium (`playwright-core`), and loads
+`pretrain.html`. That page (`src/pretrain/harness.ts`) spawns the *same* rogue + rogomatic web
+workers the app uses and plays games back-to-back, letting the pool evolve in IDBFS exactly as in
+a normal session; the driver then extracts `GenePool544` from IndexedDB to disk. Needs a cached
+Chromium — `npx playwright install chromium`, or point `CHROMIUM_EXE` at an existing binary.
+
+**Why 100 runs?** The pool holds **20 genotypes** (`learn.c`, max 100). `pickgenotype()` tests
+*every* genotype to a minimum-trial threshold before it begins breeding (crossover/mutate), so real
+evolution only starts once the whole initial pool is evaluated. At the ~⅓ natural-death record
+rate, ~100 games yields enough recorded trials to evaluate all 20 initial genotypes and breed the
+first evolved generation. It's lifetime-learning with no fixed convergence (the `untested()`
+threshold grows with total trials), so more games keep helping with diminishing returns — 100 is
+the practical knee for a shipped starter pool.
+
+> Bootstrap games are shallow (an untrained bot usually dies on levels 1–3), so a modest batch
+> already culls the worst genotypes; because runs accumulate, just run `npm run pretrain` a few
+> more times (or one big `--runs=300+` detached batch) to keep strengthening the pool. The bundled
+> pool was built this way: a `--reset` batch of 40 games, then resume runs that filled coverage to
+> all 20 genotypes and bred the first crossover generation.
+> Because deeper-game tactics (dragon handling, the Amulet ascent) never trigger at those depths,
+> they aren't exercised by pretraining — they're validated by source review and real deep play.
+>
+> Only a game that ends **naturally** (the bot dies) records a genotype's fitness; a genotype that
+> gets the bot stuck searching a level times out and records nothing, so it can't be culled — set
+> `--timeout` high enough that real games finish (too low guillotines good games before they score).
+
+---
+
+## 🔧 Enhancements in This Fork
+
+Rog-O-Matic was originally written for older Rogue variants and carries multi-version
+support (`RV36`/`RV52`/`RV53`/`RV54A`); it detects this build as **RV54A — Rogue 5.4.4**.
+An audit confirmed its version *branching* is sound (5.4.4 takes the correct modern branch
+everywhere), so the work below is about **correct behaviour within that branch**, several
+**latent bug fixes**, **smarter play**, and **hardening the web port**. All C changes are
+under `rogomatic/src/`; frontend changes under `src/`.
+
+### Rogue 5.4.4 ↔ Rog-O-Matic compatibility fixes
+
+Places where Rog-O-Matic mis-handled 5.4.4 because it targeted older Rogue:
+
+*   **Ring of *increase damage* now applies its bonus** (`arms.c`). `setbonuses()` tested for a ring named *"add damage"*, but 5.4.4's ring is *"increase damage"* — so the ring was worn/valued but its damage bonus was silently dropped from combat math. (`ringclass()` already used the correct name; this completed the rename.)
+*   **Wands of lightning / fire / cold are identified from combat** (`mess.c`). Rogue prints *"the bolt/flame/ice …"* when you zap these; those messages were swallowed as no-ops, so the wands could never be auto-identified. They now infer the wand (`lightning`/`fire`/`cold`) from the just-zapped item — while still distinguishing the real *ice monster* from the *"ice"* projectile.
+*   **Mystery trap (`T_MYST`) is no longer over-avoided** (`mess.c`). 5.4.4 adds an 8th, **purely cosmetic** trap (in `rogue/move.c` it only prints one of 11 flavour messages). Rog-O-Matic tagged all of them as a **bear trap**, which made its pathfinder treat that square as *unreachable* (`safevalue → ROGINFINITY`) — denying rest and routing every game one appeared. The messages are now recognised without the bear-trap tag; the revealed `^` still gives appropriate mild avoidance.
+*   **Damage-bonus table corrected** (`arms.c`). `damagebonus()` had an unreachable `else if (strength < 1600)` branch, so Strength 22–30 returned **+6** instead of the correct **+5** (per Rogue's `add_dam[]` in `fight.c`), over-estimating the hero's own melee damage. The ladder now matches Rogue exactly.
+*   **Rust-trap flag is now cleared** (`rooms.c`). The `WATERAP` bit was *set* by `nametrap` but omitted from every reset mask, so a stale rust-trap bit could persist on a re-used square and skew teleport-trap inference. Added to all `unsetrc` masks.
+*   **Unseen-monster gaze confusion detected** (`mess.c`). An *unseen* confuser makes Rogue print *"its gaze has confused you"* (not *"the …'s gaze …"*), which was missed; now handled.
+*   **Emergency-eat trigger matched to 5.4.4** (`mess.c`). The only eat-triggering hunger pattern, *"you are weak from hunger"*, is never emitted by 5.4.4; the real terse warning *"you are starting to feel weak"* now calls `eat()`.
+*   **Scoreboard reader fixed** (`findscore.c`). It scanned for a `"Rank"` header; 5.4.4 prints `"   Score Name"`. Header detection now accepts either (native builds only — not compiled into the wasm binary).
+
+### AI / gameplay improvements (plays better)
+
+> ⚠️ These are combat/economy **heuristics**. Each is individually reasoned and source-verified, but the *real* measure is win-rate / average depth over **many** games (the gene pool records exactly this). Treat them as directional and validate by batch play.
+
+*   **Per-monster danger model** (`ltm.c`) — *the highest-impact change.* `analyzeltm()` previously rated every un-observed monster's damage as a flat `7 + dungeon-level`, so a dragon on level 10 was estimated at **17 max** vs. its real **46** — and fight-vs-flee runs on that number. It now **seeds each monster from a static 5.4.4 damage table** (average + max per round, computed from the damage dice in `rogue/extern.c`), refined by long-term memory, floored at the true theoretical max so worst-case danger is never under-estimated. Rogue does *not* scale monster damage with depth (`new_monster` copies `s_dmg` unchanged), so a fixed table is correct. This also fixed a latent bug where an un-observed monster inherited the *previous* monster's numbers (the estimate variables were initialised once, outside the loop).
+*   **Food-aware descent pacing** (`strategy.c`) — the pre-descent "grub around for secret doors" step ran on every level with *any* food, so the bot over-explored and starved. It now grubs only with a real food margin (`havefood(2)`); when food is tight it dives for the stairs (a fresh level is a better food source), while the fallback searches still find the stairs when none are reachable.
+*   **Emergency heal when adjacent** (`strategy.c`) — the healing rule required the monster to be *non-adjacent* (`turns > 0`), skipping the most lethal case. It now drinks healing at `die_in(1)` even when the monster is adjacent (healing potions also raise max HP, so they're rarely wasted).
+*   **Teleport a *ranged* dragon** (`strategy.c`) — teleport-away only fired on *adjacent* monsters, but the dragon flames from range for ~46 and the bot (rightly) won't flee it, so it tanked flame until the dragon closed. It now teleports a dragon at range when `die_in(1)`.
+*   **Quaff-ID safety** (`tactics.c`) — unknown potions are blind-quaffed only when nothing is nearby (`mlistlen == 0`), so a confusion/blindness/poison roll can't be punished by an adjacent monster (matching `trywand()`).
+*   **Missile economy** (`arms.c`) — `havemissile()` no longer offers a spare mace/long-sword as ammo; because it picks the *fewest-count* candidate, a count-1 backup weapon was thrown ahead of a whole stack of arrows. It now throws only real throwables (arrows/spears/daggers).
+*   **Amulet-return economy** (`strategy.c`) — while carrying the Amulet of Yendor, gold is excluded from item targeting so the bot doesn't detour for gold on the deadly ascent (gold can't change a win); useful items are still collected.
+
+### Robustness (web port)
+
+*   **Gene-pool self-healing** (`src/rogomatic-worker.ts`) — a corrupt/truncated `GenePool544` (e.g. from an interrupted IDBFS sync) made the C learner index garbage genotypes and **hang on startup** (the "game won't start" symptom, stuck at `Genes written, triggering sync...`). The worker now validates the pool before `callMain()` and deletes a bad one so a fresh pool is created rather than hanging. Verified end-to-end (corrupting the IndexedDB record triggers an automatic reset, then the bot plays).
+*   **Pretrained gene pool: seed & auto-upgrade** (`src/rogomatic-worker.ts`) — before `callMain()` the worker reconciles the persisted `GenePool544` against the bundled `public/wasm/GenePool544.pretrained`: (a) *no pool yet* (new user / cleared storage) → **seed** it, so the first game runs on a trained pool; (b) *a pool carried over from an older app version that is **shallower*** (lower max depth, then max score, from the pool header) → **silently upgrade** it, so returning players aren't stuck with a weaker pool. A deliberate reset is respected: the worker records which bundled pool it has applied (`pretrained_ver`) and only re-checks when a *newer* bundled pool ships, so a freshly-reset pool is left alone. Skipped during headless pretraining. See *[Pretraining the Gene Pool](#-pretraining-the-gene-pool-headless)* above; verified headlessly across all three cases (seed / upgrade-shallow / skip-after-reset).
+
+### Build / frontend / tooling
+
+*   **Production build fixed** (`src/main.ts`) — removed a dead `CanvasAddon` import that failed `tsc` under `noUnusedLocals`.
+*   **COI service-worker path** (`index.html`) — `coi-serviceworker.min.js` → `/coi-serviceworker.min.js`, so Vite treats it as a public asset (silences a bundling warning; the `/rogoweb/` base is applied automatically).
+*   **Lint clean** (`eslint.config.js` + `src/`) — ignore the vendored `emcurses/`, fix worker ambient declarations, `prefer-const`, unused vars and empty `catch` blocks; `npm run lint` passes.
+*   **WASM build gotcha documented** — see the ⚠️ note under *Setup & Compilation* (emsdk must be fully activated, or ASYNCIFY breaks and the game hangs at first sync).
+
+---
+
+## 🗺️ Roadmap — What's Left
+
+The clearly-safe, high-value improvements are done. The remaining items are deliberately
+**not implemented** — they are either *risky* (could make the AI play worse and need
+validation over many games) or *low-value*. **Validate any of these by win-rate / average
+depth across a batch of games, not a single run.**
+
+### Risky (need careful design + batch testing)
+
+1.  **Kite awake monsters with missiles** (`explore.c`, `archmonster`) — archery repositioning only targets *sleeping* monsters; setting up shots on awake, approaching monsters (kiting) is strong in Rogue but risks manoeuvring into a worse position.
+2.  **Proactive escape / polymorph** (`strategy.c`, `battlestations`) — use teleport-away/polymorph on bad matchups *before* `die_in`. Trades limited, precious wand charges for damage avoidance (and polymorph is random — can backfire).
+3.  **Multi-monster adjacency counting** (`strategy.c`, `fightmonster`) — the `adjacent` counter is gated on `CANGO` (whether *we* could move there), so a diagonal attacker through a doorway can be under-counted, weakening the "retreat to a chokepoint when ganged" logic.
+4.  **Genetic parent selection** (`learn.c`, `selectgene`) — parents are weighted by `score.high` (one lucky game) with the mean-based version commented out; selecting by mean / an upper-confidence bound would learn more robustly but changes evolutionary dynamics.
+5.  **Pathfinding "long way around" bug** (`strategy.c`, author-flagged) — the bot "sometimes goes the long way around and doesn't see things." A genuine defect, but central movement code.
+
+### Low-value
+
+6.  **Proactive monster-detection potion** — quaff monster detection on entering deep levels for map awareness (rare item, situational).
+7.  **Aquator-armor priority** — take off rustable armor sooner vs. an aquator (marginal; aquators do 0 HP damage in 5.4.4).
+8.  **Dead-code cleanup** — remove inert legacy branches (genocide scroll, phantom items, old monster names). Harmless; cosmetic only.
+
+---
+
+## 📐 Implementation Plan for the Risky Items (design only — not executed)
+
+For each risky item: **problem → approach → risk → how to validate.** None of these are
+implemented; this is a design guide for whoever picks them up. The already-landed
+**per-monster danger model** is a prerequisite for #2 (it makes `maxhit`/matchup estimates
+trustworthy).
+
+### 1. Kiting awake monsters — `explore.c` `archmonster()`
+*   **Problem:** `archmonster()` bails on `if (mlist[m].q != ASLEEP) return 0`, so the bot never manoeuvres to fire on an awake monster; it only throws at ones already in a straight line.
+*   **Approach:** Allow repositioning against *awake* monsters only when safe — gate on `mdist >= 2 && live_for(2)` and a worthwhile arch target (dangerous, or one you shouldn't melee). Re-use `archeryinit`/`archeryvalue`, but add a bias to the move evaluator that **never decreases** distance to the monster (retreat-while-firing), not close it.
+*   **Risk:** The positioning math assumes a stationary sleeper; an awake monster closes while you move, so a naive change can reduce distance and get you hit, or make the bot dither (reposition without firing).
+*   **Validate:** Batch games weighted to rattlesnake/centaur/wraith encounters; compare arrows-per-kill and HP-lost-per-encounter vs. baseline, and check the bot still fires (no dithering loop).
+
+### 2. Proactive escape / polymorph — `strategy.c` `battlestations()`
+*   **Problem:** Escape wands fire only at `die_in(n)` — often too late against burst monsters (dragon, jabberwock, black unicorn).
+*   **Approach:** Add an "unfavourable matchup" trigger *before* `die_in`: fire teleport-away when the monster's `maxhit` is a large fraction of `Hpmax` **and** the hits-to-kill vs. hits-to-die trade is unfavourable **and** we hold a non-`WORTHLESS` teleport-away. Keep **polymorph out** of the proactive path (random outcome). Cap to ~once per monster to conserve charges.
+*   **Risk:** Depletes limited charges; too-eager thresholds waste wands on winnable fights and leave the bot worse off.
+*   **Validate:** Track teleport-away charges/game and deaths-to-burst-monsters; the change should cut the latter without a big rise in "teleported an easy monster." A/B on identical seeds.
+
+### 3. Multi-monster adjacency counting — `strategy.c` `fightmonster()`
+*   **Problem:** A monster increments `adjacent` only when the orthogonal squares between it and the hero are `CANGO`; but 5.4.4 monsters attack diagonally, so a diagonal attacker through a wall gap adds to `danger` yet not `adjacent`, under-firing the `adj > 1` chokepoint retreat (`backtodoor`).
+*   **Approach:** Count a monster toward `adjacent` when it can actually attack — Chebyshev distance 1 to the hero — independent of whether the hero could step onto its square. Keep the `CANGO` test only for "can I move to hit it."
+*   **Risk:** `adjacent` feeds several fight/flee decisions; higher counts could make the bot retreat too eagerly in the open.
+*   **Validate:** Compare survival in corridor/doorway gang-ups vs. over-retreating in open rooms.
+
+### 4. Genetic parent selection — `learn.c` `selectgene()`
+*   **Problem:** Parents are weighted by `genes[g]->score.high` (best single game), biasing evolution toward lucky outliers in a very high-variance game.
+*   **Approach:** Weight by the **mean** score (the commented-out alternative is already there) or an **upper-confidence bound** `mean + c·stdev/√trials` to retain exploration; consider raising the minimum trials before a genotype influences selection so estimates are less noisy. The death-selector `badgene()` already uses a sound lower-confidence bound, so this aligns the two ends.
+*   **Risk:** Alters long-term learning dynamics; effects appear only over many generations — hardest to validate, easiest to get subtly wrong.
+*   **Validate:** Long unattended runs (Auto-Restart) with a fixed pool seed; compare pool mean-score/mean-level trajectories over hundreds of trials, baseline vs. change.
+
+### 5. Pathfinding "long way around" — `strategy.c`
+*   **Problem:** Author-flagged: the bot sometimes takes a needlessly long route and misses things it should see.
+*   **Approach:** First reproduce (record a seed where it happens), then trace target/goal selection (`gotowardsgoal`, `findroom`, and the `makemove` value functions) to find where the cost/target is chosen sub-optimally — likely a targeted fix to a value function, not a rewrite.
+*   **Risk:** Movement is central; a wrong change can strand the bot or cause loops. Highest-touch item in the set.
+*   **Validate:** Reproduce on the recorded seed, confirm the specific detour is gone, and check a batch for new loops/strandings.
 
 ---
 

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rogoweb — Gene-pool Pretraining (headless)</title>
+  </head>
+  <body>
+    <!-- No dashboard / no xterm: this page exists only to run the game workers
+         back-to-back headlessly and evolve the gene pool. The Playwright driver
+         (scripts/pretrain.mjs) reads progress + logs off window.__pretrain. -->
+    <pre id="status">initializing…</pre>
+    <script type="module" src="/src/pretrain/harness.ts"></script>
+  </body>
+</html>

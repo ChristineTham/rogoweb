@@ -1068,6 +1068,12 @@ tostuff (void)
          if (Hp > percent (Hpmax, 80))
            dist = ROGINFINITY;
 
+      /* Don't detour for gold while carrying the Amulet home: gold can't
+         improve a win, and the ascent (dragons, etc.) is deadly.  Real items
+         (a better weapon, more food for the long climb) are still worth it. */
+      if (have (amulet) != NONE && slist[i].what == gold)
+         dist = ROGINFINITY;
+
       /* If this is the closest item, save its distance and index */
       if (dist < closest)
         { closest = dist; which = i; }

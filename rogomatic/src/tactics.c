@@ -237,8 +237,11 @@ quaffpotion (void)
       quaff (obj))
     return (1);
 
-  /* Quaff an unknown potion? */
-  if ((Level >= (k_exper/10) || objcount >= maxobj || Str<1000 || blinded) &&
+  /* Quaff an unknown potion?  Only when nothing is around to punish a bad
+     roll - a blind quaff can be confusion/blindness/poison, and eating that
+     next to an awake monster gets us killed.  (Same guard trywand() uses.) */
+  if (mlistlen == 0 &&
+      (Level >= (k_exper/10) || objcount >= maxobj || Str<1000 || blinded) &&
       (obj = unknown (potion)) != NONE) {
     if ((obj2 = wearing ("add strength")) != NONE && removering (obj2))
       return (1);

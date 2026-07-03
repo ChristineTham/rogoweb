@@ -38,9 +38,20 @@ function isValidGenePool(content: string): boolean {
   return true;
 }
 
+/**
+ * Parse the pool header's depth fields, used to decide whether a persisted pool
+ * is weaker (shallower) than the bundled pretrained one.
+ * Header: "<inittime> <trial> ...|<score: count sum sq min MAX>|<level: count sum sq min MAX>|"
+ */
+function poolDepth(content: string): { inittime: number; maxLevel: number; maxScore: number } {
+  const header = (content.split('\n').find((l) => l.trim()) || '').split('|');
+  const field = (col: string, i: number) => Number((col || '').trim().split(/\s+/)[i]) || 0;
+  return { inittime: field(header[0], 0), maxScore: field(header[1], 4), maxLevel: field(header[2], 4) };
+}
+
 self.onmessage = (e: MessageEvent) => {
   try {
-    const { type, sab, userName, seed, isReset, size } = e.data;
+    const { type, sab, userName, seed, isReset, size, skipPretrain } = e.data;
     console.log('Rogomatic Worker: received message', type);
 
     if (type === 'init') {
@@ -112,7 +123,7 @@ self.onmessage = (e: MessageEvent) => {
           }
 
           console.log('Rogomatic Worker: Starting IDBFS sync...');
-          FS.syncfs(true, (err: any) => {
+          FS.syncfs(true, async (err: any) => {
             if (err) {
               console.error('Rogomatic Worker: IDBFS syncfs(true) failed:', err);
               self.postMessage({ type: 'fs_error', message: 'Failed to synchronize persistent storage.' });
@@ -171,6 +182,73 @@ self.onmessage = (e: MessageEvent) => {
               }
             } catch (err) {
               console.warn('Rogomatic Worker: gene pool validation error:', err);
+            }
+
+            // Seed or upgrade the gene pool from the bundled pretrained pool:
+            //  - fresh browser (no pool): seed it, so a new user starts trained;
+            //  - a pool carried over from an OLDER app version that is SHALLOWER
+            //    than the bundled pool: silently upgrade it, so those players are
+            //    not disadvantaged by a weaker pool.
+            // A deliberate reset is respected: once a given bundled pool has been
+            // applied to this browser (recorded in `pretrained_ver`), we don't
+            // upgrade again until a NEWER bundled pool ships — so a user who reset
+            // to a fresh pool keeps it. Skipped during headless pretraining
+            // (skipPretrain) and on an explicit reset.
+            if (!skipPretrain && !isReset) {
+              try {
+                const poolPath = '/var/games/rogomatic/GenePool544';
+                const verPath = '/var/games/rogomatic/pretrained_ver';
+                const resp = await fetch('/rogoweb/wasm/GenePool544.pretrained');
+                if (resp.ok) {
+                  const buf = new Uint8Array(await resp.arrayBuffer());
+                  const bundledText = new TextDecoder().decode(buf);
+                  if (buf.length > 0 && isValidGenePool(bundledText)) {
+                    const bundled = poolDepth(bundledText);
+                    const bundledVer = String(bundled.inittime);
+                    const havePool = FS.analyzePath(poolPath).exists;
+                    const appliedVer = FS.analyzePath(verPath).exists
+                      ? String(FS.readFile(verPath, { encoding: 'utf8' })).trim()
+                      : '';
+
+                    let action = '';
+                    if (!havePool) {
+                      action = 'seeded';
+                    } else if (appliedVer !== bundledVer) {
+                      // A bundled pool this browser hasn't been offered yet: only
+                      // replace it if the player's pool is genuinely shallower.
+                      const cur = poolDepth(FS.readFile(poolPath, { encoding: 'utf8' }));
+                      const shallower =
+                        cur.maxLevel < bundled.maxLevel ||
+                        (cur.maxLevel === bundled.maxLevel && cur.maxScore < bundled.maxScore);
+                      if (shallower) action = 'upgraded';
+                    }
+
+                    if (action) FS.writeFile(poolPath, buf);
+                    // Record which bundled pool we've evaluated so a later
+                    // deliberate reset isn't clobbered (only a newer bundled pool
+                    // re-triggers the check).
+                    if (!havePool || appliedVer !== bundledVer) {
+                      FS.writeFile(verPath, bundledVer);
+                      await new Promise<void>((res) => FS.syncfs(false, () => res()));
+                    }
+                    if (action) {
+                      console.log(`Rogomatic Worker: ${action} pretrained gene pool (${buf.length} bytes)`);
+                      self.postMessage({
+                        type: 'log',
+                        source: 'rogomatic',
+                        message:
+                          action === 'seeded'
+                            ? 'Seeded pretrained gene pool for a fresh browser.'
+                            : 'Upgraded a shallower gene pool to the bundled pretrained pool.',
+                      });
+                    }
+                  } else {
+                    console.warn('Rogomatic Worker: bundled pretrained pool missing/invalid — leaving pool as-is');
+                  }
+                }
+              } catch (err) {
+                console.warn('Rogomatic Worker: pretrained pool seed/upgrade failed:', err);
+              }
             }
 
             if (isReset) {

@@ -559,11 +559,12 @@ havemissile (void)
       if (inven[i].count > 0 &&
           inven[i].count < fewest &&
           !itemis (i, INUSE) &&
+          /* Throw only real throwables - never cannibalize a melee weapon
+             (a spare mace/sword has count 1, so the fewest-count rule below
+             would otherwise pick it ahead of a whole stack of arrows). */
           (inven[i].type == missile ||
            stlmatch(inven[i].str,"spear") ||
-           stlmatch(inven[i].str,"dagger") ||
-           stlmatch(inven[i].str,"mace") && inven[i].phit <= 0 ||
-           stlmatch(inven[i].str,"long sword") && inven[i].phit < 0))
+           stlmatch(inven[i].str,"dagger")))
         { obj = i; fewest = inven[i].count; }
   }
 
