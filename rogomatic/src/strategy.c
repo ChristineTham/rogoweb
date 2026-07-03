@@ -629,10 +629,15 @@ battlestations (int m, char *monster, int mbad, int danger, int mdir, int mdist,
   }
 
   /*
-   * Are healing potions worthwhile?
+   * Are healing potions worthwhile?  If we will die next round and are
+   * missing real HP, drink now - INCLUDING when the monster is already
+   * adjacent (turns==0).  That is the most lethal case, yet the old
+   * "turns > 0" guard skipped it, leaving the hero to trade blows or try a
+   * (usually futile) flee from an adjacent monster.  Healing potions also
+   * raise Hpmax, so they are rarely wasted.
    */
 
-  if (die_in (1) && Hpmax-Hp > 10 && turns > 0 &&
+  if (die_in (1) && Hpmax-Hp > 10 &&
       ((obj = havenamed (potion, "extra healing")) != NONE ||
        (obj = havenamed (potion, "healing")) != NONE))
     return (quaff (obj));
@@ -782,10 +787,12 @@ battlestations (int m, char *monster, int mbad, int danger, int mdir, int mdist,
   }
 
   /*
-   * Buy buy birdy!
+   * Buy buy birdy!  Teleport an adjacent attacker away - and also a dragon
+   * even at range: it flames us for up to ~46 from a distance and we (rightly)
+   * won't flee it, so waiting for it to close just means eating flame first.
    */
 
-  if (die_in (1) && mdir != NONE && turns == 0 &&
+  if (die_in (1) && mdir != NONE && (turns == 0 || streq (monster, "dragon")) &&
       (obj = havewand ("teleport away")) != NONE &&
       ! (itemis (obj, WORTHLESS)) &&
       point (obj, mdir)) {
