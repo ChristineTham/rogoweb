@@ -318,13 +318,42 @@ dumpmonstertable (void)
 void
 analyzeltm (void)
 {
+  /* Per-monster damage priors for Rogue 5.4.4, indexed by letter A..Z,
+     computed from the monster damage dice in rogue/extern.c (avg = sum of
+     the dice means per round; max = sum of the dice maxima). Rogue does NOT
+     scale monster damage with depth (new_monster copies s_dmg unchanged), so
+     these are fixed. Monsters that do 0 HP damage (aquator A / ice monster I
+     / nymph N) are handled by name-based special logic elsewhere; the venus
+     flytrap F ramps while holding, so it gets a modest non-zero prior. */
+  static const double mon_avgdam[26] = {
+    /*A aquator*/ 0.0,  /*B bat*/     1.5,  /*C centaur*/  7.5,  /*D dragon*/ 25.5,
+    /*E emu*/     1.5,  /*F flytrap*/ 4.0,  /*G griffin*/ 17.0,  /*H hobgob*/  4.5,
+    /*I icemon*/  0.0,  /*J jabber*/ 18.0,  /*K kestrel*/  2.5,  /*L leprec*/  1.0,
+    /*M medusa*/ 21.0,  /*N nymph*/   0.0,  /*O orc*/      4.5,  /*P phantom*/10.0,
+    /*Q quagga*/  6.0,  /*R rattle*/  3.5,  /*S snake*/    2.0,  /*T troll*/  16.0,
+    /*U unicorn*/20.0,  /*V vampire*/ 5.5,  /*W wraith*/   3.5,  /*X xeroc*/  10.0,
+    /*Y yeti*/    7.0,  /*Z zombie*/  4.5
+  };
+  static const double mon_maxdam[26] = {
+    /*A*/  0.0, /*B*/  2.0, /*C*/ 12.0, /*D*/ 46.0, /*E*/  2.0, /*F*/ 12.0, /*G*/ 27.0,
+    /*H*/  8.0, /*I*/  0.0, /*J*/ 32.0, /*K*/  4.0, /*L*/  1.0, /*M*/ 34.0, /*N*/  0.0,
+    /*O*/  8.0, /*P*/ 16.0, /*Q*/ 10.0, /*R*/  6.0, /*S*/  3.0, /*T*/ 28.0, /*U*/ 36.0,
+    /*V*/ 10.0, /*W*/  6.0, /*X*/ 16.0, /*Y*/ 12.0, /*Z*/  8.0
+  };
   int m, i;
-  double avg_dam = 0.6*Level+3, max_dam = 7.0+Level, avg_arr = 4.0;
+  double avg_dam, max_dam, avg_arr;
   double phit, mean_dam, stdev_dam, three_dev;
 
   /* Loop through each monster in this game (not whole ltm file) */
   for (i=0; i<26; i++) {
     m = monindex[i+1];
+
+    /* Seed from the per-monster 5.4.4 prior (also fixes the old bug where an
+       unobserved monster inherited the previous iteration's numbers). Long
+       term memory refines these below as the hero actually fights. */
+    avg_dam = mon_avgdam[i];
+    max_dam = mon_maxdam[i];
+    avg_arr = 4.0;
 
     /* Calculate expected and maximum damage done by monster */
     if (monhist[m].damage.count > 3) {
@@ -339,8 +368,12 @@ analyzeltm (void)
         max_dam = mean_dam + stdev_dam;
         monhist[m].damage.high = max_dam;
       }
+
+      /* Never estimate below the monster's true theoretical max - it can
+         always roll it, and under-estimating the worst case gets us killed. */
+      if (max_dam < mon_maxdam[i]) max_dam = mon_maxdam[i];
     }
-    else if (monhist[m].damage.high > 0.0)
+    else if (monhist[m].damage.high > max_dam)   /* observed worse than prior */
       max_dam = monhist[m].damage.high;
 
     /* Calculate average arrows fired to killed monster */

@@ -638,7 +638,7 @@ damagebonus (int strength)
     else if (strength < 1900) bonus = 2;
     else if (strength < 2100) bonus = 3;
     else if (strength < 2200) bonus = 4;
-    else if (strength < 1600) bonus = 5;
+    else if (strength < 3100) bonus = 5;	/* str 22-30 -> +5 (was dead: <1600) */
     else bonus = 6;
   }
 

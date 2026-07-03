@@ -179,9 +179,12 @@ parsemsg (char *mess, char *mend)
 
   /*----------------Take action based on type of message-------------*/
 
-  /* :ANT: let's tag this as a BEARTRP for now */
+  /* Rogue 5.4.4 mystery trap (T_MYST): cosmetic, no game effect (rogue/move.c).
+     Recognize the message but don't flag BEARTRP - the revealed '^' gives mild
+     generic-trap avoidance; BEARTRP made safevalue treat the square as
+     unreachable (ROGINFINITY), needlessly denying rest/paths every game. */
   if (MATCH("* sparks dance across your armor*"))
-    nametrap (BEARTRP,HERE);
+    ;
 
   /* :ANT: */
 
@@ -226,10 +229,10 @@ parsemsg (char *mess, char *mend)
         else if (MATCH("a sting has weakened you*")) ;
         else if (MATCH("a bite has weakened you*")) ;
 
-        /* :ANT: let's tag this as a BEARTRP for now */
-        else if (MATCH("a mysterious trap*")) nametrap (BEARTRP,NEAR);
-        else if (MATCH("a spike shoots past your ear!*")) nametrap (BEARTRP,HERE);
-        else if (MATCH("a * light flashes in your eyes*")) nametrap (BEARTRP,HERE);
+        /* Mystery trap (T_MYST) - cosmetic in 5.4.4; recognize, don't flag BEARTRP */
+        else if (MATCH("a mysterious trap*")) ;
+        else if (MATCH("a spike shoots past your ear!*")) ;
+        else if (MATCH("a * light flashes in your eyes*")) ;
 
         /* :ANT: */
 
@@ -358,8 +361,8 @@ parsemsg (char *mess, char *mend)
         else if (MATCH("my, that was a yummy *")) ;
         else if (MATCH("moved onto *")) set (STUFF);
 
-        /* :ANT: let's tag this as a BEARTRP for now */
-        else if (MATCH("multi-colored lines swirl around you, then fade*")) nametrap (BEARTRP,HERE);
+        /* Mystery trap (T_MYST) - cosmetic in 5.4.4; recognize, don't flag BEARTRP */
+        else if (MATCH("multi-colored lines swirl around you, then fade*")) ;
 
         /* :ANT: */
 
@@ -496,9 +499,9 @@ parsemsg (char *mess, char *mend)
         else if (MATCH("the monster freezes*")) holdmonsters ();
         else if (MATCH("that's inedible*")) ;
 
-        /* :ANT: let's tag this as a BEARTRP for now */
-        else if (MATCH("time now seems to be going slower*")) nametrap (BEARTRP,HERE);
-        else if (MATCH("the light in here suddenly seems*")) nametrap (BEARTRP,HERE);
+        /* Mystery trap (T_MYST) - cosmetic in 5.4.4; recognize, don't flag BEARTRP */
+        else if (MATCH("time now seems to be going slower*")) ;
+        else if (MATCH("the light in here suddenly seems*")) ;
 
         /* :ANT: */
 
@@ -668,12 +671,12 @@ parsemsg (char *mess, char *mend)
         else if (MATCH("yuk*")) echoit=0;
         else if (MATCH("you sense the presence of magic*")) { infer ("magic detection", potion); echoit=0; }
 
-        /* :ANT: let's tag this as a BEARTRP for now */
-        else if (MATCH("you are suddenly in a parallel dimension*")) nametrap (BEARTRP, HERE);
-        else if (MATCH("you feel a sting in the side of your neck*")) nametrap (BEARTRP, HERE);
-        else if (MATCH("you feel time speed up suddenly*")) nametrap (BEARTRP, HERE);
-        else if (MATCH("you suddenly feel very thirsty*")) nametrap (BEARTRP, HERE);
-        else if (MATCH("yo* pack turns *")) nametrap (BEARTRP, HERE);
+        /* Mystery trap (T_MYST) - cosmetic in 5.4.4; recognize, don't flag BEARTRP */
+        else if (MATCH("you are suddenly in a parallel dimension*")) ;
+        else if (MATCH("you feel a sting in the side of your neck*")) ;
+        else if (MATCH("you feel time speed up suddenly*")) ;
+        else if (MATCH("you suddenly feel very thirsty*")) ;
+        else if (MATCH("yo* pack turns *")) ;
 
         /* :ANT: */
 
