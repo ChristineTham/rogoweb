@@ -4,6 +4,8 @@
 
 This project unites these two historic C codebases into a single repository, compiling them to WebAssembly (WASM) and running them entirely in the browser. It features a rich VT100-style terminal interface and live, high-fidelity telemetry.
 
+![Rogoweb running Rog-O-Matic on dungeon level 5 — the VT100 terminal beside the live telemetry side panel (HP, gene pool, and the observer log's descent milestones)](screenshot.png)
+
 ---
 
 ## 📜 Origin and History
