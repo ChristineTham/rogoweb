@@ -44,6 +44,41 @@ const resetCancelBtn = document.getElementById('btn-reset-cancel') as HTMLButton
 const resetPoolSizeInput = document.getElementById('reset-pool-size') as HTMLInputElement;
 const resetSeedInput = document.getElementById('reset-seed') as HTMLInputElement;
 
+/* =========================================
+   VERSION / BUILD INFO + OBSERVER-LOG EVENTS
+========================================= */
+// Injected at build time by vite `define` (see vite.config.ts).
+declare const __APP_VERSION__: string;
+declare const __GIT_COMMIT__: string;
+
+// Populate the persistent version/commit footer in the status panel.
+(() => {
+  const ver = document.getElementById('app-ver');
+  if (ver) ver.textContent = `v${__APP_VERSION__}`;
+  const commitEl = document.getElementById('app-commit') as HTMLAnchorElement | null;
+  if (commitEl) {
+    commitEl.textContent = __GIT_COMMIT__;
+    if (__GIT_COMMIT__ && __GIT_COMMIT__ !== 'unknown') {
+      commitEl.href = `https://github.com/ChristineTham/rogoweb/commit/${__GIT_COMMIT__}`;
+    }
+  }
+})();
+
+/** Append one line to the OBSERVER LOG pane (auto-scrolls). */
+const logObserver = (message: string, cls = 'text-green-400') => {
+  const pane = document.getElementById('observer-log');
+  if (!pane) return;
+  const entry = document.createElement('div');
+  entry.textContent = message;
+  cls.split(/\s+/).filter(Boolean).forEach((c) => entry.classList.add(c));
+  pane.appendChild(entry);
+  requestAnimationFrame(() => { pane.scrollTop = pane.scrollHeight; });
+};
+
+// Per-game trackers so the observer log can surface milestones, not spam.
+let evtPrevLevel = 0; // last dungeon level seen (for descent messages)
+let evtHpCrisis = false; // latched while HP is critically low
+
 const statsModal = document.getElementById('modal-gene-stats') as HTMLDialogElement;
 const statsContent = document.getElementById('gene-stats-content') as HTMLDivElement;
 const geneStatsBtn = document.getElementById('btn-gene-stats') as HTMLButtonElement;
@@ -295,6 +330,10 @@ const simulateTyping = async (text: string, speed = 100) => {
 
 const startWorkerGame = (userName: string) => {
   isExited = false;
+  // New game: reset milestone trackers and stamp the build info in the log.
+  evtPrevLevel = 0;
+  evtHpCrisis = false;
+  logObserver(`[system] rogoweb v${__APP_VERSION__} (${__GIT_COMMIT__}) — new game`, 'text-cyan-400 font-bold');
   if (activeRogueWorker) {
     activeRogueWorker.terminate();
     activeRogueWorker = null;
@@ -374,6 +413,12 @@ const startWorkerGame = (userName: string) => {
         handleAutoExit(e.data.status, userName);
       }
     } else if (e.data && e.data.type === 'log') {
+      // Surface the gene-pool size ("Gene pool size N, started ...") as a stat.
+      const poolMatch = String(e.data.message).match(/Gene pool size (\d+)/);
+      if (poolMatch) {
+        const poolEl = document.getElementById('stat-pool');
+        if (poolEl) poolEl.innerText = poolMatch[1];
+      }
       const logPane = document.getElementById('observer-log');
       if (logPane) {
         const entry = document.createElement('div');
@@ -703,6 +748,13 @@ const renderStats = (stats: any) => {
           bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
           const colorClass = pct < 30 ? 'bg-red-600' : pct < 70 ? 'bg-amber-500' : 'bg-green-600';
           bar.className = `h-full rounded-sm transition-all duration-300 ${colorClass}`;
+          // Latched low-HP warning: log once per crisis, clear when recovered.
+          if (pct < 25 && !evtHpCrisis) {
+            evtHpCrisis = true;
+            logObserver(`⚠ Critical HP ${hpVal}/${maxhpVal} — the bot is in danger`, 'text-red-400');
+          } else if (pct > 50) {
+            evtHpCrisis = false;
+          }
         }
       }
     }
@@ -748,6 +800,11 @@ const renderStats = (stats: any) => {
     if (stats.level !== undefined) {
       const el = document.getElementById('stat-level');
       if (el) el.innerText = stats.level;
+      const lvl = Number(stats.level);
+      if (lvl > evtPrevLevel) {
+        if (evtPrevLevel > 0) logObserver(`⬇ Descended to dungeon level ${lvl}`, 'text-cyan-400');
+        evtPrevLevel = lvl;
+      }
     }
     if (stats.exp !== undefined && stats.explev !== undefined) {
       const el = document.getElementById('stat-exp');
@@ -819,6 +876,12 @@ const handleAutoExit = (status: number, userName: string) => {
   const botStateEl = document.getElementById('bot-state');
 
   const shouldAutoRestart = autoRestartToggle ? autoRestartToggle.checked : true;
+
+  // Game-over summary (depth / gold / turns) from the last-seen stats.
+  const goDepth = document.getElementById('stat-level')?.innerText || '?';
+  const goGold = document.getElementById('stat-gold')?.innerText || '?';
+  const goTurns = document.getElementById('bot-turns')?.innerText || '?';
+  logObserver(`☠ Game over — reached level ${goDepth}, ${goGold} gold, ${goTurns} turns`, 'text-amber-400 font-bold');
 
   if (shouldAutoRestart) {
     // Log in observer log

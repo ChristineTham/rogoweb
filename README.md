@@ -155,28 +155,43 @@ Each run **resumes from and evolves the bundled pool** (the default `--out` *is*
 running `npm run pretrain` repeatedly keeps strengthening the shipped pool. Use `--reset` to throw
 it away and start from a fresh random pool.
 
+It trains **in parallel across all CPU cores by default**: N isolated "islands" (Playwright browser
+contexts, each with its own IndexedDB) evolve their own copy of the pool at once, then the driver
+merges them into one. Each game-pair is mostly blocked on `Atomics.wait` (~1 core), so this scales
+near-linearly — measured **~10× on a 10-core machine**. Set `--jobs=1` for serial.
+
 ```bash
-npm run pretrain                                # 100 games, building on the bundled pool
+npm run pretrain                                # all cores in parallel, building on the pool
+npm run pretrain -- --jobs=4 --runs=200         # 4 islands × 50 games each, then merge
 npm run pretrain -- --reset --runs=100          # start over from a fresh random pool
-npm run pretrain -- --until=meanLevel>=4        # …or train until a goal metric is reached
-npm run pretrain -- --runs=50 --timeout=60000   # give deeper games more time to finish
+npm run pretrain -- --jobs=1                     # serial (one island, no merge)
 ```
 
 | Flag | Default | Meaning |
 |------|---------|---------|
-| `--runs=N` | 100 | number of games to play (≈5× the 20-genotype pool — see below) |
-| `--until=<metric><op><value>` | — | stop early when the pool hits a goal, e.g. `meanLevel>=4`, `highScore>1000`, `trialno>=200` |
+| `--runs=N` | 100 | total games, split evenly across `--jobs` islands (≈5× the 20-genotype pool — see below) |
+| `--jobs=N` | cpu count | parallel islands (isolated pools) merged at the end; `1` = serial, no merge |
+| `--until=<metric><op><value>` | — | stop early when an island's pool hits a goal, e.g. `meanLevel>=4`, `highScore>1000`, `trialno>=200` |
 | `--timeout=<ms>` | 45000 | per-game wall-clock cap; a stuck genotype is killed and skipped |
 | `--seed=random\|<n>`, `--base=<n>` | random | deterministic seeds for reproducible batches |
 | `--out=<file>` | `public/wasm/GenePool544.pretrained` | where to write the evolved pool (defaults to the bundled pool, so runs accumulate) |
 | `--reset` | off | wipe the pool and start from a fresh random one instead of resuming |
 
-**How it works.** `scripts/pretrain.mjs` starts the project's Vite dev server (for the COOP/COEP
-headers `SharedArrayBuffer` needs), launches headless Chromium (`playwright-core`), and loads
-`pretrain.html`. That page (`src/pretrain/harness.ts`) spawns the *same* rogue + rogomatic web
-workers the app uses and plays games back-to-back, letting the pool evolve in IDBFS exactly as in
-a normal session; the driver then extracts `GenePool544` from IndexedDB to disk. Needs a cached
-Chromium — `npx playwright install chromium`, or point `CHROMIUM_EXE` at an existing binary.
+**How it works.** `scripts/pretrain.mjs` starts one Vite dev server (COOP/COEP headers for
+`SharedArrayBuffer`), launches one headless Chromium (`playwright-core`), and opens `--jobs`
+**isolated browser contexts**. Each loads `pretrain.html` (`src/pretrain/harness.ts`), which spawns
+the *same* rogue + rogomatic workers the app uses and evolves its own pool in IDBFS — the islands
+never contend on the shared pool because each context has its own IndexedDB. The driver then
+extracts every island's `GenePool544` and **merges** them: it pools each genotype's fitness across
+islands (subtracting the shared resume-base so its games aren't counted once per island). The merge
+is **elitist / no-regression** — it keeps the pool at its existing size (20), a genotype is only
+ever replaced by a *robustly* better one (fitness is weighted by evidence, so a lucky low-sample
+genotype can't evict a proven one), and the peak score/level never drop below the base's. On top of
+that the driver **only overwrites the pool if the run improved it** — reached a new peak, or held
+the peak with an equal-or-better mean; a bad or unlucky run leaves the existing pool untouched. Every
+run therefore refines and improves the pool without discarding what it already learned. Needs a
+cached Chromium — `npx playwright install chromium`, or point `CHROMIUM_EXE` at an existing binary. Genotypes are self-contained (`dna[8]` + stats; parents are logging-only in
+`learn.c`), which is what makes a clean merge possible.
 
 **Why 100 runs?** The pool holds **20 genotypes** (`learn.c`, max 100). `pickgenotype()` tests
 *every* genotype to a minimum-trial threshold before it begins breeding (crossover/mutate), so real
@@ -197,6 +212,30 @@ the practical knee for a shipped starter pool.
 > Only a game that ends **naturally** (the bot dies) records a genotype's fitness; a genotype that
 > gets the bot stuck searching a level times out and records nothing, so it can't be culled — set
 > `--timeout` high enough that real games finish (too low guillotines good games before they score).
+
+---
+
+## 📸 Screenshots & social preview
+
+Two npm scripts drive the **real app** headlessly (the same `playwright-core` + Chromium setup as
+pretraining) to capture promo imagery mid-game at a decent depth — no manual play required:
+
+```bash
+npm run screenshot     # full 1920×1080 app screenshot → public/screenshot.png (+ ./screenshot.png)
+npm run og-image       # 1200×630 social card          → public/og-image.png   (+ ./og-image.png)
+```
+
+Both run Rog-O-Matic (auto-restarting across deaths) until a game reaches a target dungeon level,
+wait for that level to be actually **explored** (map revealed, not a fresh dark arrival — a settle
+heuristic keeps the *deepest* explored view), then screenshot. Flags: `--target=N` (dungeon level
+to reach), `--width`/`--height` (viewport), `--settle=<s>` (seconds on a level before it counts as
+explored), `--timeout=<ms>` (per-run cap), `--seed=<n>`, `--out=<file>`.
+
+`og-image` captures **directly at 1200×630** — the Open Graph / Twitter `summary_large_image`
+optimum (1.91:1) — so the responsive UI lays itself out to fit at that size and **nothing is
+cropped**. `index.html`'s `og:image` / `twitter:image` point at `og-image.png`; the larger
+`screenshot.png` is kept for the README / repository preview. Needs a cached Chromium (`npx
+playwright install chromium`, or point `CHROMIUM_EXE` at an existing binary).
 
 ---
 

@@ -3,7 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rogoweb</title>
+    <title>Rogoweb — Rogue 5.4.4 &amp; Rog-O-Matic in your browser</title>
+    <meta
+      name="description"
+      content="Play Rogue 5.4.4, the classic 1980 dungeon crawler — or watch the legendary Rog-O-Matic AI play it for you. The original C code compiled to WebAssembly, running entirely in your browser with a VT100 terminal and live telemetry."
+    />
+    <meta
+      name="keywords"
+      content="Rogue, roguelike, Rog-O-Matic, rogomatic, WebAssembly, WASM, dungeon crawler, VT100 terminal, retro game, genetic algorithm, AI player, Rogue 5.4.4"
+    />
+    <meta name="author" content="Christine Tham" />
+    <meta name="theme-color" content="#FE5000" />
+    <link rel="canonical" href="https://christinetham.github.io/rogoweb/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rogoweb" />
+    <meta property="og:title" content="Rogoweb — Rogue 5.4.4 &amp; Rog-O-Matic in your browser" />
+    <meta
+      property="og:description"
+      content="Play Rogue 5.4.4 — or watch the legendary Rog-O-Matic AI play it — compiled to WebAssembly, running entirely in your browser with a VT100 terminal and live telemetry."
+    />
+    <meta property="og:url" content="https://christinetham.github.io/rogoweb/" />
+    <meta property="og:image" content="https://christinetham.github.io/rogoweb/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Rog-O-Matic exploring a Rogue dungeon level in the Rogoweb VT100 terminal, with live telemetry."
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Rogoweb — Rogue 5.4.4 &amp; Rog-O-Matic in your browser" />
+    <meta
+      name="twitter:description"
+      content="Play Rogue 5.4.4 — or watch the legendary Rog-O-Matic AI play it — compiled to WebAssembly, running in your browser."
+    />
+    <meta name="twitter:image" content="https://christinetham.github.io/rogoweb/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="Rog-O-Matic exploring a Rogue dungeon level in the Rogoweb VT100 terminal, with live telemetry."
+    />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -185,6 +229,7 @@
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Level</span><span id="stat-level" class="font-black text-vt-black">1</span></div>
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Experience</span><span id="stat-exp" class="font-black text-vt-black">0/1</span></div>
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Generation</span><span id="bot-gen" class="font-black text-vt-black">0</span></div>
+                  <div class="flex items-center gap-1.5 whitespace-nowrap" title="Genotypes in the gene pool"><span class="text-[#555] font-black">Pool</span><span id="stat-pool" class="font-black text-vt-black">—</span></div>
                   <div class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-[#555] font-black">Turns</span><span id="bot-turns" class="font-black text-vt-black">0</span></div>
                 </div>
 
@@ -277,6 +322,15 @@
                   </div>
                 </div>
               </section>
+
+              <!-- VERSION FOOTER -->
+              <div
+                id="app-version"
+                class="mt-auto border-t border-black/10 pt-1 text-[10px] text-[#666] font-mono leading-tight text-center"
+              >
+                rogoweb <span id="app-ver">v?</span> ·
+                <a id="app-commit" href="#" target="_blank" rel="noopener" class="hover:underline">?</a>
+              </div>
             </div>
           </aside>
         </main>
