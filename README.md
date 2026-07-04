@@ -233,9 +233,10 @@ explored), `--timeout=<ms>` (per-run cap), `--seed=<n>`, `--out=<file>`.
 
 `og-image` captures **directly at 1200×630** — the Open Graph / Twitter `summary_large_image`
 optimum (1.91:1) — so the responsive UI lays itself out to fit at that size and **nothing is
-cropped**. `index.html`'s `og:image` / `twitter:image` point at `og-image.png`; the larger
-`screenshot.png` is kept for the README / repository preview. Needs a cached Chromium (`npx
-playwright install chromium`, or point `CHROMIUM_EXE` at an existing binary).
+cropped**. `index.html`'s `og:image` / `twitter:image` point at `og-image.png`, and the bundled
+`screenshot.png` currently holds that same level-5 capture; run `npm run screenshot` to regenerate
+a full-resolution 1920×1080 version for the README / repository preview. Needs a cached Chromium
+(`npx playwright install chromium`, or point `CHROMIUM_EXE` at an existing binary).
 
 ---
 
