@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 const html = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
-const SITE = 'https://christinetham.github.io/rogoweb';
+const SITE = 'https://christham.net/rogoweb';
 
 describe('SEO / social-preview metadata (v1.0.0)', () => {
   let document: Document;
