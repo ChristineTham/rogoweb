@@ -8,6 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts",
+    "test:all": "npm run test && npm run test:e2e",
     "lint": "eslint .",
     "format": "prettier --write .",
     "build:emcurses": "emmake make -C emcurses/emscripten libs",

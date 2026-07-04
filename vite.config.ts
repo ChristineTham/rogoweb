@@ -40,6 +40,8 @@ export default defineConfig({
     },
   ],
   test: {
-    include: ['src/**/*.spec.ts'],
+    // Fast unit tests only. The e2e suite (e2e/**/*.e2e.ts) runs under its own
+    // config (vitest.config.e2e.ts) because it boots a dev server + Chromium.
+    include: ['src/**/*.spec.ts', 'scripts/**/*.spec.ts'],
   },
 });

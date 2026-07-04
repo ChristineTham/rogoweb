@@ -240,6 +240,31 @@ a full-resolution 1920×1080 version for the README / repository preview. Needs 
 
 ---
 
+## 🧪 Testing
+
+```bash
+npm test          # unit suite (vitest; node + jsdom) — fast, no browser
+npm run test:e2e  # end-to-end (Playwright): boots a dev server + headless Chromium
+npm run test:all  # both
+```
+
+**Unit tests** (`src/**/*.spec.ts`, `scripts/**/*.spec.ts`) cover the pure logic: the
+`SharedArrayBuffer` ring buffer and WASM-pipe IPC, the terminal shim, responsive scaling / layout,
+the v1.0.0 telemetry helpers (`src/telemetry.ts` — descent milestones, the latched low-HP warning,
+gene-pool-size parsing, the game-over summary, version/commit formatting), the SEO / Open Graph
+tags and status-panel scaffolding (JSDOM over `index.html`), the gene-pool **merge invariants**
+(`scripts/genepool.mjs` — base-subtract accounting, evidence-weighted elitism, no-regression /
+ratchet), and version-agnostic Chromium detection (`scripts/chromium.mjs`).
+
+**End-to-end tests** (`e2e/**/*.e2e.ts`) drive the *real* app in headless Chromium: they assert
+cross-origin isolation (so `SharedArrayBuffer` is available), the 1200×630 og:image, the
+version/commit footer, that START enables once the runtime is ready, and — playing Rog-O-Matic back
+to back — that live telemetry (turns, gene-pool size) and the descent milestones update, with no
+debug output leaking into the status panel. They **skip automatically** when no cached Chromium is
+present, so `npm test` stays green on a bare checkout.
+
+---
+
 ## 🔧 Enhancements in This Fork
 
 Rog-O-Matic was originally written for older Rogue variants and carries multi-version

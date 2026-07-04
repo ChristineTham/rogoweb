@@ -3,6 +3,17 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { TerminalShim, TermGlobals } from './terminal-shim';
 import { SharedIPC } from './ipc/ring-buffer';
+import {
+  parseStatPair,
+  barColorClass,
+  parseGenePoolSize,
+  descentMessage,
+  hpCrisisTransition,
+  gameOverSummary,
+  newGameBanner,
+  versionLabel,
+  commitUrl,
+} from './telemetry';
 
 /* =========================================
    VT100 TECHNICAL CONSTANTS
@@ -54,13 +65,12 @@ declare const __GIT_COMMIT__: string;
 // Populate the persistent version/commit footer in the status panel.
 (() => {
   const ver = document.getElementById('app-ver');
-  if (ver) ver.textContent = `v${__APP_VERSION__}`;
+  if (ver) ver.textContent = versionLabel(__APP_VERSION__);
   const commitEl = document.getElementById('app-commit') as HTMLAnchorElement | null;
   if (commitEl) {
     commitEl.textContent = __GIT_COMMIT__;
-    if (__GIT_COMMIT__ && __GIT_COMMIT__ !== 'unknown') {
-      commitEl.href = `https://github.com/ChristineTham/rogoweb/commit/${__GIT_COMMIT__}`;
-    }
+    const url = commitUrl(__GIT_COMMIT__);
+    if (url) commitEl.href = url;
   }
 })();
 
@@ -333,7 +343,7 @@ const startWorkerGame = (userName: string) => {
   // New game: reset milestone trackers and stamp the build info in the log.
   evtPrevLevel = 0;
   evtHpCrisis = false;
-  logObserver(`[system] rogoweb v${__APP_VERSION__} (${__GIT_COMMIT__}) — new game`, 'text-cyan-400 font-bold');
+  logObserver(newGameBanner(__APP_VERSION__, __GIT_COMMIT__), 'text-cyan-400 font-bold');
   if (activeRogueWorker) {
     activeRogueWorker.terminate();
     activeRogueWorker = null;
@@ -414,10 +424,10 @@ const startWorkerGame = (userName: string) => {
       }
     } else if (e.data && e.data.type === 'log') {
       // Surface the gene-pool size ("Gene pool size N, started ...") as a stat.
-      const poolMatch = String(e.data.message).match(/Gene pool size (\d+)/);
-      if (poolMatch) {
+      const poolSize = parseGenePoolSize(e.data.message);
+      if (poolSize !== null) {
         const poolEl = document.getElementById('stat-pool');
-        if (poolEl) poolEl.innerText = poolMatch[1];
+        if (poolEl) poolEl.innerText = String(poolSize);
       }
       const logPane = document.getElementById('observer-log');
       if (logPane) {
@@ -737,24 +747,20 @@ const renderStats = (stats: any) => {
           hpVal = Number(stats.hp);
           maxhpVal = Number(stats.maxhp);
         } else if (typeof stats.hp === 'string') {
-          const match = stats.hp.match(/(\d+)\((\d+)\)/);
-          if (match) {
-            hpVal = parseInt(match[1], 10);
-            maxhpVal = parseInt(match[2], 10);
+          const pair = parseStatPair(stats.hp);
+          if (pair) {
+            hpVal = pair.cur;
+            maxhpVal = pair.max;
           }
         }
         if (maxhpVal > 0) {
           const pct = (hpVal / maxhpVal) * 100;
           bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
-          const colorClass = pct < 30 ? 'bg-red-600' : pct < 70 ? 'bg-amber-500' : 'bg-green-600';
-          bar.className = `h-full rounded-sm transition-all duration-300 ${colorClass}`;
+          bar.className = `h-full rounded-sm transition-all duration-300 ${barColorClass(pct)}`;
           // Latched low-HP warning: log once per crisis, clear when recovered.
-          if (pct < 25 && !evtHpCrisis) {
-            evtHpCrisis = true;
-            logObserver(`⚠ Critical HP ${hpVal}/${maxhpVal} — the bot is in danger`, 'text-red-400');
-          } else if (pct > 50) {
-            evtHpCrisis = false;
-          }
+          const crisis = hpCrisisTransition(hpVal, maxhpVal, evtHpCrisis);
+          evtHpCrisis = crisis.latched;
+          if (crisis.message) logObserver(crisis.message, 'text-red-400');
         }
       }
     }
@@ -766,10 +772,10 @@ const renderStats = (stats: any) => {
         let strVal = 0;
         let maxStrVal = 0;
         if (typeof stats.str === 'string') {
-          const match = stats.str.match(/(\d+)\((\d+)\)/);
-          if (match) {
-            strVal = parseInt(match[1], 10);
-            maxStrVal = parseInt(match[2], 10);
+          const pair = parseStatPair(stats.str);
+          if (pair) {
+            strVal = pair.cur;
+            maxStrVal = pair.max;
           } else {
             strVal = parseInt(stats.str, 10);
             maxStrVal = strVal; // Fallback if no max is provided
@@ -788,8 +794,7 @@ const renderStats = (stats: any) => {
         if (maxStrVal > 0) {
           const pct = (strVal / maxStrVal) * 100;
           bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
-          const colorClass = pct < 30 ? 'bg-red-600' : pct < 70 ? 'bg-amber-500' : 'bg-green-600';
-          bar.className = `h-full rounded-sm transition-all duration-300 ${colorClass}`;
+          bar.className = `h-full rounded-sm transition-all duration-300 ${barColorClass(pct)}`;
         }
       }
     }
@@ -801,10 +806,9 @@ const renderStats = (stats: any) => {
       const el = document.getElementById('stat-level');
       if (el) el.innerText = stats.level;
       const lvl = Number(stats.level);
-      if (lvl > evtPrevLevel) {
-        if (evtPrevLevel > 0) logObserver(`⬇ Descended to dungeon level ${lvl}`, 'text-cyan-400');
-        evtPrevLevel = lvl;
-      }
+      const descent = descentMessage(evtPrevLevel, lvl);
+      if (descent) logObserver(descent, 'text-cyan-400');
+      if (lvl > evtPrevLevel) evtPrevLevel = lvl;
     }
     if (stats.exp !== undefined && stats.explev !== undefined) {
       const el = document.getElementById('stat-exp');
@@ -881,7 +885,7 @@ const handleAutoExit = (status: number, userName: string) => {
   const goDepth = document.getElementById('stat-level')?.innerText || '?';
   const goGold = document.getElementById('stat-gold')?.innerText || '?';
   const goTurns = document.getElementById('bot-turns')?.innerText || '?';
-  logObserver(`☠ Game over — reached level ${goDepth}, ${goGold} gold, ${goTurns} turns`, 'text-amber-400 font-bold');
+  logObserver(gameOverSummary(goDepth, goGold, goTurns), 'text-amber-400 font-bold');
 
   if (shouldAutoRestart) {
     // Log in observer log

@@ -16,9 +16,9 @@
  */
 import { chromium } from 'playwright-core';
 import { createServer } from 'vite';
-import { existsSync, copyFileSync, readdirSync } from 'node:fs';
+import { copyFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { homedir } from 'node:os';
+import { findChromium } from './chromium.mjs';
 
 const args = {};
 for (const a of process.argv.slice(2)) { const m = a.match(/^--([^=]+)(?:=(.*))?$/); if (m) args[m[1]] = m[2] ?? 'true'; }
@@ -30,28 +30,7 @@ const HEIGHT = Math.max(240, parseInt(args.height || '1080', 10));
 const SEED = args.seed && args.seed !== 'true' ? String(args.seed) : '';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Locate a cached Playwright Chromium without hard-coding the build number (it
-// bumps on every playwright-core update). Prefer $CHROMIUM_EXE, else the newest
-// cached headless-shell, else the newest full Chromium.
-function findChromium() {
-  if (process.env.CHROMIUM_EXE && existsSync(process.env.CHROMIUM_EXE)) return process.env.CHROMIUM_EXE;
-  const cache = `${homedir()}/Library/Caches/ms-playwright`;
-  let dirs;
-  try { dirs = readdirSync(cache); } catch { return null; }
-  const rels = {
-    'chromium_headless_shell-': ['chrome-headless-shell-mac-arm64/chrome-headless-shell', 'chrome-headless-shell-mac-x64/chrome-headless-shell'],
-    'chromium-': ['chrome-mac/Chromium.app/Contents/MacOS/Chromium'],
-  };
-  for (const prefix of ['chromium_headless_shell-', 'chromium-']) {
-    const newest = dirs.filter((d) => d.startsWith(prefix))
-      .sort((a, b) => (parseInt(b.slice(prefix.length), 10) || 0) - (parseInt(a.slice(prefix.length), 10) || 0));
-    for (const dir of newest) for (const rel of rels[prefix]) {
-      const p = `${cache}/${dir}/${rel}`;
-      if (existsSync(p)) return p;
-    }
-  }
-  return null;
-}
+// Chromium detection (version-agnostic) lives in ./chromium.mjs.
 const EXE = findChromium();
 if (!EXE) { console.error('No Chromium found. Set CHROMIUM_EXE, or run: npx playwright install chromium'); process.exit(1); }
 
