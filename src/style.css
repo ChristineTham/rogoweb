@@ -42,9 +42,22 @@
   html {
     @apply h-screen w-screen bg-black text-p4-white overflow-hidden m-0 p-0;
     font-family: var(--font-term);
+    /* VT323 ships standard f-ligatures (ff/fi/fl) that collapse two glyphs into
+       one — in the xterm terminal that silently merges two character cells and
+       breaks the monospace grid (a visible gap around "f"). A pixel terminal
+       font never wants ligatures, so disable them everywhere VT323 is used. */
+    font-variant-ligatures: none;
+    font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0;
   }
   #app {
     @apply h-full w-full;
+  }
+  /* Belt-and-suspenders: pin it on the terminal itself so no xterm default can
+     re-enable ligatures on the character grid. */
+  .xterm,
+  .xterm .xterm-rows {
+    font-variant-ligatures: none;
+    font-feature-settings: 'liga' 0, 'clig' 0, 'dlig' 0;
   }
 }
 

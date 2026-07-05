@@ -62,6 +62,18 @@ describe.skipIf(!EXE)('rogoweb app (e2e)', () => {
     expect(await page.evaluate(() => typeof SharedArrayBuffer !== 'undefined')).toBe(true);
   });
 
+  it('renders the terminal with font ligatures disabled (monospace grid intact)', async () => {
+    // VT323 ships ff/fi/fl ligatures that would collapse two character cells into
+    // one and break the terminal grid (a visible gap around "f"). style.css must
+    // keep them off.
+    await page.waitForFunction(() => !!document.querySelector('.xterm-rows'), { timeout: 30_000 });
+    const ligatures = await page.evaluate(() => {
+      const el = document.querySelector('.xterm .xterm-rows') || document.querySelector('.xterm-rows');
+      return el ? getComputedStyle(el).fontVariantLigatures : null;
+    });
+    expect(ligatures).toBe('none');
+  });
+
   it('exposes the 1200x630 og:image card in the served HTML', async () => {
     expect(await page.getAttribute('meta[property="og:image"]', 'content')).toMatch(/\/og-image\.png$/);
     expect(await page.getAttribute('meta[property="og:image:width"]', 'content')).toBe('1200');
